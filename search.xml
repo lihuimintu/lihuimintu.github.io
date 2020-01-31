@@ -3256,42 +3256,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Linux IO</title>
-    <url>/2019/08/28/Linux-IO/</url>
-    <content><![CDATA[<p>I/O相关的应用通常用来处理大量数据，需要大量内存和存储，频繁I/O操作读、写数据</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>IO 是运维过程中比较关注的点。阅读<a href="https://www.jellythink.com/archives/451" target="_blank" rel="noopener">Linux性能监测：IO篇</a></p>
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>说到实际的，那就要说说实际运维工作中，如何发现IO性能瓶颈</p>
-<p>iostat。通过这个神器，就可以监视具体的磁盘性能了。</p>
-<p><code>iostat -x 1 20</code> 每一秒显示一次详细信息，共显示20次。   -x 显示详细信息 / -d 显示磁盘使用情况</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[user1@Test_Server ~]$ iostat -x</span><br><span class="line">Linux 3.10.0-693.2.2.el7.x86_64 (jellythink)    01&#x2F;05&#x2F;2019      _x86_64_        (1 CPU)</span><br><span class="line"></span><br><span class="line">avg-cpu:  %user   %nice %system %iowait  %steal   %idle</span><br><span class="line">           1.83    0.00    0.31    0.09    0.00   97.77</span><br><span class="line"></span><br><span class="line">Device:         rrqm&#x2F;s   wrqm&#x2F;s     r&#x2F;s     w&#x2F;s    rkB&#x2F;s    wkB&#x2F;s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util</span><br><span class="line">vda               0.03     0.78    0.24    1.38    12.64    20.67    41.01     0.02   10.98   55.50    3.17   0.71   0.12</span><br></pre></td></tr></table></figure>
-
-<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/438" target="_blank" rel="noopener">Linux iostat命令详解</a></p>
-<p>关注性能监控指标</p>
-<ul>
-<li>%iowait: 如果该值较高，表示磁盘存在I/O瓶颈</li>
-<li>await: 一般地，系统I/O响应时间应该低于5ms，如果大于10ms就比较大了。另一方面如果 svctm 比较接近 await，说明 I/O 几乎没有等待时间；如果 await 远大于 svctm，说明I/O 队列太长，io响应太慢，则需要进行必要优化。</li>
-<li>%util: 一秒中有百分之多少的时间用于I/O操作，即被IO消耗的CPU百分比，一般地，如果该参数是100%表示设备已经接近满负荷运行了</li>
-<li>avgqu-sz: 如果avgqu-sz比较大，也表示有当量io在等待。如果单块磁盘的队列长度持续超过2，一般认为该磁盘存在I/O性能问题。</li>
-</ul>
-<p>但是，在实际运维工作中，都希望找到是哪个进程消耗了IO，所以终极目的是找到这个进程ID。可是通过 iostat 都没法达到目的。<br>所以，神器pidstat命令就登场了，通过这个命令，就可以知道是谁在后台偷用IO了。</p>
-<p>pidstat 是 sysstat 工具的一个命令，如果服务器上没有现成的，不要着急。CentOS 使用<code>yum install sysstat</code> 安装</p>
-<p>使用 -d 选项，可以查看进程IO的统计信息</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# pidstat -d 1</span><br><span class="line">Linux 2.6.32-431.el6.x86_64 (massive-dataset-new-002)   08&#x2F;28&#x2F;2019      _x86_64_        (8 CPU)</span><br><span class="line"></span><br><span class="line">03:28:50 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:51 PM       438      0.00      3.96      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:51 PM     21406      0.00    126.73      0.00  mysqld</span><br><span class="line"></span><br><span class="line">03:28:51 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:52 PM       438      0.00      4.00      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:52 PM       969      0.00      4.00      0.00  flush-253:1</span><br><span class="line">03:28:52 PM     14200      0.00      4.00      0.00  java</span><br><span class="line">03:28:52 PM     21406      0.00      8.00      0.00  mysqld</span><br><span class="line">03:28:52 PM     24608      0.00      8.00      0.00  java</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">kB_rd&#x2F;s: 每秒进程从磁盘读取的数据量(以kB为单位)</span><br><span class="line">kB_wr&#x2F;s: 每秒进程向磁盘写的数据量(以kB为单位)</span><br><span class="line">Command: 拉起进程对应的命令</span><br></pre></td></tr></table></figure>
-
-<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/444" target="_blank" rel="noopener">Linux pidstat命令详解</a></p>
-<p>现在定位到进程级别了，很多时候，需要知道这个进程到底打开了哪些文件，这个进程到底和哪些进程关联，这个时候就不得不提到lsof命令了。</p>
-<p><code>lsof -p 20711</code> 列出指定进程打开的文件列表</p>
-<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/449" target="_blank" rel="noopener">Linux lsof命令详解</a></p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>排查问题所使用的工具大而全的知识一时半会记不全。要多练习多思考</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Linux 内存</title>
     <url>/2019/08/28/Linux-Memory/</url>
     <content><![CDATA[<p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。</p>
@@ -3427,6 +3391,63 @@
       </categories>
   </entry>
   <entry>
+    <title>Linux IO</title>
+    <url>/2019/08/28/Linux-IO/</url>
+    <content><![CDATA[<p>I/O相关的应用通常用来处理大量数据，需要大量内存和存储，频繁I/O操作读、写数据</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>IO 是运维过程中比较关注的点。阅读<a href="https://www.jellythink.com/archives/451" target="_blank" rel="noopener">Linux性能监测：IO篇</a></p>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>说到实际的，那就要说说实际运维工作中，如何发现IO性能瓶颈</p>
+<p>iostat。通过这个神器，就可以监视具体的磁盘性能了。</p>
+<p><code>iostat -x 1 20</code> 每一秒显示一次详细信息，共显示20次。   -x 显示详细信息 / -d 显示磁盘使用情况</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[user1@Test_Server ~]$ iostat -x</span><br><span class="line">Linux 3.10.0-693.2.2.el7.x86_64 (jellythink)    01&#x2F;05&#x2F;2019      _x86_64_        (1 CPU)</span><br><span class="line"></span><br><span class="line">avg-cpu:  %user   %nice %system %iowait  %steal   %idle</span><br><span class="line">           1.83    0.00    0.31    0.09    0.00   97.77</span><br><span class="line"></span><br><span class="line">Device:         rrqm&#x2F;s   wrqm&#x2F;s     r&#x2F;s     w&#x2F;s    rkB&#x2F;s    wkB&#x2F;s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util</span><br><span class="line">vda               0.03     0.78    0.24    1.38    12.64    20.67    41.01     0.02   10.98   55.50    3.17   0.71   0.12</span><br></pre></td></tr></table></figure>
+
+<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/438" target="_blank" rel="noopener">Linux iostat命令详解</a></p>
+<p>关注性能监控指标</p>
+<ul>
+<li>%iowait: 如果该值较高，表示磁盘存在I/O瓶颈</li>
+<li>await: 一般地，系统I/O响应时间应该低于5ms，如果大于10ms就比较大了。另一方面如果 svctm 比较接近 await，说明 I/O 几乎没有等待时间；如果 await 远大于 svctm，说明I/O 队列太长，io响应太慢，则需要进行必要优化。</li>
+<li>%util: 一秒中有百分之多少的时间用于I/O操作，即被IO消耗的CPU百分比，一般地，如果该参数是100%表示设备已经接近满负荷运行了</li>
+<li>avgqu-sz: 如果avgqu-sz比较大，也表示有当量io在等待。如果单块磁盘的队列长度持续超过2，一般认为该磁盘存在I/O性能问题。</li>
+</ul>
+<p>但是，在实际运维工作中，都希望找到是哪个进程消耗了IO，所以终极目的是找到这个进程ID。可是通过 iostat 都没法达到目的。<br>所以，神器pidstat命令就登场了，通过这个命令，就可以知道是谁在后台偷用IO了。</p>
+<p>pidstat 是 sysstat 工具的一个命令，如果服务器上没有现成的，不要着急。CentOS 使用<code>yum install sysstat</code> 安装</p>
+<p>使用 -d 选项，可以查看进程IO的统计信息</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# pidstat -d 1</span><br><span class="line">Linux 2.6.32-431.el6.x86_64 (massive-dataset-new-002)   08&#x2F;28&#x2F;2019      _x86_64_        (8 CPU)</span><br><span class="line"></span><br><span class="line">03:28:50 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:51 PM       438      0.00      3.96      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:51 PM     21406      0.00    126.73      0.00  mysqld</span><br><span class="line"></span><br><span class="line">03:28:51 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:52 PM       438      0.00      4.00      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:52 PM       969      0.00      4.00      0.00  flush-253:1</span><br><span class="line">03:28:52 PM     14200      0.00      4.00      0.00  java</span><br><span class="line">03:28:52 PM     21406      0.00      8.00      0.00  mysqld</span><br><span class="line">03:28:52 PM     24608      0.00      8.00      0.00  java</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">kB_rd&#x2F;s: 每秒进程从磁盘读取的数据量(以kB为单位)</span><br><span class="line">kB_wr&#x2F;s: 每秒进程向磁盘写的数据量(以kB为单位)</span><br><span class="line">Command: 拉起进程对应的命令</span><br></pre></td></tr></table></figure>
+
+<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/444" target="_blank" rel="noopener">Linux pidstat命令详解</a></p>
+<p>现在定位到进程级别了，很多时候，需要知道这个进程到底打开了哪些文件，这个进程到底和哪些进程关联，这个时候就不得不提到lsof命令了。</p>
+<p><code>lsof -p 20711</code> 列出指定进程打开的文件列表</p>
+<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/449" target="_blank" rel="noopener">Linux lsof命令详解</a></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>排查问题所使用的工具大而全的知识一时半会记不全。要多练习多思考</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>使用 Flink 时遇到的问题</title>
+    <url>/2019/08/20/Flink-Problem/</url>
+    <content><![CDATA[<p>使用Flink时遇到的问题（不断更新中）</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>作为公司第一个吃 Flink 这支螃蟹的人肯定免不了踩坑，因此通过文字记录的方式记录踩坑经历</p>
+<h4 id="Could-not-build-the-program-from-JAR-file"><a href="#Could-not-build-the-program-from-JAR-file" class="headerlink" title="Could not build the program from JAR file."></a>Could not build the program from JAR file.</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报错</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Could not build the program from JAR file.</span><br><span class="line"></span><br><span class="line">Use the help option (-h or --help) to get help on the command.</span><br></pre></td></tr></table></figure>
+
+<p>这是需要配置 Hadoop Classpaths。 <a href="https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/hadoop.html#configuring-flink-with-hadoop-classpaths" target="_blank" rel="noopener">Configuring Flink with Hadoop Classpaths</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export HADOOP_CLASSPATH&#x3D;&#96;hadoop classpath&#96;</span><br></pre></td></tr></table></figure>
+
+<h4 id="UnsupportedClassVersionError"><a href="#UnsupportedClassVersionError" class="headerlink" title="UnsupportedClassVersionError"></a>UnsupportedClassVersionError</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报 UnsupportedClassVersionError 错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.UnsupportedClassVersionError: org&#x2F;apache&#x2F;flink&#x2F;client&#x2F;cli&#x2F;CliFrontend : Unsupported major.minor version 52.0</span><br><span class="line">        at java.lang.ClassLoader.defineClass1(Native Method)</span><br><span class="line">        at java.lang.ClassLoader.defineClass(ClassLoader.java:800)</span><br><span class="line">        at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)</span><br><span class="line">        at java.net.URLClassLoader.defineClass(URLClassLoader.java:449)</span><br><span class="line">        at java.net.URLClassLoader.access$100(URLClassLoader.java:71)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:361)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:355)</span><br><span class="line">        at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:354)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:425)</span><br><span class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:308)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)</span><br><span class="line">        at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:482)</span><br></pre></td></tr></table></figure>
+
+<p>Java 版本不对, Flink1.8 需要 JDK1.8 以上。修改环境变量 JAVA_HOME</p>
+]]></content>
+      <categories>
+        <category>Flink</category>
+      </categories>
+  </entry>
+  <entry>
     <title>HBase Region 数量&amp;大小</title>
     <url>/2019/08/20/HBase-Region-Number/</url>
     <content><![CDATA[<p>HBase Region 数量&amp;大小</p>
@@ -3466,27 +3487,6 @@
 ]]></content>
       <categories>
         <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>使用 Flink 时遇到的问题</title>
-    <url>/2019/08/20/Flink-Problem/</url>
-    <content><![CDATA[<p>使用Flink时遇到的问题（不断更新中）</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>作为公司第一个吃 Flink 这支螃蟹的人肯定免不了踩坑，因此通过文字记录的方式记录踩坑经历</p>
-<h4 id="Could-not-build-the-program-from-JAR-file"><a href="#Could-not-build-the-program-from-JAR-file" class="headerlink" title="Could not build the program from JAR file."></a>Could not build the program from JAR file.</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报错</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Could not build the program from JAR file.</span><br><span class="line"></span><br><span class="line">Use the help option (-h or --help) to get help on the command.</span><br></pre></td></tr></table></figure>
-
-<p>这是需要配置 Hadoop Classpaths。 <a href="https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/hadoop.html#configuring-flink-with-hadoop-classpaths" target="_blank" rel="noopener">Configuring Flink with Hadoop Classpaths</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export HADOOP_CLASSPATH&#x3D;&#96;hadoop classpath&#96;</span><br></pre></td></tr></table></figure>
-
-<h4 id="UnsupportedClassVersionError"><a href="#UnsupportedClassVersionError" class="headerlink" title="UnsupportedClassVersionError"></a>UnsupportedClassVersionError</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报 UnsupportedClassVersionError 错误</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.UnsupportedClassVersionError: org&#x2F;apache&#x2F;flink&#x2F;client&#x2F;cli&#x2F;CliFrontend : Unsupported major.minor version 52.0</span><br><span class="line">        at java.lang.ClassLoader.defineClass1(Native Method)</span><br><span class="line">        at java.lang.ClassLoader.defineClass(ClassLoader.java:800)</span><br><span class="line">        at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)</span><br><span class="line">        at java.net.URLClassLoader.defineClass(URLClassLoader.java:449)</span><br><span class="line">        at java.net.URLClassLoader.access$100(URLClassLoader.java:71)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:361)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:355)</span><br><span class="line">        at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:354)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:425)</span><br><span class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:308)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)</span><br><span class="line">        at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:482)</span><br></pre></td></tr></table></figure>
-
-<p>Java 版本不对, Flink1.8 需要 JDK1.8 以上。修改环境变量 JAVA_HOME</p>
-]]></content>
-      <categories>
-        <category>Flink</category>
       </categories>
   </entry>
   <entry>
@@ -6219,30 +6219,6 @@ Table Znode选项
       </categories>
   </entry>
   <entry>
-    <title>HBase 表信息解析</title>
-    <url>/2019/06/03/Analysis-of-metadata-information-in-HBase-tables/</url>
-    <content><![CDATA[<p>HBase 表元数据信息解析</p>
-<hr>
-<h4 id="表元数据"><a href="#表元数据" class="headerlink" title="表元数据"></a>表元数据</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">desc &#39;dimensoft:user&#39;, &#x2F;&#x2F;namespace:tableName</span><br><span class="line">    &#123;</span><br><span class="line">        NAME &#x3D;&gt; &#39;info&#39;, &#x2F;&#x2F;列族</span><br><span class="line"> </span><br><span class="line">        DATA_BLOCK_ENCODING &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;数据块编码方式设置</span><br><span class="line">        &#x2F;&#x2F;参见: http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#compression</span><br><span class="line">        &#x2F;&#x2F;http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#data.block.encoding.enable</span><br><span class="line"> </span><br><span class="line">        BLOOMFILT &#x3D;&gt; &#39;ROW&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#bloom.filters.when</span><br><span class="line"> </span><br><span class="line">        REPLICATION_SCOPE &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;配置HBase集群replication时需要将该参数设置为1.</span><br><span class="line"> </span><br><span class="line">        &#x2F;&#x2F;参见：http:&#x2F;&#x2F;blog.cloudera.com&#x2F;blog&#x2F;2012&#x2F;08&#x2F;hbase-replication-operational-overview&#x2F;?utm_source&#x3D;tuicool</span><br><span class="line">        &#39;REPLICATION_SCOPE is a column-family level attribute</span><br><span class="line">user has to alter each column family with the alter command as</span><br><span class="line">shown above, for all the column families he wants to replicate.&#39;</span><br><span class="line"> </span><br><span class="line">        VERSIONS &#x3D;&gt; &#39;1&#39;, &#x2F;&#x2F;设置保存的最大版本数</span><br><span class="line"> </span><br><span class="line">        COMPRESSION &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;设置压缩算法</span><br><span class="line"> </span><br><span class="line">        MIN_VERSIONS &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;最小存储版本数</span><br><span class="line"> </span><br><span class="line">        TTL &#x3D;&gt; &#39;FOREVER&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#ttl</span><br><span class="line">        &#39;ColumnFamilies can set a TTL length in seconds, and HBase</span><br><span class="line">        reached. This applies to all versions of a row - even the current one.</span><br><span class="line">        The TTL time encoded in the HBase for the row is specified in</span><br><span class="line">        UTC.&#39;</span><br><span class="line"> </span><br><span class="line">        KEEP_DELETED_CELLS &#x3D;&gt; &#39;false&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#cf.keep.deleted</span><br><span class="line"> </span><br><span class="line">        BLOCKSIZE &#x3D;&gt; &#39;65536&#39;, &#x2F;&#x2F;设置HFile数据块大小（默认64kb）</span><br><span class="line"> </span><br><span class="line">        IN_MEMORY &#x3D;&gt; &#39;false&#39;,&#x2F;&#x2F;设置激进缓存，优先考虑将该列族放入块缓存中,即放入BlockCache，</span><br><span class="line">                             &#x2F;&#x2F;针对随机读操作相对较多的列族可以设置该属性为true，不能设置meta为false，因为meta表经常使用</span><br><span class="line"> </span><br><span class="line">        BLOCKCACHE &#x3D;&gt; &#39;true&#39; &#x2F;&#x2F;数据块缓存属性</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="TTL"><a href="#TTL" class="headerlink" title="TTL"></a>TTL</h4><p>在minor compaction时删除仅包含过期行的存储文件。设置hbase.store.delete.expired.storefile为false禁用此功能。将最小版本数设置为0以外也会禁用此功能。</p>
-<h4 id="数据块编码"><a href="#数据块编码" class="headerlink" title="数据块编码"></a>数据块编码</h4><p>数据块编码是 HBase 的一个特性，即 key 会根据前一个 key 进行编码和压缩。</p>
-<p>其中一个编码选项（FAST_DIFF）让hbase 只存储当前 key 和前一个 key 不同的地方。</p>
-<p>HBase 独立存储每个单元，包括 key 和 value。当一行有多个 cell 时，为每个 cell 写入相同的 key 将会消耗大量空间，启用数据块编码可以节省大量空间。</p>
-<p>多数情况下启动数据块编码是有用的。</p>
-<h4 id="MinVersion"><a href="#MinVersion" class="headerlink" title="MinVersion"></a>MinVersion</h4><p>used when timeToLive is set</p>
-<p>如果HBase中的表设置了TTL的时候，MinVersion才会起作用。</p>
-<p>a）MIN_VERSION &gt; 0时：</p>
-<p>Cell至少有MIN_VERSION个最新版本会保留下来。这样确保在你的查询以及数据早于TTL时有结果返回。</p>
-<p>b）MIN_VERSION = 0时：</p>
-<p>Cell中的数据超过TTL时间时，全部清空，不保留最低版本。</p>
-]]></content>
-      <categories>
-        <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Linux 系统 CPU 过高异常排查</title>
     <url>/2019/06/03/Occupying-CPU-high/</url>
     <content><![CDATA[<p>使用堆栈进行问题排查，如机器占用 CPU 高问题排查、死锁</p>
@@ -6283,6 +6259,30 @@ Table Znode选项
 ]]></content>
       <categories>
         <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>HBase 表信息解析</title>
+    <url>/2019/06/03/Analysis-of-metadata-information-in-HBase-tables/</url>
+    <content><![CDATA[<p>HBase 表元数据信息解析</p>
+<hr>
+<h4 id="表元数据"><a href="#表元数据" class="headerlink" title="表元数据"></a>表元数据</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">desc &#39;dimensoft:user&#39;, &#x2F;&#x2F;namespace:tableName</span><br><span class="line">    &#123;</span><br><span class="line">        NAME &#x3D;&gt; &#39;info&#39;, &#x2F;&#x2F;列族</span><br><span class="line"> </span><br><span class="line">        DATA_BLOCK_ENCODING &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;数据块编码方式设置</span><br><span class="line">        &#x2F;&#x2F;参见: http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#compression</span><br><span class="line">        &#x2F;&#x2F;http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#data.block.encoding.enable</span><br><span class="line"> </span><br><span class="line">        BLOOMFILT &#x3D;&gt; &#39;ROW&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#bloom.filters.when</span><br><span class="line"> </span><br><span class="line">        REPLICATION_SCOPE &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;配置HBase集群replication时需要将该参数设置为1.</span><br><span class="line"> </span><br><span class="line">        &#x2F;&#x2F;参见：http:&#x2F;&#x2F;blog.cloudera.com&#x2F;blog&#x2F;2012&#x2F;08&#x2F;hbase-replication-operational-overview&#x2F;?utm_source&#x3D;tuicool</span><br><span class="line">        &#39;REPLICATION_SCOPE is a column-family level attribute</span><br><span class="line">user has to alter each column family with the alter command as</span><br><span class="line">shown above, for all the column families he wants to replicate.&#39;</span><br><span class="line"> </span><br><span class="line">        VERSIONS &#x3D;&gt; &#39;1&#39;, &#x2F;&#x2F;设置保存的最大版本数</span><br><span class="line"> </span><br><span class="line">        COMPRESSION &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;设置压缩算法</span><br><span class="line"> </span><br><span class="line">        MIN_VERSIONS &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;最小存储版本数</span><br><span class="line"> </span><br><span class="line">        TTL &#x3D;&gt; &#39;FOREVER&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#ttl</span><br><span class="line">        &#39;ColumnFamilies can set a TTL length in seconds, and HBase</span><br><span class="line">        reached. This applies to all versions of a row - even the current one.</span><br><span class="line">        The TTL time encoded in the HBase for the row is specified in</span><br><span class="line">        UTC.&#39;</span><br><span class="line"> </span><br><span class="line">        KEEP_DELETED_CELLS &#x3D;&gt; &#39;false&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#cf.keep.deleted</span><br><span class="line"> </span><br><span class="line">        BLOCKSIZE &#x3D;&gt; &#39;65536&#39;, &#x2F;&#x2F;设置HFile数据块大小（默认64kb）</span><br><span class="line"> </span><br><span class="line">        IN_MEMORY &#x3D;&gt; &#39;false&#39;,&#x2F;&#x2F;设置激进缓存，优先考虑将该列族放入块缓存中,即放入BlockCache，</span><br><span class="line">                             &#x2F;&#x2F;针对随机读操作相对较多的列族可以设置该属性为true，不能设置meta为false，因为meta表经常使用</span><br><span class="line"> </span><br><span class="line">        BLOCKCACHE &#x3D;&gt; &#39;true&#39; &#x2F;&#x2F;数据块缓存属性</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="TTL"><a href="#TTL" class="headerlink" title="TTL"></a>TTL</h4><p>在minor compaction时删除仅包含过期行的存储文件。设置hbase.store.delete.expired.storefile为false禁用此功能。将最小版本数设置为0以外也会禁用此功能。</p>
+<h4 id="数据块编码"><a href="#数据块编码" class="headerlink" title="数据块编码"></a>数据块编码</h4><p>数据块编码是 HBase 的一个特性，即 key 会根据前一个 key 进行编码和压缩。</p>
+<p>其中一个编码选项（FAST_DIFF）让hbase 只存储当前 key 和前一个 key 不同的地方。</p>
+<p>HBase 独立存储每个单元，包括 key 和 value。当一行有多个 cell 时，为每个 cell 写入相同的 key 将会消耗大量空间，启用数据块编码可以节省大量空间。</p>
+<p>多数情况下启动数据块编码是有用的。</p>
+<h4 id="MinVersion"><a href="#MinVersion" class="headerlink" title="MinVersion"></a>MinVersion</h4><p>used when timeToLive is set</p>
+<p>如果HBase中的表设置了TTL的时候，MinVersion才会起作用。</p>
+<p>a）MIN_VERSION &gt; 0时：</p>
+<p>Cell至少有MIN_VERSION个最新版本会保留下来。这样确保在你的查询以及数据早于TTL时有结果返回。</p>
+<p>b）MIN_VERSION = 0时：</p>
+<p>Cell中的数据超过TTL时间时，全部清空，不保留最低版本。</p>
+]]></content>
+      <categories>
+        <category>HBase</category>
       </categories>
   </entry>
   <entry>
@@ -7840,31 +7840,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>PrintStream 里的内容转为 String</title>
-    <url>/2019/04/24/printstream-to-string/</url>
-    <content><![CDATA[<p>PrintStream 里的内容转为 String</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有个业务需求是将其 yarn log 日志返回到前端。</p>
-<p>参考 <a href="https://www.cnblogs.com/lyy-blog/p/9635601.html" target="_blank" rel="noopener">yarn logs -applicationId命令java版本简单实现</a> 实现该业务需求</p>
-<p>发现它是将其输出流作为文件输出的。</p>
-<p>PrintStream out = new PrintStream(appIdStr); </p>
-<p>这将会把输出流数据输出到源代码目录下。</p>
-<p>因此需要将输出流处理后转为 String 返回到前端</p>
-<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ByteArrayOutputStream os = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">PrintStream out = <span class="keyword">new</span> PrintStream(os);</span><br><span class="line">String s = <span class="keyword">new</span> String(os.toByteArray(), StandardCharsets.UTF_8);</span><br></pre></td></tr></table></figure>
-
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.jianshu.com/p/83ad6eb5a905" target="_blank" rel="noopener">PrintStream里的内容转为String</a></li>
-<li><a href="https://www.cnblogs.com/fnz0/p/5423201.html" target="_blank" rel="noopener">(JAVA）从零开始之–打印流PrintStream记录日志文件</a></li>
-<li><a href="https://www.cnblogs.com/skywang12345/p/io_16.html" target="_blank" rel="noopener">java io系列16之 PrintStream(打印输出流)详解</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Java</category>
-      </categories>
-  </entry>
-  <entry>
     <title>一致性模型</title>
     <url>/2019/04/24/uniformity/</url>
     <content><![CDATA[<p>一致性（Consistency）是指多副本（Replications）问题中的数据一致性。</p>
@@ -7898,6 +7873,31 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>Distributed</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>PrintStream 里的内容转为 String</title>
+    <url>/2019/04/24/printstream-to-string/</url>
+    <content><![CDATA[<p>PrintStream 里的内容转为 String</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有个业务需求是将其 yarn log 日志返回到前端。</p>
+<p>参考 <a href="https://www.cnblogs.com/lyy-blog/p/9635601.html" target="_blank" rel="noopener">yarn logs -applicationId命令java版本简单实现</a> 实现该业务需求</p>
+<p>发现它是将其输出流作为文件输出的。</p>
+<p>PrintStream out = new PrintStream(appIdStr); </p>
+<p>这将会把输出流数据输出到源代码目录下。</p>
+<p>因此需要将输出流处理后转为 String 返回到前端</p>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ByteArrayOutputStream os = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">PrintStream out = <span class="keyword">new</span> PrintStream(os);</span><br><span class="line">String s = <span class="keyword">new</span> String(os.toByteArray(), StandardCharsets.UTF_8);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/83ad6eb5a905" target="_blank" rel="noopener">PrintStream里的内容转为String</a></li>
+<li><a href="https://www.cnblogs.com/fnz0/p/5423201.html" target="_blank" rel="noopener">(JAVA）从零开始之–打印流PrintStream记录日志文件</a></li>
+<li><a href="https://www.cnblogs.com/skywang12345/p/io_16.html" target="_blank" rel="noopener">java io系列16之 PrintStream(打印输出流)详解</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Java</category>
       </categories>
   </entry>
   <entry>
@@ -8142,6 +8142,27 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
+    <title>SpringBoot 启动方式</title>
+    <url>/2019/04/04/springboot-start/</url>
+    <content><![CDATA[<p>SpringBoot 启动方式</p>
+<hr>
+<h4 id="IDEA"><a href="#IDEA" class="headerlink" title="IDEA"></a>IDEA</h4><p>启动类必须包含 @SpringBootApplication 这个注解</p>
+<p>其他类目录要么跟Application同级，要么在其下级目录</p>
+<p><img src="/images/blog/2019-04-04-1.png" alt></p>
+<h4 id="MAVEN"><a href="#MAVEN" class="headerlink" title="MAVEN"></a>MAVEN</h4><p>进入到项目的pom.xml 层级，输入图中命令即可</p>
+<p><img src="/images/blog/2019-04-04-2.png" alt></p>
+<h4 id="JAR"><a href="#JAR" class="headerlink" title="JAR"></a>JAR</h4><p>maven 打包</p>
+<p><img src="/images/blog/2019-04-04-3.png" alt></p>
+<p>编译成功后进入target 目录下可以看到有个jar包</p>
+<p><img src="/images/blog/2019-04-04-4.png" alt></p>
+<p>jar 命令启动jar包</p>
+<p><img src="/images/blog/2019-04-04-5.png" alt></p>
+]]></content>
+      <categories>
+        <category>SpringBoot</category>
+      </categories>
+  </entry>
+  <entry>
     <title>HBase Snapshot 源码分析 1</title>
     <url>/2019/04/04/hbase-snapshot-source/</url>
     <content><![CDATA[<p>Snapshot是很多存储系统和数据库系统都支持的功能。</p>
@@ -8199,27 +8220,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>SpringBoot 启动方式</title>
-    <url>/2019/04/04/springboot-start/</url>
-    <content><![CDATA[<p>SpringBoot 启动方式</p>
-<hr>
-<h4 id="IDEA"><a href="#IDEA" class="headerlink" title="IDEA"></a>IDEA</h4><p>启动类必须包含 @SpringBootApplication 这个注解</p>
-<p>其他类目录要么跟Application同级，要么在其下级目录</p>
-<p><img src="/images/blog/2019-04-04-1.png" alt></p>
-<h4 id="MAVEN"><a href="#MAVEN" class="headerlink" title="MAVEN"></a>MAVEN</h4><p>进入到项目的pom.xml 层级，输入图中命令即可</p>
-<p><img src="/images/blog/2019-04-04-2.png" alt></p>
-<h4 id="JAR"><a href="#JAR" class="headerlink" title="JAR"></a>JAR</h4><p>maven 打包</p>
-<p><img src="/images/blog/2019-04-04-3.png" alt></p>
-<p>编译成功后进入target 目录下可以看到有个jar包</p>
-<p><img src="/images/blog/2019-04-04-4.png" alt></p>
-<p>jar 命令启动jar包</p>
-<p><img src="/images/blog/2019-04-04-5.png" alt></p>
-]]></content>
-      <categories>
-        <category>SpringBoot</category>
       </categories>
   </entry>
   <entry>
