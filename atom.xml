@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-01-28T05:39:33.753Z</updated>
+  <updated>2020-01-31T14:08:58.621Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,13 +21,13 @@
     <link href="http://yoursite.com/2020/01/28/HDFS-small-file/"/>
     <id>http://yoursite.com/2020/01/28/HDFS-small-file/</id>
     <published>2020-01-27T16:00:00.000Z</published>
-    <updated>2020-01-28T05:39:33.753Z</updated>
+    <updated>2020-01-31T14:08:58.621Z</updated>
     
     <content type="html"><![CDATA[<p>Hadoop 中处理小文件</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HDFS 随着使用时间会存在小文件现象，这里将网上调研的处理方法收集一下</p><h4 id><a href="#" class="headerlink" title></a></h4><p>什么是小文件？小文件是怎么来的？可以参阅<a href="https://mp.weixin.qq.com/s/QdaNFfq37bBlAQtNDGLmVw" target="_blank" rel="noopener">如何在Hadoop中处理小文件</a></p><p>利用 HAR 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/rlM3ZPmWz-ZT72w59lvrRw" target="_blank" rel="noopener">0508-如何使用Hadoop的Archive处理小文件</a></p><p>利用 Hive 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/xw6MjNvpI97m0aygyW1HaA" target="_blank" rel="noopener">如何在Hadoop中处理小文件-续</a>、<a href="https://mp.weixin.qq.com/s/ki2k9fBPco6PwMZEzff60A" target="_blank" rel="noopener">0704-5.16.2-如何使用Hive合并小文件</a></p><p>利用 Impala 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/BTBqUqfbczq08LKRCuC_Ig" target="_blank" rel="noopener">如何使用Impala合并小文件</a></p><p>在有赞使用 SparkSQL 中提到存在小文件现象，采用社区 <a href="https://issues.apache.org/jira/browse/SPARK-24940" target="_blank" rel="noopener">SPARK-24940</a>方式处理，借助 SQL hint 的方式合并小文件。参阅<a href="https://www.iteblog.com/archives/2501.html" target="_blank" rel="noopener">Spark SQL 查询中 Coalesce 和 Repartition 暗示（Hint）</a></p><p>利用 Spark 处理小文件跟 Spark SQL 也是差不多的，通过 Spark 的 coalesce() 方法和 repartition() 方法，设置并行个数可以通过输入文件的总大小和期望输出文件的大小进行预计算而得。</p><hr><p>参考链接</p><ul><li><a href="http://bigdatadecode.club/HDFS-little-file-action.html" target="_blank" rel="noopener">HDFS小文件合并实战</a></li><li><a href="https://juejin.im/post/5c3f2713f265da61285a5b75#heading-8" target="_blank" rel="noopener">SparkSQL 在有赞的实践</a></li><li><a href="https://blog.csdn.net/weixin_37944880/article/details/86694829" target="_blank" rel="noopener">Spark小文件合并</a></li></ul>]]></content>
     
     <summary type="html">
     
-      some word here
+      Hadoop 中处理小文件
     
     </summary>
     
