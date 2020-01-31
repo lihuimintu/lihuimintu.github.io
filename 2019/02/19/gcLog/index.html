@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="JVM 配置GC日志">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM 配置GC日志">
+<meta property="og:url" content="http://yoursite.com/2019/02/19/gcLog/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="JVM 配置GC日志">
+<meta property="article:published_time" content="2019-02-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-10-29T01:45:28.481Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="GC、 JVM">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/02/19/gcLog/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>JVM 配置GC日志 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/19/gcLog/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JVM 配置GC日志
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-02-19 00:00:00" itemprop="dateCreated datePublished" datetime="2019-02-19T00:00:00+08:00">2019-02-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-29 09:45:28" itemprop="dateModified" datetime="2019-10-29T09:45:28+08:00">2019-10-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">JVM</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">JVM 配置GC日志</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>JVM 配置GC日志</p>
+<hr>
+<h4 id="开启GC日志"><a href="#开启GC日志" class="headerlink" title="开启GC日志"></a>开启GC日志</h4><p>多种方法都能开启GC的日志功能，其中包括：使用-verbose:gc或-XX:+PrintGC这两个标志中的任意一个能创建基本的GC日志<br>（这两个日志标志实际上互为别名，默认情况下的GC日志功能是关闭的）<br>使用-XX:+PrintGCDetails标志会创建更详细的GC日志</p>
+<p>推荐使用-XX:+PrintGCDetails标志（这个标志默认情况下也是关闭的）；<br>通常情况下使用基本的GC日志很难诊断垃圾回收时发生的问题。</p>
+<h4 id="开启GC时间提示"><a href="#开启GC时间提示" class="headerlink" title="开启GC时间提示"></a>开启GC时间提示</h4><p>除了使用详细的GC日志，我们还推荐使用-XX:+PrintGCTimeStamps或者-XX:+PrintGCDateStamps，<br>便于我们更精确地判断几次GC操作之间的时间。这两个参数之间的差别在于时间戳是相对于0（依据JVM启动的时间）的值，<br>而日期戳（date stamp）是实际的日期字符串。由于日期戳需要进行格式化，所以它的效率可能会受轻微的影响，<br>不过这种操作并不频繁，它造成的影响也很难被我们感知。</p>
+<h4 id="指定GC日志路径"><a href="#指定GC日志路径" class="headerlink" title="指定GC日志路径"></a>指定GC日志路径</h4><p>默认情况下GC日志直接输出到标准输出，不过使用-Xloggc:filename标志也能修改输出到某个文件。<br>除非显式地使用-PrintGCDetails标志，否则使用-Xloggc会自动地开启基本日志模式。<br>使用日志循环（Log rotation）标志可以限制保存在GC日志中的数据量；<br>对于需要长时间运行的服务器而言，这是一个非常有用的标志，否则累积几个月的数据很可能会耗尽服务器的磁盘。</p>
+<h4 id="开启日志滚动输出"><a href="#开启日志滚动输出" class="headerlink" title="开启日志滚动输出"></a>开启日志滚动输出</h4><p>通过-XX:+UseGCLogfileRotation  -XX:NumberOfGCLogfiles=N  -XX:GCLogfileSize=N标志可以控制日志文件的循环。</p>
+<p>默认情况下，UseGCLogfileRotation标志是关闭的。它负责打开或关闭GC日志滚动记录功能的。要求必须设置 -Xloggc参数<br>开启UseGCLogfileRotation标志后，默认的文件数目是0（意味着不作任何限制），默认的日志文件大小是0（同样也是不作任何限制）。</p>
+<p>因此，为了让日志循环功能真正生效，我们必须为所有这些标志设定值。<br>需要注意的是：</p>
+<ul>
+<li>The size of the log file at which point the log will be rotated, must be &gt;= 8K. 设置滚动日志文件的大小，必须大于8k。<br>当前写日志文件大小超过该参数值时，日志将写入下一个文件</li>
+<li>设置滚动日志文件的个数，必须大于等于1</li>
+<li>必须设置 -Xloggc 参数</li>
+</ul>
+<h4 id="开启语句"><a href="#开启语句" class="headerlink" title="开启语句"></a>开启语句</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-XX:+PrintGCDetails  -XX:+PrintGCDateStamps  </span><br><span class="line">-Xloggc:&#x2F;var&#x2F;log&#x2F;hbase&#x2F;gc-regionserver-hbase.log   </span><br><span class="line">-XX:+UseGCLogFileRotation  </span><br><span class="line">-XX:NumberOfGCLogFiles&#x3D;10  -XX:GCLogFileSize&#x3D;512k</span><br></pre></td></tr></table></figure>
+
+<h4 id="参数详解"><a href="#参数详解" class="headerlink" title="参数详解"></a>参数详解</h4><p>-XX:+PrintGCDetails<br>输出GC的详细日志</p>
+<p>-XX:+PrintGCDateStamps<br>输出GC的日期戳</p>
+<p>-Xloggc:/var/log/hbase/gc-regionserver-hbase.log<br>GC日志输出的路径</p>
+<p>-XX:+UseGCLogFileRotation<br>打开GC日志滚动记录功能</p>
+<p>-XX:NumberOfGCLogFiles<br>设置滚动日志文件的个数，必须大于等于1<br>日志文件命名策略是，<filename>.0, <filename>.1, …, <filename>.n-1，其中n是该参数的值</filename></filename></filename></p>
+<p>-XX:GCLogFileSize<br><code>The size of the log file at which point the log will be rotated, must be &gt;= 8K.</code><br>设置滚动日志文件的大小，必须大于8k<br>当前写日志文件大小超过该参数值时，日志将写入下一个文件</p>
+<h4 id="其他有用参数"><a href="#其他有用参数" class="headerlink" title="其他有用参数"></a>其他有用参数</h4><p>-XX:+PrintGCApplicationStoppedTime<br>打印GC造成应用暂停的时间</p>
+<p>-XX:+PrintHeapAtGC<br>在进行GC的前后打印出堆的信息</p>
+<p>-XX:+PrintTenuringDistribution<br>在每次新生代 young GC时,输出幸存区中对象的年龄分布</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/dfdf80286c73" target="_blank" rel="noopener">jvm 设置滚动记录GC日志</a></li>
+<li><a href="https://segmentfault.com/a/1190000009415136" target="_blank" rel="noopener">GC日志参数</a></li>
+<li><a href="https://mp.weixin.qq.com/s/aGT31AQyH7NRqnRGArE2eg" target="_blank" rel="noopener">假笨说参数-GC日志其实也支持滚动输出的</a></li>
+<li><a href="https://www.jianshu.com/p/e634955f3bbb" target="_blank" rel="noopener">jvm-对象年龄(-XX:+PrintTenuringDistribution)</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/02/18/skipList/" rel="prev" title="SkipList 跳表">
+      <i class="fa fa-chevron-left"></i> SkipList 跳表
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/02/20/hbase-copytable/" rel="next" title="HBase 表数据迁移">
+      HBase 表数据迁移 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#开启GC日志"><span class="nav-number">1.</span> <span class="nav-text">开启GC日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#开启GC时间提示"><span class="nav-number">2.</span> <span class="nav-text">开启GC时间提示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#指定GC日志路径"><span class="nav-number">3.</span> <span class="nav-text">指定GC日志路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#开启日志滚动输出"><span class="nav-number">4.</span> <span class="nav-text">开启日志滚动输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#开启语句"><span class="nav-number">5.</span> <span class="nav-text">开启语句</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参数详解"><span class="nav-number">6.</span> <span class="nav-text">参数详解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他有用参数"><span class="nav-number">7.</span> <span class="nav-text">其他有用参数</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'b840560afd9331799af72210e929cd59',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
 <meta name="generator" content="Hexo 4.2.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
   <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
 <link rel="stylesheet" href="/css/main.css">
@@ -21,12 +21,12 @@
   var CONFIG = {
     hostname: new URL('http://yoursite.com').hostname,
     root: '/',
-    scheme: 'Muse',
+    scheme: 'Gemini',
     version: '7.7.0',
     exturl: false,
     sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
     copycode: {"enable":false,"show_result":false,"style":null},
-    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
     bookmark: {"enable":false,"color":"#222","save":"auto"},
     fancybox: false,
     mediumzoom: false,
@@ -40,17 +40,19 @@
       hits: {"per_page":10},
       labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     },
-    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
-    path: '',
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
   };
 </script>
 
-  <meta property="og:type" content="website">
+  <meta name="description" content="Life isn&#39;t always what one likes.">
+<meta property="og:type" content="website">
 <meta property="og:title" content="lihuimintu">
 <meta property="og:url" content="http://yoursite.com/archives/2020/index.html">
 <meta property="og:site_name" content="lihuimintu">
-<meta property="article:author" content="tu">
+<meta property="og:description" content="Life isn&#39;t always what one likes.">
+<meta property="article:author" content="图">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://yoursite.com/archives/2020/">
@@ -65,7 +67,7 @@
   };
 </script>
 
-  <title>Archive | lihuimintu</title>
+  <title>归档 | lihuimintu</title>
   
 
 
@@ -96,6 +98,7 @@
   </style>
 </noscript>
 
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage">
@@ -116,7 +119,7 @@
   </div>
 
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar">
+    <div class="toggle" aria-label="切换导航栏">
       <span class="toggle-line toggle-line-first"></span>
       <span class="toggle-line toggle-line-middle"></span>
       <span class="toggle-line toggle-line-last"></span>
@@ -130,17 +133,52 @@
   <ul id="menu" class="menu">
         <li class="menu-item menu-item-home">
 
-    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
 
   </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
   </ul>
 
 </nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
 </div>
     </header>
 
@@ -165,7 +203,8 @@
   <div class="post-block">
     <div class="posts-collapse">
       <div class="collection-title">
-        <span class="collection-header">Um..! 2 posts in total. Keep on posting.</span>
+        
+        <span class="collection-header">非常好! 目前共计 175 篇日志。 继续努力。</span>
       </div>
 
       
@@ -178,15 +217,15 @@
 
       <div class="post-meta">
         <time itemprop="dateCreated"
-              datetime="2020-01-31T14:41:27+08:00"
-              content="2020-01-31">
-          01-31
+              datetime="2020-01-28T00:00:00+08:00"
+              content="2020-01-28">
+          01-28
         </time>
       </div>
 
       <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/31/hexotu/" itemprop="url">
-            <span itemprop="name">hexotu</span>
+          <a class="post-title-link" href="/2020/01/28/HDFS-small-file/" itemprop="url">
+            <span itemprop="name">HDFS 处理小文件方法</span>
           </a>
       </h2>
 
@@ -198,15 +237,175 @@
 
       <div class="post-meta">
         <time itemprop="dateCreated"
-              datetime="2020-01-31T14:19:10+08:00"
-              content="2020-01-31">
-          01-31
+              datetime="2020-01-27T00:00:00+08:00"
+              content="2020-01-27">
+          01-27
         </time>
       </div>
 
       <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/31/hello-world/" itemprop="url">
-            <span itemprop="name">Hello World</span>
+          <a class="post-title-link" href="/2020/01/27/Hive-set/" itemprop="url">
+            <span itemprop="name">Hive set 命令使用</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-27T00:00:00+08:00"
+              content="2020-01-27">
+          01-27
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/27/HDFS-atime-ctime/" itemprop="url">
+            <span itemprop="name">HDFS 中 atime 与 mtime 解析</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-24T00:00:00+08:00"
+              content="2020-01-24">
+          01-24
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/24/Kafka-Zero-Copy/" itemprop="url">
+            <span itemprop="name">Kafka 零拷贝原理</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-22T00:00:00+08:00"
+              content="2020-01-22">
+          01-22
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/22/HDFS-Federation/" itemprop="url">
+            <span itemprop="name">HDFS Federation 发展历程</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-21T00:00:00+08:00"
+              content="2020-01-21">
+          01-21
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/21/HBase-Table/" itemprop="url">
+            <span itemprop="name">HBase 表存储层次</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-20T00:00:00+08:00"
+              content="2020-01-20">
+          01-20
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/20/Spark-submit/" itemprop="url">
+            <span itemprop="name">Spark-Submit 参数说明</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-19T00:00:00+08:00"
+              content="2020-01-19">
+          01-19
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/19/Yarn-Container/" itemprop="url">
+            <span itemprop="name">YARN Memory CPU 配置</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-18T00:00:00+08:00"
+              content="2020-01-18">
+          01-18
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/18/HBase-CMS/" itemprop="url">
+            <span itemprop="name">HBase CMS GC 配置参考</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2020-01-18T00:00:00+08:00"
+              content="2020-01-18">
+          01-18
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2020/01/18/HBase-Master-is-initializing/" itemprop="url">
+            <span itemprop="name">记一次 HBase Master is initializing 问题处理</span>
           </a>
       </h2>
 
@@ -221,6 +420,9 @@
   
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/archives/2020/page/2/">2</a><a class="extend next" rel="next" href="/archives/2020/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+  </nav>
 
 
 
@@ -263,10 +465,10 @@
 
       <ul class="sidebar-nav motion-element">
         <li class="sidebar-nav-toc">
-          Table of Contents
+          文章目录
         </li>
         <li class="sidebar-nav-overview">
-          Overview
+          站点概览
         </li>
       </ul>
 
@@ -277,20 +479,33 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">tu</p>
-  <div class="site-description" itemprop="description"></div>
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
 </div>
 <div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
-          <span class="site-state-item-name">posts</span>
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
 </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
 
 
 
@@ -315,12 +530,22 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">tu</span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
 </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
   <span class="post-meta-divider">|</span>
-  <div class="theme-info">Theme – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.7.0
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
   </div>
 
         
@@ -346,7 +571,7 @@
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/muse.js"></script>
+<script src="/js/schemes/pisces.js"></script>
 
 
 <script src="/js/next-boot.js"></script>
@@ -359,6 +584,10 @@
 
 
 
+  
+<script src="/js/local-search.js"></script>
+
+
 
 
 
@@ -373,6 +602,7 @@
   
 
   
+
 
 </body>
 </html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="HBase 计数器 Increment">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase 计数器 Increment">
+<meta property="og:url" content="http://yoursite.com/2019/06/17/HBase-Increment/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="HBase 计数器 Increment">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-17-6.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-17-5.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-17-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-17-3.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-17-4.png">
+<meta property="article:published_time" content="2019-06-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-06-19T02:33:10.938Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase">
+<meta property="article:tag" content=" Increment">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-06-17-6.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/06/17/HBase-Increment/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HBase 计数器 Increment | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/17/HBase-Increment/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HBase 计数器 Increment
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-17 00:00:00" itemprop="dateCreated datePublished" datetime="2019-06-17T00:00:00+08:00">2019-06-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-06-19 10:33:10" itemprop="dateModified" datetime="2019-06-19T10:33:10+08:00">2019-06-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+            <div class="post-description">HBase 计数器 Increment</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>天上那么多星，你可否数得清？</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在互联网企业中，经常会有这样的一些需求，比如说：统计下某网站某日pv/uv量或是统计下某签约作者某篇文章的所获点赞数等等类似的需求，<br>传统的做法可能需要我们先读出该列的原有值，然后+1后再覆盖原有值，同时还要加锁处理等等。<br>为了保证原子性的完成一个客户端请求，HBase 引入了计数器的概念。本文主要简要概述一下 HBase 计数器的使用及应注意的一些问题。</p>
+<h4 id="概念介绍"><a href="#概念介绍" class="headerlink" title="概念介绍"></a>概念介绍</h4><ol>
+<li><p>HBase 计数器是什么？<br>一个计数器就是一个与其他列类似的简单列，列值要求且必须以长整型转码插入，否则将破坏该计数器结构。用户可以一次更新多个计数器，但它们都必须属于同一行。更新多行的计数器需多次RPC请求调用，暂不支持 batch(Increment)。</p>
+</li>
+<li><p>HBase 计数器解决什么问题？<br>HBase 计数器的引入主要解决了 read-and-modify 场景下的锁竞争与原子性问题。</p>
+</li>
+</ol>
+<h4 id="Shell-Api"><a href="#Shell-Api" class="headerlink" title="Shell Api"></a>Shell Api</h4><h5 id="1-创建计数器并插入值"><a href="#1-创建计数器并插入值" class="headerlink" title="1. 创建计数器并插入值"></a>1. 创建计数器并插入值</h5><p>注意：步长值可为正可为负可为0.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">hbase(main):003:0&gt; incr &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;,1</span><br><span class="line">COUNTER VALUE &#x3D; 1</span><br><span class="line">0 row(s) in 0.0790 seconds</span><br><span class="line"></span><br><span class="line">hbase(main):004:0&gt; incr &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;,2</span><br><span class="line">COUNTER VALUE &#x3D; 3</span><br><span class="line">0 row(s) in 0.0200 seconds</span><br><span class="line"></span><br><span class="line">hbase(main):005:0&gt; incr &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;,-1</span><br><span class="line">COUNTER VALUE &#x3D; 2</span><br><span class="line">0 row(s) in 0.0170 seconds</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-Get-Api-获取计数器值"><a href="#2-Get-Api-获取计数器值" class="headerlink" title="2. Get Api 获取计数器值"></a>2. Get Api 获取计数器值</h5><p>可见：一个计数器就是一个与其他列类似的简单列。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">hbase(main):006:0&gt; get &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;</span><br><span class="line">COLUMN                                         CELL                                                                                                                                 </span><br><span class="line"> f:count                                       timestamp&#x3D;1552830973949, value&#x3D;\x00\x00\x00\x00\x00\x00\x00\x02                                                                      </span><br><span class="line">1 row(s) in 0.0600 seconds</span><br><span class="line"></span><br><span class="line">hbase(main):007:0&gt; get &#39;test&#39;,&#39;r1&#39;,&#39;f:count:toLong&#39;</span><br><span class="line">COLUMN                                         CELL                                                                                                                                 </span><br><span class="line"> f:count                                       timestamp&#x3D;1552830973949, value&#x3D;2                                                                                                     </span><br><span class="line">1 row(s) in 0.0070 seconds</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-标准-Api-获取计数器值"><a href="#3-标准-Api-获取计数器值" class="headerlink" title="3. 标准 Api 获取计数器值"></a>3. 标准 Api 获取计数器值</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hbase(main):008:0&gt; get_counter &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;</span><br><span class="line">COUNTER VALUE &#x3D; 2</span><br></pre></td></tr></table></figure>
+
+<h5 id="4-错误示范"><a href="#4-错误示范" class="headerlink" title="4. 错误示范"></a>4. 错误示范</h5><p>如下操作将破坏计数器结构。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"># 以字符串类型PUT值</span><br><span class="line">hbase(main):009:0&gt; put &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;,&#39;123&#39;</span><br><span class="line">0 row(s) in 0.0950 seconds</span><br><span class="line"></span><br><span class="line"># GET 获取值正常（该计数器已转为普通列）</span><br><span class="line">hbase(main):010:0&gt; get &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;</span><br><span class="line">COLUMN                                         CELL                                                                                                                                 </span><br><span class="line"> f:count                                       timestamp&#x3D;1552831549637, value&#x3D;123                                                                                                   </span><br><span class="line">1 row(s) in 0.0160 seconds</span><br><span class="line"></span><br><span class="line"># 执行计数器 get_counter 操作</span><br><span class="line">hbase(main):011:0&gt; get_counter &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;</span><br><span class="line"></span><br><span class="line">ERROR: offset (0) + length (8) exceed the capacity of the array: 3</span><br><span class="line"></span><br><span class="line"># 执行计数器 incr 操作</span><br><span class="line">hbase(main):012:0&gt; incr &#39;test&#39;,&#39;r1&#39;,&#39;f:count&#39;,-1</span><br><span class="line"></span><br><span class="line">ERROR: org.apache.hadoop.hbase.DoNotRetryIOException: Field is not a long, it&#39;s 3 bytes wide</span><br><span class="line">    at org.apache.hadoop.hbase.regionserver.HRegion.getLongValue(HRegion.java:7690)</span><br><span class="line">    at org.apache.hadoop.hbase.regionserver.HRegion.applyIncrementsToColumnFamily(HRegion.java:7644)</span><br><span class="line">    at org.apache.hadoop.hbase.regionserver.HRegion.doIncrement(HRegion.java:7530)</span><br><span class="line">    at org.apache.hadoop.hbase.regionserver.HRegion.increment(HRegion.java:7487)</span><br><span class="line">    at org.apache.hadoop.hbase.regionserver.RSRpcServices.increment(RSRpcServices.java:592)</span><br><span class="line">    at org.apache.hadoop.hbase.regionserver.RSRpcServices.mutate(RSRpcServices.java:2246)</span><br><span class="line">    at org.apache.hadoop.hbase.protobuf.generated.ClientProtos$ClientService$2.callBlockingMethod(ClientProtos.java:32383)</span><br><span class="line">    at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:2150)</span><br><span class="line">    at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:112)</span><br><span class="line">    at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:187)</span><br><span class="line">    at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:167)</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出，计数器对数据类型是极其敏感的，使用过程中一定要注意。</strong></p>
+<h4 id="Java-Api"><a href="#Java-Api" class="headerlink" title="Java Api"></a>Java Api</h4><h5 id="1-编码与解码"><a href="#1-编码与解码" class="headerlink" title="1. 编码与解码"></a>1. 编码与解码</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1) 编码：Bytes.toBytes(long)</span><br><span class="line"></span><br><span class="line">2) 解码：Bytes.toLong(bytes)</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-单列计数器"><a href="#2-单列计数器" class="headerlink" title="2. 单列计数器"></a>2. 单列计数器</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    Table table &#x3D; ...; &#x2F;&#x2F; 表实例</span><br><span class="line">    String rowkey &#x3D; ...; &#x2F;&#x2F; 行键</span><br><span class="line">    String columnFamily &#x3D; ...; &#x2F;&#x2F; 列族</span><br><span class="line">    </span><br><span class="line">    table.incrementColumnValue(Bytes.toBytes(rowkey),Bytes.toBytes(columnFamily), Bytes.toBytes(counter), 1L);</span><br><span class="line">    </span><br><span class="line">    table.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-多列计数器"><a href="#3-多列计数器" class="headerlink" title="3. 多列计数器"></a>3. 多列计数器</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    Table table &#x3D; ...; &#x2F;&#x2F; 表实例</span><br><span class="line">    String rowkey &#x3D; ...; &#x2F;&#x2F; 行键</span><br><span class="line">    String columnFamily &#x3D; ...; &#x2F;&#x2F; 列族</span><br><span class="line">    </span><br><span class="line">    Increment increment &#x3D; new Increment(Bytes.toBytes(rowkey));</span><br><span class="line">    increment.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(&quot;pv&quot;), 6L);</span><br><span class="line">    increment.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(&quot;uv&quot;), 10L);</span><br><span class="line">    </span><br><span class="line">    Result result &#x3D; table.increment(increment);</span><br><span class="line">    </span><br><span class="line">    table.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="4-获取计数器的值"><a href="#4-获取计数器的值" class="headerlink" title="4. 获取计数器的值"></a>4. 获取计数器的值</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Get get &#x3D; new Get(Bytes.toBytes(rowkey));</span><br><span class="line"></span><br><span class="line">get.setMaxVersions(1);</span><br><span class="line">get.addColumn(Bytes.toBytes(columnfamily), Bytes.toBytes(counter));</span><br><span class="line">Result result &#x3D; table.get(get);</span><br><span class="line">byte[] value &#x3D; result.getValue(Bytes.toBytes(columnfamily), Bytes.toBytes(counter));</span><br><span class="line"></span><br><span class="line">long count &#x3D; Bytes.toLong(value);</span><br><span class="line">String countStr &#x3D; String.valueOf(Bytes.toLong(value));</span><br></pre></td></tr></table></figure>
+
+<h4 id="HBase-Hive-映射表"><a href="#HBase-Hive-映射表" class="headerlink" title="HBase-Hive 映射表"></a>HBase-Hive 映射表</h4><p>这里需要注意一下，如果想通过 Hive 映射 HBase 表获取计数器的值，<br>建表语句中计数器列语法要有别于常规列，否则将返回乱码或NULL值。</p>
+<p>下面提供一个简单的示例:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE EXTERNAL TABLE counters(</span><br><span class="line">	key string,</span><br><span class="line">	daily_hits bigint,</span><br><span class="line">	weekly string,</span><br><span class="line">	monthly string</span><br><span class="line">)   </span><br><span class="line">STORED BY &#39;org.apache.hadoop.hive.hbase.HBaseStorageHandler&#39;   </span><br><span class="line">WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; &#x3D;&quot;:key,daily:hits#b,weekly:a,monthly:b&quot;)   </span><br><span class="line">TBLPROPERTIES(&quot;hbase.table.name&quot; &#x3D; &quot;counters&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>当 HBase 中 double，int，long 类型以byte方式存储时，用字符串取出来必然是乱码。</p>
+<p><img src="/images/blog/2019-06-17-6.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-17-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p>Bytes类型的数据，建 hive 映射表示加 #b</p>
+<p>创建 HBase 表，计数器加1</p>
+<p><img src="/images/blog/2019-06-17-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p>创建 Hive 映射表没有 #b， select 查询为 NULL，错误</p>
+<p><img src="/images/blog/2019-06-17-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p>创建 Hive 映射表使用 #b， select 查询为 1，正确</p>
+<p><img src="/images/blog/2019-06-17-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p>当在 Hive 中创建 HBase 已经存在的外部表时，默认的 hbase.table.default.storage.type 类型为 string。<br>daily_hits 为 bigint 字段的话，映射过来的值为 NULL。也可以修改 hbase.table.default.storage.type 为 binary</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">CREATE EXTERNAL TABLE HisDiagnose(</span><br><span class="line">	key string, </span><br><span class="line">	doctorId int, </span><br><span class="line">	patientId int, </span><br><span class="line">	description String, </span><br><span class="line">	rtime int</span><br><span class="line">) </span><br><span class="line">STORED BY &#39;org.apache.hadoop.hive.hbase.HBaseStorageHandler&#39; </span><br><span class="line">WITH SERDEPROPERTIES (</span><br><span class="line">    &quot;hbase.columns.mapping&quot; &#x3D; &quot;:key,diagnoseFamily:doctorId,diagnoseFamily:patientId,diagnoseFamily:description,diagnoseFamily:rtime&quot;, </span><br><span class="line">    &quot;hbase.table.default.storage.type&quot;&#x3D;&quot;binary&quot;</span><br><span class="line">) </span><br><span class="line">TBLPROPERTIES(&quot;hbase.table.name&quot; &#x3D; &quot;HisDiagnose&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>修改 hbase.table.default.storage.type 为 binary之后如果想表示类型为string， 加 cf:val#s 即可。</p>
+<p>对此感兴趣可以阅读参考链接<a href="https://blog.csdn.net/jameshadoop/article/details/42162669" target="_blank" rel="noopener">hive与hbase数据类型对应关系</a>, <a href="https://hai19850514.iteye.com/blog/1918099" target="_blank" rel="noopener">hive创建外部表映射hbase中已存在表问题</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">作者： 禅克</span><br><span class="line">出处： &lt;https:&#x2F;&#x2F;mp.weixin.qq.com&#x2F;s&#x2F;EmG57gIJtyLZlYPwdHWNfA&gt;</span><br><span class="line">本文版权归作者所有，欢迎转载，但未经作者同意必须保留此段声明，且在页面明显位置给出原文链接。</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/xianpanjia4616/article/details/81046077" target="_blank" rel="noopener">hbase的表映射到hive中</a></li>
+<li><a href="https://www.cnblogs.com/similarface/p/5834347.html" target="_blank" rel="noopener">HBase之计数器</a></li>
+<li><a href="https://blog.csdn.net/jameshadoop/article/details/42162669" target="_blank" rel="noopener">hive与hbase数据类型对应关系</a></li>
+<li><a href="https://hai19850514.iteye.com/blog/1918099" target="_blank" rel="noopener">hive创建外部表映射hbase中已存在表问题</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/15/Flume/" rel="prev" title="Flume">
+      <i class="fa fa-chevron-left"></i> Flume
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/17/HBase-HBCK/" rel="next" title="HBase hbck 运维指南">
+      HBase hbck 运维指南 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#概念介绍"><span class="nav-number">2.</span> <span class="nav-text">概念介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Shell-Api"><span class="nav-number">3.</span> <span class="nav-text">Shell Api</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-创建计数器并插入值"><span class="nav-number">3.1.</span> <span class="nav-text">1. 创建计数器并插入值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-Get-Api-获取计数器值"><span class="nav-number">3.2.</span> <span class="nav-text">2. Get Api 获取计数器值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-标准-Api-获取计数器值"><span class="nav-number">3.3.</span> <span class="nav-text">3. 标准 Api 获取计数器值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-错误示范"><span class="nav-number">3.4.</span> <span class="nav-text">4. 错误示范</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java-Api"><span class="nav-number">4.</span> <span class="nav-text">Java Api</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-编码与解码"><span class="nav-number">4.1.</span> <span class="nav-text">1. 编码与解码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-单列计数器"><span class="nav-number">4.2.</span> <span class="nav-text">2. 单列计数器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-多列计数器"><span class="nav-number">4.3.</span> <span class="nav-text">3. 多列计数器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-获取计数器的值"><span class="nav-number">4.4.</span> <span class="nav-text">4. 获取计数器的值</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HBase-Hive-映射表"><span class="nav-number">5.</span> <span class="nav-text">HBase-Hive 映射表</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '1c043b20ac5f77f531e2bf3e99b09690',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

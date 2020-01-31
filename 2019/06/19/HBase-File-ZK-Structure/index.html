@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="HBase 目录结构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase 目录结构">
+<meta property="og:url" content="http://yoursite.com/2019/06/19/HBase-File-ZK-Structure/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="HBase 目录结构">
+<meta property="article:published_time" content="2019-06-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-06-25T03:21:02.462Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/06/19/HBase-File-ZK-Structure/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HBase 目录结构 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/19/HBase-File-ZK-Structure/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HBase 目录结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-19 00:00:00" itemprop="dateCreated datePublished" datetime="2019-06-19T00:00:00+08:00">2019-06-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-06-25 11:21:02" itemprop="dateModified" datetime="2019-06-25T11:21:02+08:00">2019-06-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+            <div class="post-description">HBase 目录结构</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>HBase 在 HDFS 存储目录结构、在 Zookeeper 的目录结构</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 在 HDFS 存储目录结构、在 Zookeeper 的目录结构</p>
+<h4 id="在-HDFS-路径"><a href="#在-HDFS-路径" class="headerlink" title="在 HDFS 路径"></a>在 HDFS 路径</h4><p>HBase 在 HDFS 默认根目录: <code>/hbase</code></p>
+<p>配置项 <code>&lt;name&gt; hbase.rootdir &lt;/name&gt;</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@massive-dataset-new-005 ~]# hadoop fs -ls &#x2F;hbase</span><br><span class="line">Found 10 items</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-02-22 11:20 &#x2F;hbase&#x2F;.hbase-snapshot   # 存储的是 Snapshot 的相关信息</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-10 20:57 &#x2F;hbase&#x2F;.tmp              # 临时目录。当对表进行操作的时候，首先会将表移动到该目录下，然后再进行操作。</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-19 20:17 &#x2F;hbase&#x2F;MasterProcWALs    # 一个HMaster主节点状态日志文件。</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-19 19:12 &#x2F;hbase&#x2F;WALs              # 预写日志，和 Hadoop 中的 edits 文件类似，作用是容灾</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-19 19:25 &#x2F;hbase&#x2F;archive           # HBase 在做 Split , Compact，Drop 操作完成之后，会将 HFile 移到 archive 目录中,然后将之前的 hfile 删除掉,该目录由 HMaster 上的一个定时任务定期去清理. </span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-01-30 16:55 &#x2F;hbase&#x2F;corrupt           # 存储 HBase 做损坏的日志文件，一般都是为空的</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-11 11:44 &#x2F;hbase&#x2F;data              # HBase 的表数据目录，0.98版本里支持 namespace 的概念模型，系统会预置两个 namespace 即: hbase 和 default</span><br><span class="line">-rw-r--r--   3 hbase hbase         42 2018-12-25 15:31 &#x2F;hbase&#x2F;hbase.id          # 它是一个文件，存储集群唯一的 cluster id 号，是一个 uuid</span><br><span class="line">-rw-r--r--   3 hbase hbase          7 2018-12-25 15:31 &#x2F;hbase&#x2F;hbase.version     # 同样也是一个文件，存储集群的版本号，貌似是加密的，看不到，只能通过web-ui 才能正确显示出来  </span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-19 19:54 &#x2F;hbase&#x2F;oldWALs           # 预写日志归档目录，参数 hbase.master.logcleaner.ttl 控制此文件会定时被清除，默认是 10 分钟</span><br></pre></td></tr></table></figure>
+
+<p>MasterProcWALs 解释下。由于目前几乎所有的集群操作都是通过 procedure 进行的。<br>procedure 执行的每一步都会以log的形式持久化在 HBase 的 MasterProcWals 目录下，这样 master 在重启时也能通过日志来恢复之前的状态并且继续执行。<br>完成的操作日志一段时间后会被删除</p>
+<p>/hbase/archive 目录下的数据会过期清理，但是 Snapshot 对应的数据不会被清理，除非删除对应 Snapshot。<br>只要原来的文件有被删除的情况，如 Compaction，Split, Drop 操作，那么快照所引用的hfile文件都会归档到archive的对应表目录中。</p>
+<p>HBase 的表数据目录首先是 namespace。hbase、default 是 HBase 自带的 namespace</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@massive-dataset-new-005 ~]# hadoop fs -ls &#x2F;hbase&#x2F;data</span><br><span class="line">Found 4 items</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-19 19:12 &#x2F;hbase&#x2F;data&#x2F;default</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2018-12-25 15:31 &#x2F;hbase&#x2F;data&#x2F;hbase</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-03-06 10:38 &#x2F;hbase&#x2F;data&#x2F;mytest</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-01-03 14:41 &#x2F;hbase&#x2F;data&#x2F;nametest</span><br></pre></td></tr></table></figure>
+
+<p>hbase 这个 namespace 下面存储了 HBase 的 namespace、meta 和 acl 三个表。<br>如果没有开启 HBase 权限的话不会有 acl 这个表。 启用 HBase 授权。设置 hbase.security.authorization = true</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@aaadddccc ~]# hadoop fs -ls &#x2F;hbase&#x2F;data&#x2F;hbase</span><br><span class="line">Found 3 items</span><br><span class="line">drwxr-xr-x   - hbase supergroup          0 2018-04-16 21:12 &#x2F;hbase&#x2F;data&#x2F;hbase&#x2F;acl</span><br><span class="line">drwxr-xr-x   - hbase supergroup          0 2016-06-30 19:03 &#x2F;hbase&#x2F;data&#x2F;hbase&#x2F;meta</span><br><span class="line">drwxr-xr-x   - hbase supergroup          0 2016-06-30 19:04 &#x2F;hbase&#x2F;data&#x2F;hbase&#x2F;namespace</span><br></pre></td></tr></table></figure>
+
+<p>每张表都维护 tabledesc 和 regioninfo</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@massive-dataset-new-005 ~]# hadoop fs -ls &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu</span><br><span class="line">Found 3 items</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-01 15:59 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;.tabledesc    # 表的元数据目录</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-01 15:59 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;.tmp          # 中间临时数据，当 .tableinfo 被更新时该目录就会被用到</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-08 21:06 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd  # encoded_regionname 即 region 编码名</span><br><span class="line"></span><br><span class="line">[root@massive-dataset-new-005 ~]# hadoop fs -ls &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;.tabledesc</span><br><span class="line">Found 1 items</span><br><span class="line">-rw-r--r--   3 hbase hbase        285 2019-06-01 15:59 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;.tabledesc&#x2F;.tableinfo.0000000001 # 表元数据信息具体文件</span><br><span class="line"></span><br><span class="line">[root@massive-dataset-new-005 ~]# hadoop fs -ls &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd</span><br><span class="line">Found 4 items</span><br><span class="line">-rw-r--r--   3 hbase hbase         37 2019-06-01 15:59 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd&#x2F;.regioninfo      # region 描述目录</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-08 21:06 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd&#x2F;.tmp             # 存储临时文件，比如某个合并产生的重新写回的文件</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-08 21:06 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd&#x2F;picinfo          # 列族</span><br><span class="line">drwxr-xr-x   - hbase hbase          0 2019-06-01 16:52 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd&#x2F;recovered.edits  # WAL 日志回放目录</span><br><span class="line">[root@massive-dataset-new-005 ~]# hadoop fs -ls &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd&#x2F;.regioninfo</span><br><span class="line">-rw-r--r--   3 hbase hbase         37 2019-06-01 15:59 &#x2F;hbase&#x2F;data&#x2F;default&#x2F;tu&#x2F;44b1f7dc0ce95cfd867d69a17f26b1fd&#x2F;.regioninfo      # region 描述文件</span><br></pre></td></tr></table></figure>
+
+<h4 id="在-zk-目录结构"><a href="#在-zk-目录结构" class="headerlink" title="在 zk 目录结构"></a>在 zk 目录结构</h4><p>查看 Zookeeper 内部 HBase 相关数据，有三个主要的渠道:</p>
+<ul>
+<li>通过 hbase shell 命令 zk_dump 查看</li>
+<li>通过 hbase zkcli 查看</li>
+<li>通过 Zookeeper 查看</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[zk: localhost:2181(CONNECTED) 0] ls &#x2F;hbase</span><br><span class="line">[meta-region-server, acl, backup-masters, table, draining, region-in-transition, running, table-lock, master, balancer, namespace, hbaseid, online-snapshot, replication, splitWAL, recovering-regions, rs, flush-table-proc]</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">hbase(main):001:0&gt; zk_dump</span><br><span class="line">HBase is rooted at &#x2F;hbase</span><br><span class="line">Active master address: datanode1,60000,1483706056881</span><br><span class="line">Backup master addresses:</span><br><span class="line">Region server holding hbase:meta: datanode3,60020,1483706055770</span><br><span class="line">Region servers:</span><br><span class="line"> datanode2,60020,1483706054731</span><br><span class="line"> datanode0,60020,1483706054027</span><br><span class="line"> datanode4,60020,1483706055881</span><br><span class="line"> datanode3,60020,1483706055770</span><br><span class="line"> datanode7,60020,1483706055693</span><br><span class="line"> datanode5,60020,1483706054452</span><br><span class="line">&#x2F;hbase&#x2F;replication: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;peers: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;rs: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;rs&#x2F;datanode5,60020,1483706054452: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;rs&#x2F;datanode7,60020,1483706055693: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;rs&#x2F;datanode3,60020,1483706055770: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;rs&#x2F;datanode4,60020,1483706055881: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;rs&#x2F;datanode0,60020,1483706054027: </span><br><span class="line">&#x2F;hbase&#x2F;replication&#x2F;rs&#x2F;datanode2,60020,1483706054731: </span><br><span class="line">Quorum Server Statistics:</span><br><span class="line"> localhost:2181</span><br><span class="line">  Zookeeper version: 3.4.5-cdh5.7.2--1, built on 07&#x2F;22&#x2F;2016 19:18 GMT</span><br><span class="line">  Clients:</span><br><span class="line">   &#x2F;172.16.171.9:48487[1](queued&#x3D;0,recved&#x3D;5107,sent&#x3D;5107)</span><br><span class="line">   &#x2F;172.16.171.17:36252[1](queued&#x3D;0,recved&#x3D;50936,sent&#x3D;50936)</span><br><span class="line">   &#x2F;172.16.171.20:47011[1](queued&#x3D;0,recved&#x3D;19631,sent&#x3D;19631)</span><br><span class="line">   &#x2F;172.16.171.19:62253[1](queued&#x3D;0,recved&#x3D;7455,sent&#x3D;7455)</span><br><span class="line">   &#x2F;127.0.0.1:18625[1](queued&#x3D;0,recved&#x3D;22,sent&#x3D;22)</span><br><span class="line">   &#x2F;172.16.171.11:34643[1](queued&#x3D;0,recved&#x3D;7456,sent&#x3D;7456)</span><br><span class="line">   &#x2F;127.0.0.1:18621[1](queued&#x3D;0,recved&#x3D;3,sent&#x3D;3)</span><br><span class="line">   &#x2F;172.16.171.21:38192[1](queued&#x3D;0,recved&#x3D;7467,sent&#x3D;7467)</span><br><span class="line">   &#x2F;172.16.171.17:36254[1](queued&#x3D;0,recved&#x3D;50936,sent&#x3D;50936)</span><br><span class="line">   &#x2F;172.16.171.5:60302[1](queued&#x3D;0,recved&#x3D;7456,sent&#x3D;7456)</span><br><span class="line">   &#x2F;172.16.171.9:48540[1](queued&#x3D;0,recved&#x3D;25518,sent&#x3D;25518)</span><br><span class="line">   &#x2F;172.16.171.9:32467[1](queued&#x3D;0,recved&#x3D;7455,sent&#x3D;7455)</span><br><span class="line">   &#x2F;172.16.171.8:61522[1](queued&#x3D;0,recved&#x3D;10566,sent&#x3D;10586)</span><br><span class="line">   &#x2F;172.16.171.19:16777[1](queued&#x3D;0,recved&#x3D;25518,sent&#x3D;25518)</span><br><span class="line">   &#x2F;127.0.0.1:18626[0](queued&#x3D;0,recved&#x3D;1,sent&#x3D;0)</span><br><span class="line">   &#x2F;172.16.171.8:45515[1](queued&#x3D;0,recved&#x3D;7455,sent&#x3D;7455)</span><br><span class="line">   &#x2F;172.16.171.12:18371[1](queued&#x3D;0,recved&#x3D;381742,sent&#x3D;381742)</span><br><span class="line">  </span><br><span class="line">  Latency min&#x2F;avg&#x2F;max: 0&#x2F;3&#x2F;51663</span><br><span class="line">  Received: 1431771</span><br><span class="line">  Sent: 1461307</span><br><span class="line">  Connections: 17</span><br><span class="line">  Outstanding: 0</span><br><span class="line">  Zxid: 0x2600046a80</span><br><span class="line">  Mode: follower</span><br><span class="line">  Node count: 5349</span><br></pre></td></tr></table></figure>
+
+<p>关于输出结果的解读，就不去细说了，感兴趣的兄弟，自己去问度娘吧。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/4e4f5f558816" target="_blank" rel="noopener">hbase数据存储</a></li>
+<li><a href="https://blog.csdn.net/L_15156024189/article/details/83444255" target="_blank" rel="noopener">hbase在hdfs上的详细目录结构</a></li>
+<li><a href="https://www.cnblogs.com/hadoopdev/p/3984318.html" target="_blank" rel="noopener">HBase与Zookeeper数据结构查询</a></li>
+<li><a href="https://blog.bcmeng.com/post/hbase-hdfs.html" target="_blank" rel="noopener">HBase 在HDFS上的物理目录结构</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/19/HBase-Data-Block-Encoding-Types/" rel="prev" title="HBase Data Block Encoding Types">
+      <i class="fa fa-chevron-left"></i> HBase Data Block Encoding Types
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/20/HBase-LinkFile/" rel="next" title="HBase LinkFile">
+      HBase LinkFile <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在-HDFS-路径"><span class="nav-number">2.</span> <span class="nav-text">在 HDFS 路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在-zk-目录结构"><span class="nav-number">3.</span> <span class="nav-text">在 zk 目录结构</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '10e4d3f9744e14e6fa25687d32f70ec9',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

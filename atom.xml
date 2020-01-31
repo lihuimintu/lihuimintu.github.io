@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>lihuimintu</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://yoursite.com/"/>
+  <updated>2020-01-28T05:39:33.753Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name>图</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>HDFS 处理小文件方法</title>
+    <link href="http://yoursite.com/2020/01/28/HDFS-small-file/"/>
+    <id>http://yoursite.com/2020/01/28/HDFS-small-file/</id>
+    <published>2020-01-27T16:00:00.000Z</published>
+    <updated>2020-01-28T05:39:33.753Z</updated>
+    
+    <summary type="html">
+    
+      some word here
+    
+    </summary>
+    
+    
+      <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Hive set 命令使用</title>
+    <link href="http://yoursite.com/2020/01/27/Hive-set/"/>
+    <id>http://yoursite.com/2020/01/27/Hive-set/</id>
+    <published>2020-01-26T16:00:00.000Z</published>
+    <updated>2020-01-27T13:26:18.550Z</updated>
+    
+    <summary type="html">
+    
+      Hive set 命令使用
+    
+    </summary>
+    
+    
+      <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HDFS 中 atime 与 mtime 解析</title>
+    <link href="http://yoursite.com/2020/01/27/HDFS-atime-ctime/"/>
+    <id>http://yoursite.com/2020/01/27/HDFS-atime-ctime/</id>
+    <published>2020-01-26T16:00:00.000Z</published>
+    <updated>2020-01-27T09:15:45.043Z</updated>
+    
+    <summary type="html">
+    
+      HDFS 中 atime 与 mtime 解析
+    
+    </summary>
+    
+    
+      <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka 零拷贝原理</title>
+    <link href="http://yoursite.com/2020/01/24/Kafka-Zero-Copy/"/>
+    <id>http://yoursite.com/2020/01/24/Kafka-Zero-Copy/</id>
+    <published>2020-01-23T16:00:00.000Z</published>
+    <updated>2020-01-24T16:25:42.411Z</updated>
+    
+    <summary type="html">
+    
+      Kafka 零拷贝原理
+    
+    </summary>
+    
+    
+      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HDFS Federation 发展历程</title>
+    <link href="http://yoursite.com/2020/01/22/HDFS-Federation/"/>
+    <id>http://yoursite.com/2020/01/22/HDFS-Federation/</id>
+    <published>2020-01-21T16:00:00.000Z</published>
+    <updated>2020-01-22T09:42:20.390Z</updated>
+    
+    <summary type="html">
+    
+      HDFS Federation 发展历程
+    
+    </summary>
+    
+    
+      <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HBase 表存储层次</title>
+    <link href="http://yoursite.com/2020/01/21/HBase-Table/"/>
+    <id>http://yoursite.com/2020/01/21/HBase-Table/</id>
+    <published>2020-01-20T16:00:00.000Z</published>
+    <updated>2020-01-21T06:16:06.478Z</updated>
+    
+    <summary type="html">
+    
+      HBase 表存储层次
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Spark-Submit 参数说明</title>
+    <link href="http://yoursite.com/2020/01/20/Spark-submit/"/>
+    <id>http://yoursite.com/2020/01/20/Spark-submit/</id>
+    <published>2020-01-19T16:00:00.000Z</published>
+    <updated>2020-01-20T13:31:42.735Z</updated>
+    
+    <summary type="html">
+    
+      spark-submit 详细参数说明
+    
+    </summary>
+    
+    
+      <category term="Spark" scheme="http://yoursite.com/categories/Spark/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>YARN Memory CPU 配置</title>
+    <link href="http://yoursite.com/2020/01/19/Yarn-Container/"/>
+    <id>http://yoursite.com/2020/01/19/Yarn-Container/</id>
+    <published>2020-01-18T16:00:00.000Z</published>
+    <updated>2020-01-20T06:48:02.591Z</updated>
+    
+    <summary type="html">
+    
+      YARN Memory CPU 配置
+    
+    </summary>
+    
+    
+      <category term="Yarn" scheme="http://yoursite.com/categories/Yarn/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HBase CMS GC 配置参考</title>
+    <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
+    <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
+    <published>2020-01-17T16:00:00.000Z</published>
+    <updated>2020-01-18T08:01:39.325Z</updated>
+    
+    <summary type="html">
+    
+      HBase CMS GC 配置参考
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>记一次 HBase Master is initializing 问题处理</title>
+    <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
+    <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
+    <published>2020-01-17T16:00:00.000Z</published>
+    <updated>2020-01-19T15:01:51.625Z</updated>
+    
+    <summary type="html">
+    
+      HBase Master is initializing 问题处理
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>记一次 Arthas 实操</title>
+    <link href="http://yoursite.com/2020/01/17/Arthas/"/>
+    <id>http://yoursite.com/2020/01/17/Arthas/</id>
+    <published>2020-01-16T16:00:00.000Z</published>
+    <updated>2020-01-17T04:43:22.084Z</updated>
+    
+    <summary type="html">
+    
+      记一次 Arthas 实操
+    
+    </summary>
+    
+    
+      <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>CDH 中使用 Hive on Spark</title>
+    <link href="http://yoursite.com/2020/01/15/Hive-On-Spark/"/>
+    <id>http://yoursite.com/2020/01/15/Hive-On-Spark/</id>
+    <published>2020-01-14T16:00:00.000Z</published>
+    <updated>2020-01-15T06:58:20.128Z</updated>
+    
+    <summary type="html">
+    
+      Hive on Spark 使用
+    
+    </summary>
+    
+    
+      <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Linux block 与 inode</title>
+    <link href="http://yoursite.com/2020/01/10/Linux-block-inode/"/>
+    <id>http://yoursite.com/2020/01/10/Linux-block-inode/</id>
+    <published>2020-01-09T16:00:00.000Z</published>
+    <updated>2020-01-10T09:07:38.110Z</updated>
+    
+    <summary type="html">
+    
+      Linux block 与 inode
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>监控 Yarn 上作业状态</title>
+    <link href="http://yoursite.com/2020/01/07/Yarn-App-Monitor/"/>
+    <id>http://yoursite.com/2020/01/07/Yarn-App-Monitor/</id>
+    <published>2020-01-06T16:00:00.000Z</published>
+    <updated>2020-01-14T11:19:53.533Z</updated>
+    
+    <summary type="html">
+    
+      监控 Yarn 上作业状态
+    
+    </summary>
+    
+    
+      <category term="Yarn" scheme="http://yoursite.com/categories/Yarn/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Spark spark.yarn.jars 使用说明</title>
+    <link href="http://yoursite.com/2020/01/06/Spark-yarn-jar/"/>
+    <id>http://yoursite.com/2020/01/06/Spark-yarn-jar/</id>
+    <published>2020-01-05T16:00:00.000Z</published>
+    <updated>2020-01-09T12:02:46.183Z</updated>
+    
+    <summary type="html">
+    
+      Spark spark.yarn.jars 使用说明
+    
+    </summary>
+    
+    
+      <category term="Spark" scheme="http://yoursite.com/categories/Spark/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Linux shell 命令行参数</title>
+    <link href="http://yoursite.com/2020/01/04/Linux-getopts-getopt/"/>
+    <id>http://yoursite.com/2020/01/04/Linux-getopts-getopt/</id>
+    <published>2020-01-03T16:00:00.000Z</published>
+    <updated>2020-01-09T12:02:46.183Z</updated>
+    
+    <summary type="html">
+    
+      Linux shell 命令行参数
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Maven 项目打成 jar 包运行</title>
+    <link href="http://yoursite.com/2020/01/02/mavan-jar/"/>
+    <id>http://yoursite.com/2020/01/02/mavan-jar/</id>
+    <published>2020-01-01T16:00:00.000Z</published>
+    <updated>2020-01-09T12:02:46.183Z</updated>
+    
+    <summary type="html">
+    
+      Maven 项目打成 jar 包运行
+    
+    </summary>
+    
+    
+      <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>YARN Fair scheduler</title>
+    <link href="http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/"/>
+    <id>http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/</id>
+    <published>2020-01-01T16:00:00.000Z</published>
+    <updated>2020-01-19T10:45:53.408Z</updated>
+    
+    <summary type="html">
+    
+      YARN Fair scheduler
+    
+    </summary>
+    
+    
+      <category term="Yarn" scheme="http://yoursite.com/categories/Yarn/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>二阶段提交（2PC）</title>
+    <link href="http://yoursite.com/2020/01/01/2PC/"/>
+    <id>http://yoursite.com/2020/01/01/2PC/</id>
+    <published>2019-12-31T16:00:00.000Z</published>
+    <updated>2020-01-05T03:45:46.485Z</updated>
+    
+    <summary type="html">
+    
+      在分布式环境下，所有节点进行事务提交，保持一致性的算法
+    
+    </summary>
+    
+    
+      <category term="Distributed" scheme="http://yoursite.com/categories/Distributed/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Cloudera Manager API 使用</title>
+    <link href="http://yoursite.com/2019/12/27/CM-API/"/>
+    <id>http://yoursite.com/2019/12/27/CM-API/</id>
+    <published>2019-12-26T16:00:00.000Z</published>
+    <updated>2020-01-09T12:02:46.182Z</updated>
+    
+    <summary type="html">
+    
+      Cloudera Manager API 使用
+    
+    </summary>
+    
+    
+      <category term="CDH" scheme="http://yoursite.com/categories/CDH/"/>
+    
+    
+  </entry>
+  
+</feed>

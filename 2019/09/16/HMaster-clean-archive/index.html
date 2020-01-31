@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="HMaster 定期清理 archive">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HMaster 定期清理 archive">
+<meta property="og:url" content="http://yoursite.com/2019/09/16/HMaster-clean-archive/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="HMaster 定期清理 archive">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-09-17-1.png">
+<meta property="article:published_time" content="2019-09-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-09-18T03:16:11.641Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-09-17-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/09/16/HMaster-clean-archive/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HMaster 定期清理 archive | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/16/HMaster-clean-archive/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HMaster 定期清理 archive
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-16T00:00:00+08:00">2019-09-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-09-18 11:16:11" itemprop="dateModified" datetime="2019-09-18T11:16:11+08:00">2019-09-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">HMaster 定期清理 archive</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>HFileCleaner 定期清理 archive 下的文件</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>表一旦删除，刚开始是可以在 archive 中看到删除表的数据文件，但是等待一段时间后 archive 中的数据就会被彻底删除，再也无法找回。</p>
+<p>这是因为 master 上会启动一个定期清理 archive 中垃圾文件的线程（HFileCleaner），定期会对这些被删除的垃圾文件进行清理。</p>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>定时清理任务的插件设置会从 hbase.master.hfilecleaner.plugins 配置里加载所有 BaseHFileCleanerDelegate。 只有所有 delegate 都同意才能被删除。</p>
+<p><img src="/images/blog/2019-09-17-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p>就是通过 HFileLinkCleaner，SnapshotHFileCleaner，TimeToLiveHFileCleaner 这三种规则的约束来清理archive中的数据</p>
+<h5 id="HFileLinkCleaner"><a href="#HFileLinkCleaner" class="headerlink" title="HFileLinkCleaner"></a>HFileLinkCleaner</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * HFileLink cleaner that determines if a hfile should be deleted.</span><br><span class="line"> * HFiles can be deleted only if there&#39;re no links to them.</span><br><span class="line"> *</span><br><span class="line"> * When a HFileLink is created a back reference file is created in:</span><br><span class="line"> *      &#x2F;hbase&#x2F;archive&#x2F;table&#x2F;region&#x2F;cf&#x2F;.links-hfile&#x2F;ref-region.ref-table</span><br><span class="line"> * To check if the hfile can be deleted the back references folder must be empty.</span><br><span class="line"> *&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>如果对archive中的文件的引用不存在了，则可以删除</p>
+<p>问题: /hbase/archive/table/region/cf/.links-hfile/ref-region.ref-table 从何而来？<br>回答: HBase 做 clone_snapshot 的时候。有兴趣可以自看<a href="http://hbasefly.com/2017/09/17/hbase-snapshot/" target="_blank" rel="noopener">HBase原理 – 分布式系统中snapshot是怎么玩的？</a></p>
+<h5 id="SnapshotHFileCleaner"><a href="#SnapshotHFileCleaner" class="headerlink" title="SnapshotHFileCleaner"></a>SnapshotHFileCleaner</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * Implementation of a file cleaner that checks if a hfile is still used by snapshots of HBase</span><br><span class="line"> * tables.</span><br><span class="line"> *&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>未被 snapshots 引用的文件，可以删除</p>
+<p>问题: snapshot 为嘛会引用到 archive 中的文件？<br>回答: 表做了snapshot后，此时该表的元数据以及相关的link文件都存储在snapshot中, 该表发生 compact 操作前会将原始表移动到 archive 目录下再执行 compact。对于表删除操作，正常情况也会将删除表数据移动到archive目录下），这样snapshot对应的元数据就不会失去意义，只不过原始数据不再存在于数据目录下，而是移动到了archive目录下。</p>
+<h5 id="TimeToLiveHFileCleaner"><a href="#TimeToLiveHFileCleaner" class="headerlink" title="TimeToLiveHFileCleaner"></a>TimeToLiveHFileCleaner</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * HFile cleaner that uses the timestamp of the hfile to determine if it should be deleted. By</span><br><span class="line"> * default they are allowed to live for &#123;@value #DEFAULT_TTL&#125;</span><br><span class="line"> *&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>默认清理时间超过5分钟的HFile</p>
+<h4 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h4><p>在查看公司 HBase 集群 archive 文件夹发现有 2018 年的数据未清理。。。</p>
+<p>按所学知识正常的情况下超过5分钟的HFile就会被清理。</p>
+<p>继续翻阅文件发现了 links-hfile 文件。因此推断是因为有 clone 的表还依赖着。</p>
+<p>links-hfile 文件的消失是在 clone 表做 Compact 之后会消失。但是因为 clone 表已经一直没有写入，所以 region 没有做 majorCompat, 后台线程周期性检查也会因为 needsCompaction() 方法去判断没有足够多的文件触发了 Compaction</p>
+<p>只能手动触发 majorCompact，一旦手动触发，HBase 会不做很多自动化检查，直接执行合并。</p>
+<p>等待一段时间回看发现 archive 文件的2018年数据已清理</p>
+<p>整个过程忘记留图了。。。导致只能后续口诉加回忆。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/f82aafd7b381" target="_blank" rel="noopener">HMaster 功能之定期清理archive</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/01/Flink-Kafka-Connector/" rel="prev" title="Flink kafka connector">
+      <i class="fa fa-chevron-left"></i> Flink kafka connector
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/17/HBase-wrong-deletion-table/" rel="next" title="HBase 误删表恢复">
+      HBase 误删表恢复 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#HFileLinkCleaner"><span class="nav-number">2.1.</span> <span class="nav-text">HFileLinkCleaner</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#SnapshotHFileCleaner"><span class="nav-number">2.2.</span> <span class="nav-text">SnapshotHFileCleaner</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#TimeToLiveHFileCleaner"><span class="nav-number">2.3.</span> <span class="nav-text">TimeToLiveHFileCleaner</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实战"><span class="nav-number">3.</span> <span class="nav-text">实战</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '75398bd7c8fa092ba9fec3e672c01d65',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

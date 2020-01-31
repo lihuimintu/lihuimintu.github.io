@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="HBase 参数设置参考">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase 参数设置参考">
+<meta property="og:url" content="http://yoursite.com/2019/08/15/HBase-tuning/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="HBase 参数设置参考">
+<meta property="article:published_time" content="2019-08-14T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-01-26T03:43:49.783Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/08/15/HBase-tuning/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HBase 参数设置参考 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/15/HBase-tuning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HBase 参数设置参考
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-15 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-15T00:00:00+08:00">2019-08-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-01-26 11:43:49" itemprop="dateModified" datetime="2020-01-26T11:43:49+08:00">2020-01-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+            <div class="post-description">HBase 参数设置参考</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>HBase 参数设置参考</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 配置参数极其繁多，参数配置可能会影响到 HBase 性能问题，因此得好好总结下。</p>
+<p>HBase 调优是个技术活。得结合多年生产经验加测试环境下性能测试得出。</p>
+<ol>
+<li><p>JVM垃圾回收优化</p>
+</li>
+<li><p>本地 memstore 分配缓存优化</p>
+</li>
+<li><p>Region 拆分优化</p>
+</li>
+<li><p>Region 合并优化</p>
+</li>
+<li><p>Region 预先加载优化</p>
+</li>
+<li><p>负载均衡优化</p>
+</li>
+<li><p>启用压缩，推荐snappy</p>
+</li>
+<li><p>进行预分区，从而避免自动 split，提高 HBase 响应速度</p>
+</li>
+<li><p>避免出现 region 热点现象，启动按照 table 级别进行 balance</p>
+</li>
+</ol>
+<h4 id="GC"><a href="#GC" class="headerlink" title="GC"></a>GC</h4><p><a href="https://lihuimintu.github.io/2020/01/18/HBase-CMS/" target="_blank" rel="noopener">HBase CMS GC 配置参考</a></p>
+<h4 id="RS-参数"><a href="#RS-参数" class="headerlink" title="RS 参数"></a>RS 参数</h4><p><strong>hbase.server.thread.wakefrequency</strong></p>
+<p>该值默认是 10 秒，它影响着 Flush 和 Compaction</p>
+<p>FlushHandler 从队列 flushQueue 取出需要刷新的请求，从队列里取请求超时时间是该参数</p>
+<p>Compaction 后台定期线程检查也是该参数 </p>
+<h4 id="BlockCache"><a href="#BlockCache" class="headerlink" title="BlockCache"></a>BlockCache</h4><p><strong>hfile.block.cache.size</strong><br>表示 BlockCache 占 hbase_heapsize 比例，参数默认 0.4<br>一个 RS 上有一个 BlockCache 和N个 MemStore，它们的大小之和建议小于 heapsize * 0.8，否则 HBase 可能不能启动，因为仍然要留有一些内存保证其它任务的执行。</p>
+<h4 id="flush-参数"><a href="#flush-参数" class="headerlink" title="flush 参数"></a>flush 参数</h4><p><strong>hbase.regionserver.global.memstore.size</strong><br>对应旧参数<code>hbase.regionserver.global.memstore.upperLimit</code><br>表示 RS 全局 MemStore 占 hbase_heapsize 最大占比，参数默认 0.4<br>一个 RS 上有一个 BlockCache 和N个 MemStore，它们的大小之和建议小于 heapsize * 0.8，否则 HBase 可能不能启动，因为仍然要留有一些内存保证其它任务的执行。</p>
+<p><strong>hbase.hregion.memstore.block.multiplier</strong></p>
+<p>写请求达到 HRegion 后，HRegion 首先会加行锁，然后进行 checkResource 操作，在 checkResource 操作里主要检查 memstoreSize 是否大于 blockingMemStoreSize，其中 blockingMemStoreSize 由等于 memstoreFlushSize *<br>hbase.hregion.memstore.block.multiplier，该参数默认值是 4</p>
+<p>hbase.hregion.memstore.block.multiplier 设置的太大在写入量大的时候很可能会导致机器内存耗尽而引发 OutofMem 错误</p>
+<p><strong>hbase.hregion.memstore.flush.size</strong></p>
+<p>上文提到的 memstoreFlushSize 大小由参数 hbase.hregion.memstore.flush.size 指定，该值默认值是 128M</p>
+<p><strong>hbase.hstore.flusher.count</strong></p>
+<p>MemStoreFlusher 的职责是接受 HRegion 的刷新请求并调度该请求，在 MemStoreFlusher 内部有一个 flushQueue 队列，消费此队列的是 FlushHandler，FlushHandler 的个数由参数 hbase.hstore.flusher.count 设定, 默认值是 2</p>
+<p>如果线程个数较少，MemStore 刷新将排队。对于更多的线程个数，刷新将并行执行，从而增加 HDFS 负载。这也会导致更多的 compact。</p>
+<p><strong>hbase.hstore.blockingStoreFiles</strong></p>
+<p>在HFile的数量过多的时候会限制写请求的速度，如果过多就会阻塞 flush 而进行 compact 操作并阻塞一定时间后才进行 flush 操作</p>
+<p>阻塞文件参数由参数 hbase.hstore.blockingStoreFiles 控制该值默认为 7，阻塞时间由参数 hbase.hstore.blockingWaitTime 控制，该值默认为 90000 毫秒</p>
+<p><strong>hbase.hstore.blockingWaitTime</strong></p>
+<p>值默认为 90000 毫秒，上文有提参数作用</p>
+<h4 id="Split-参数"><a href="#Split-参数" class="headerlink" title="Split 参数"></a>Split 参数</h4><p><strong>hbase.regionserver.region.split.policy</strong></p>
+<p>HBase 的分裂策略可以通过表的属性 SPLIT_POLICY 指定，也可以通过 hbase-site.xml 全局指派，参数为 hbase.regionserver.region.split.policy，默认为IncreasingToUpperBoundRegionSplitPolicy。</p>
+<p><strong>hbase.regionserver.thread.split</strong></p>
+<p>执行 split 的线程数，默认为 1</p>
+<p><strong>hbase.regionserver.regionSplitLimit</strong></p>
+<p>当前 regionserver 的 region 个数最大值，如果当前 regionserver 的 region 个数超过该值，那么将不会在进行 split 操作。默认值 1000</p>
+<h4 id="Compaction-参数"><a href="#Compaction-参数" class="headerlink" title="Compaction 参数"></a>Compaction 参数</h4><p>Compaction 的主要目的</p>
+<ul>
+<li>将多个HFile 合并为较大HFile，从而提高查询性能</li>
+<li>减少HFile 数量，减少小文件对 HDFS 影响</li>
+<li>提高 Region 初始化速度</li>
+</ul>
+<p><strong>hbase.hstore.compaction.min</strong></p>
+<p>当某个列族下的 HFile 文件数量超过这个值，则会触发 minor compaction 操作 默认是3，比较小，建议设置 10-15<br>设置过小会导致合并文件太频繁，特别是频繁 bulkload 或者数据量比较大的情况下 设置过大又会导致一个列族下面的 HFile 数量比较多，影响查询效率</p>
+<p><strong>hbase.hstore.compaction.max</strong></p>
+<p>一次最多可以合并多少个HFile，默认为 10 限制某个列族下面选择最多可选择多少个文件来进行合并<br>注意需要满足条件<code>hbase.hstore.compaction.max</code> &gt; <code>hbase.hstore.compaction.min</code></p>
+<p><strong>hbase.hstore.compaction.max.size</strong></p>
+<p>默认 Long 最大值，minor_compact 时 HFile 大小超过这个值则不会被选中合并<br>用来限制防止过大的 HFile 被选中合并，减少写放大以及提高合并速度</p>
+<p><strong>hbase.hstore.compaction.min.size</strong></p>
+<p>默认 memstore 大小，minor_compact 时 HFile 小于这个值，则一定会被选中<br>可用来优化尽量多的选择合并小的文件</p>
+<p><strong>hbase.regionserver.thread.compaction.small</strong></p>
+<p>默认1，每个RS的 minor compaction线程数，其实不是很准确，这个线程主要是看参与合并的 HFile 数据量 有可能 minor compaction 数据量较大会使用 compaction.large 提高线程可提高 HFile 合并效率</p>
+<p><strong>hbase.regionserver.thread.compaction.large</strong></p>
+<p>默认1，每个RS的 major compaction线程数，其实不是很准确，这个线程主要是看参与合并的 HFile 数据量 有可能 minor compaction 数据量较大会使用 compaction.large 提高线程可提高 HFile 合并效率</p>
+<p><strong>hbase.hregion.majorcompaction</strong></p>
+<p>默认604800000, 单位是毫秒，即7天。major compaction 间隔</p>
+<p>设置为0即关闭hbase major compaction，改为业务低谷手动执行。<a href="https://lihuimintu.github.io/2019/06/09/HBase-timing-major-compaction/" target="_blank" rel="noopener">HBase 自动大合并脚本</a></p>
+<p><strong>hbase.hregion.majorcompaction.jetter</strong></p>
+<p>Major compaction 抖动参数，默认值0.5。这个参数是为了避免major compaction同时在各个regionserver上同时发生，避免此操作给集群带来很大压力。 这样节点major compaction就会在 + 或 - 两者乘积的时间范围内随机发生。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/uMDoSnsbcqznCvSQCW5_yA" target="_blank" rel="noopener">HBase调优 HBase Compaction参数调优</a></li>
+<li><a href="https://cloud.tencent.com/developer/article/1005586" target="_blank" rel="noopener">Hbase Region Split compaction 过程分析以及调优</a></li>
+<li><a href="https://blog.csdn.net/u011598442/article/details/90632702" target="_blank" rel="noopener">深入理解 HBase Compaction 机制</a></li>
+<li><a href="https://www.cnblogs.com/hixiaowei/p/11936325.html" target="_blank" rel="noopener">hfile.block.cache.size - hbase调优</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/14/fault-simulation/" rel="prev" title="测试故障模拟">
+      <i class="fa fa-chevron-left"></i> 测试故障模拟
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/16/ulimit-Invalid/" rel="next" title="ulimit 未生效">
+      ulimit 未生效 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GC"><span class="nav-number">2.</span> <span class="nav-text">GC</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RS-参数"><span class="nav-number">3.</span> <span class="nav-text">RS 参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BlockCache"><span class="nav-number">4.</span> <span class="nav-text">BlockCache</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#flush-参数"><span class="nav-number">5.</span> <span class="nav-text">flush 参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Split-参数"><span class="nav-number">6.</span> <span class="nav-text">Split 参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Compaction-参数"><span class="nav-number">7.</span> <span class="nav-text">Compaction 参数</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '4db4a3e1ebdb51fe4d45da03ca681cd6',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="some word here">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase Data Block Encoding Types">
+<meta property="og:url" content="http://yoursite.com/2019/06/19/HBase-Data-Block-Encoding-Types/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="some word here">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-19-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-19-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-19-3.png">
+<meta property="article:published_time" content="2019-06-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-01-23T08:32:43.182Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase Data Block Encoding Types">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-06-19-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/06/19/HBase-Data-Block-Encoding-Types/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HBase Data Block Encoding Types | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/19/HBase-Data-Block-Encoding-Types/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HBase Data Block Encoding Types
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-19 00:00:00" itemprop="dateCreated datePublished" datetime="2019-06-19T00:00:00+08:00">2019-06-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-01-23 16:32:43" itemprop="dateModified" datetime="2020-01-23T16:32:43+08:00">2020-01-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+            <div class="post-description">some word here</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Data Block Encoding Types</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>AlstonWilliams 的<a href="https://www.jianshu.com/p/a62e49f749f3" target="_blank" rel="noopener">HBase Data Block Encoding Types介绍</a>写的挺好的</p>
+<p>本文主要是翻译<a href="http://hbase.apache.org/book.html#compression" target="_blank" rel="noopener">官方Data Block Encoding Types 部分</a></p>
+<h4 id="块压缩"><a href="#块压缩" class="headerlink" title="块压缩"></a>块压缩</h4><p>HBase 中提供了五种 Data Block Encoding Types，具体有: </p>
+<ul>
+<li>NONE</li>
+<li>PREFIX</li>
+<li>DIFF</li>
+<li>FAST_DIFF</li>
+<li>PREFIX_TREE</li>
+</ul>
+<p><code>NONE</code>这种就不介绍了，这个很容易理解。</p>
+<h5 id="PREFIX"><a href="#PREFIX" class="headerlink" title="PREFIX"></a>PREFIX</h5><p>通常来说，key 总是相似的，拥有相同的前缀，只是末尾不相同。</p>
+<p>例如，一个 Key 是 <code>RowKey:Family:Qualifier0</code>，<br>跟它相邻的下一个 Key 可能是 <code>RowKey:Family:Qualifier1</code></p>
+<p>在 PREFIX 编码中，会额外添加一字段表示当前行的 key 和前一行的 key<br>前缀相同长度</p>
+<p>很明显，如果相邻 Key 之间，完全没有共同点，那 PREFIX 显然毫无用处，还增加了额外的开销．</p>
+<p>当使用 NONE 这种 Block Encoding 时，如下图所示:</p>
+<p><img src="/images/blog/2019-06-19-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p>而如果采用 PREFIX 这种数据块编码，如下图所示:</p>
+<p><img src="/images/blog/2019-06-19-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p>此处的第一个 key 与之前的 key 完全不同，则其前缀长度为 0，<br>第二个 key 前缀长度为 23，因为它们前 23 个字符相同。</p>
+<h5 id="DIFF"><a href="#DIFF" class="headerlink" title="DIFF"></a>DIFF</h5><p>DIFF 是在 PREFIX 基础上扩展，不在把 Key 看成一个整体，而是将 Key 每个键字段拆分，以便可以更有效地压缩键的每个部分。</p>
+<p>它添加了两个新的字段 <code>timestamp</code> 和 <code>type</code></p>
+<p>如果 KeyB 的 ColumnFamily、key length、value length、Key type 和 KeyA 对应字段相同，那么它就会在 KeyB 中被省略．</p>
+<p>此外，timestamp 存储的是相对于前一行 Row 的 timestamp 偏移量（即差值），而不是完整存储。</p>
+<p>默认情况下，DIFF 是不建议启动的．因为它会导致写数据、Scan 数据更慢．但是相对于 PREFIX/NONE，它会在 BlockCache 中缓存更多数据．</p>
+<p>用 DIFF 编码方式压缩之前的 block 如下图所示:</p>
+<p><img src="/images/blog/2019-06-19-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p>示例中的第一行、第二行，并给出 timestamp 和 type 精确匹配，key 长度也是相等的，所以第二行的 key length 和 type 都不需要存储，timestamp 存储与上一行的差值。</p>
+<h5 id="FAST-DIFF"><a href="#FAST-DIFF" class="headerlink" title="FAST_DIFF"></a>FAST_DIFF</h5><p>FAST_DIFF 跟 DIFF 非常相似，所不同的是，它额外增加了一个字段，表示 RowB 是否跟 RowA 完全一样，如果是的话，那数据就不需要重复保存了．</p>
+<p>如果在你的场景下，Key很长，或者有很多Column，那么推荐使用FAST_DIFF。</p>
+<p>数据格式几乎与 DIFF 编码相同，因此没有图像来说明它。</p>
+<h5 id="PREFIX-TREE"><a href="#PREFIX-TREE" class="headerlink" title="PREFIX_TREE"></a>PREFIX_TREE</h5><p>PREFIX_TREE 是 HBase 0.96 中的一项实验功能。它已在 HBase-2.0.0 中删除。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/a62e49f749f3" target="_blank" rel="noopener">HBase Data Block Encoding Types介绍</a></li>
+<li><a href="http://hbasefly.com/2016/07/02/hbase-pracise-cfsetting/" target="_blank" rel="noopener">HBase最佳实践－列族设计优化</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/18/Hive-HBase-mapping/" rel="prev" title="Hive 映射 HBase 表方式">
+      <i class="fa fa-chevron-left"></i> Hive 映射 HBase 表方式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/19/HBase-File-ZK-Structure/" rel="next" title="HBase 目录结构">
+      HBase 目录结构 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#块压缩"><span class="nav-number">2.</span> <span class="nav-text">块压缩</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#PREFIX"><span class="nav-number">2.1.</span> <span class="nav-text">PREFIX</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#DIFF"><span class="nav-number">2.2.</span> <span class="nav-text">DIFF</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FAST-DIFF"><span class="nav-number">2.3.</span> <span class="nav-text">FAST_DIFF</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#PREFIX-TREE"><span class="nav-number">2.4.</span> <span class="nav-text">PREFIX_TREE</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '68f8d9597a1778d8a25ce437b710be5f',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

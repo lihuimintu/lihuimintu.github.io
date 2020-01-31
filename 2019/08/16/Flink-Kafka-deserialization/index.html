@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="内置的常用消息格式的Schemas">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink-Kafka 内置 Schemas">
+<meta property="og:url" content="http://yoursite.com/2019/08/16/Flink-Kafka-deserialization/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="内置的常用消息格式的Schemas">
+<meta property="article:published_time" content="2019-08-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-08-17T13:52:14.266Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Flink">
+<meta property="article:tag" content=" Kafka">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/08/16/Flink-Kafka-deserialization/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Flink-Kafka 内置 Schemas | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/16/Flink-Kafka-deserialization/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Flink-Kafka 内置 Schemas
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-16T00:00:00+08:00">2019-08-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-08-17 21:52:14" itemprop="dateModified" datetime="2019-08-17T21:52:14+08:00">2019-08-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Flink/" itemprop="url" rel="index">
+                    <span itemprop="name">Flink</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">内置的常用消息格式的Schemas</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Apache Flink 内部提供了内置的常用消息格式的 Schemas</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Flink 消费 Kafka 时，要对消息进行格式化</p>
+<h4 id="Schemas"><a href="#Schemas" class="headerlink" title="Schemas"></a>Schemas</h4><p>Flink 有提供内置的 Schemas</p>
+<p>先看 Flink 中初始化 Kafka 数据源代码，其中传入服务器名和 Topic 名就可以了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Properties props &#x3D; new Properties();</span><br><span class="line">props.setProperty(&quot;bootstrap.servers&quot;, &quot;localhost:9092&quot;);</span><br><span class="line">FlinkKafkaConsumer010&lt;String&gt; consumer &#x3D; new FlinkKafkaConsumer010&lt;&gt;(</span><br><span class="line">    &quot;flink_test&quot;, new SimpleStringSchema(), props);</span><br><span class="line">DataStream&lt;String&gt; stream &#x3D; env.addSource(consumer);</span><br></pre></td></tr></table></figure>
+
+<p>上方 SimpleStringSchema 即为 Schemas。如果需要使用其他的，替换掉该参数，并把相应数据类型进行修改</p>
+<p>如果想自己实现 Schema ，可以参看<a href="https://juejin.im/post/5c8fd4dd5188252d92095995#heading-8" target="_blank" rel="noopener">Apache-Flink深度解析-DataStream-Connectors之Kafka</a> Simple ETL 部分，<br>与 SimpleStringSchema 是一样的效果，只是自己实现的 Schema</p>
+<p>如果类找不到，请添加依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.apache.flink&lt;&#x2F;groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;flink-avro&lt;&#x2F;artifactId&gt;</span><br><span class="line">  &lt;version&gt;1.8.0&lt;&#x2F;version&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="SimpleStringSchema"><a href="#SimpleStringSchema" class="headerlink" title="SimpleStringSchema"></a>SimpleStringSchema</h5><p>SimpleStringSchema 把 message 反序列化为字符串。如果 message 有键, 则忽略键</p>
+<h5 id="JSONDeserializationSchema"><a href="#JSONDeserializationSchema" class="headerlink" title="JSONDeserializationSchema"></a>JSONDeserializationSchema</h5><p>JSONDeserializationSchema 使用 jackson 将 message 反序列化为 json 格式的消息并返回 com.fasterxml.jackson.databind.node.ObjectNode 对象流。你可以使用 .get(“property”) 方法访问字段。再一次, 键被忽略。</p>
+<h5 id="JSONKeyValueDeserializationSchema"><a href="#JSONKeyValueDeserializationSchema" class="headerlink" title="JSONKeyValueDeserializationSchema"></a>JSONKeyValueDeserializationSchema</h5><p>JSONKeyValueDeserializationSchema 与前一个非常类似，但处理带有json编码的键和值的消息</p>
+<p>返回的 ObjectNode 包含如下字段:</p>
+<p>key: 键中存在的所有字段<br>value: 所有的 message 字段<br>metadata（可选）: 暴露消息的 offset, partition 和 topic（将 true 传递给构造函数以获取元数据）</p>
+<p>例如:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kafka-console-producer --broker-list localhost:9092 --topic json-topic \</span><br><span class="line">    --property parse.key&#x3D;true \</span><br><span class="line">    --property key.separator&#x3D;|</span><br><span class="line">&#123;&quot;keyField1&quot;: 1, &quot;keyField2&quot;: 2&#125; | &#123;&quot;valueField1&quot;: 1, &quot;valueField2&quot; : &#123;&quot;foo&quot;: &quot;bar&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>会被解码为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;key&quot;:&#123;&quot;keyField1&quot;:1,&quot;keyField2&quot;:2&#125;,</span><br><span class="line">    &quot;value&quot;:&#123;&quot;valueField1&quot;:1,&quot;valueField2&quot;:&#123;&quot;foo&quot;:&quot;bar&quot;&#125;&#125;,</span><br><span class="line">    &quot;metadata&quot;:&#123;</span><br><span class="line">        &quot;offset&quot;:43,</span><br><span class="line">        &quot;topic&quot;:&quot;json-topic&quot;,</span><br><span class="line">        &quot;partition&quot;:0</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果消息本身就没有 key、metadata。JSONKeyValueDeserializationSchema 解析出来也是没有key、value</p>
+<h5 id="AvroDeserializationSchema"><a href="#AvroDeserializationSchema" class="headerlink" title="AvroDeserializationSchema"></a>AvroDeserializationSchema</h5><p>使用静态提供的模式读取使用 Avro 格式序列化的数据</p>
+<p>可以从 Avro 生成的类（AvroDeserializationSchema.forSpecific（…））推断出模式，或者它可以与 GenericRecords 一起使用手动提供的模式（使用AvroDeserializationSchema.forGeneric（…））</p>
+<h5 id="TypeInformationSerializationSchema"><a href="#TypeInformationSerializationSchema" class="headerlink" title="TypeInformationSerializationSchema"></a>TypeInformationSerializationSchema</h5><p>TypeInformationSerializationSchema (and TypeInformationKeyValueSerializationSchema) 它基于Flink的TypeInformation创建模式。 如果数据由Flink写入和读取，这将非常有用</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>AvroDeserializationSchema 与 TypeInformationSerializationSchema </p>
+<p>还没接触过，这里就暂时记录下，如果下次有用到再回来记录</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://juejin.im/post/5c8fd4dd5188252d92095995#heading-5" target="_blank" rel="noopener">Apache-Flink深度解析-DataStream-Connectors之Kafka</a></li>
+<li><a href="https://ohmycloud.github.io/2019/05/15/apache-flink-built-in-deserialization-schemas-md/" target="_blank" rel="noopener">Flink-Kafka 内置的反序列化 schemas</a></li>
+<li><a href="https://riptutorial.com/zh-CN/apache-flink/example/27995/%E5%86%85%E7%BD%AE%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%A8%A1%E5%BC%8F" target="_blank" rel="noopener">apache-flink内置反序列化模式</a></li>
+<li><a href="https://stackoverflow.com/questions/39300183/flink-kafka-json-java-example" target="_blank" rel="noopener">Flink + Kafka + JSON - java example</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/16/ulimit-Invalid/" rel="prev" title="ulimit 未生效">
+      <i class="fa fa-chevron-left"></i> ulimit 未生效
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/18/Kafka-offset/" rel="next" title="kafka offset 机制">
+      kafka offset 机制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Schemas"><span class="nav-number">2.</span> <span class="nav-text">Schemas</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#SimpleStringSchema"><span class="nav-number">2.1.</span> <span class="nav-text">SimpleStringSchema</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#JSONDeserializationSchema"><span class="nav-number">2.2.</span> <span class="nav-text">JSONDeserializationSchema</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#JSONKeyValueDeserializationSchema"><span class="nav-number">2.3.</span> <span class="nav-text">JSONKeyValueDeserializationSchema</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#AvroDeserializationSchema"><span class="nav-number">2.4.</span> <span class="nav-text">AvroDeserializationSchema</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#TypeInformationSerializationSchema"><span class="nav-number">2.5.</span> <span class="nav-text">TypeInformationSerializationSchema</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '317b07b219dd68569f81baf40a593f17',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

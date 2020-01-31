@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="使用 HBase 存储图片">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 HBase 存储图片">
+<meta property="og:url" content="http://yoursite.com/2019/06/01/HBase-save-picture/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="使用 HBase 存储图片">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-01-4.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-01-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-01-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-01-3.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-19-4.png">
+<meta property="article:published_time" content="2019-05-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-06-19T11:43:41.949Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-06-01-4.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/06/01/HBase-save-picture/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>使用 HBase 存储图片 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/01/HBase-save-picture/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用 HBase 存储图片
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-01 00:00:00" itemprop="dateCreated datePublished" datetime="2019-06-01T00:00:00+08:00">2019-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-06-19 19:43:41" itemprop="dateModified" datetime="2019-06-19T19:43:41+08:00">2019-06-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+            <div class="post-description">使用 HBase 存储图片</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文主要描述如何将图片文件转成 sequence file，然后保存到 HBase</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 可用于来数据文件。假设我们碰到的是图片文件呢，该如何保存或存储呢。<br>本文主要描述如何将图片文件转成sequence file，然后保存到HBase。</p>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li><p>文件处理流程</p>
+</li>
+<li><p>准备上传文件的Java代码</p>
+</li>
+<li><p>运行代码</p>
+</li>
+<li><p>读HBase并本地输出</p>
+</li>
+</ol>
+<h4 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h4><p><img src="/images/blog/2019-06-01-4.png" alt>{:height=”80%” width=”80%”} </p>
+<p>先在本地准备了一堆图片文件</p>
+<p><img src="/images/blog/2019-06-01-1.png" alt>{:height=”80%” width=”80%”} </p>
+<p>上传到 HDFS</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line">for i in &#96;ls imgs&#96;;</span><br><span class="line">do</span><br><span class="line">        hadoop fs -put imgs&#x2F;$i &#x2F;tmp&#x2F;lihm&#x2F;picHbase</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-06-01-2.png" alt>{:height=”80%” width=”80%”} </p>
+<p>然后通过Java程序遍历所有图片生成一个Sequence File，然后把Sequence File入库到HBase<br>在入库过程中，我们读取图片文件的文件名作为Rowkey，另外将整个图片内容转为bytes存储在HBase表的一个column里。</p>
+<p>最后可以通过Hue来进行查看图片，当然你也可以考虑对接到你自己的查询系统。</p>
+<h4 id="准备上传文件的-Java-代码"><a href="#准备上传文件的-Java-代码" class="headerlink" title="准备上传文件的 Java 代码"></a>准备上传文件的 Java 代码</h4><p>Maven 配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">&lt;packaging&gt;jar&lt;&#x2F;packaging&gt;</span><br><span class="line">&lt;name&gt;hbase-exmaple&lt;&#x2F;name&gt;</span><br><span class="line">&lt;url&gt;http:&#x2F;&#x2F;maven.apache.org&lt;&#x2F;url&gt;</span><br><span class="line">&lt;properties&gt;</span><br><span class="line">    &lt;project.build.sourceEncoding&gt;UTF-8&lt;&#x2F;project.build.sourceEncoding&gt;</span><br><span class="line">&lt;&#x2F;properties&gt;</span><br><span class="line">&lt;repositories&gt;</span><br><span class="line">    &lt;repository&gt;</span><br><span class="line">        &lt;id&gt;cloudera&lt;&#x2F;id&gt;</span><br><span class="line">        &lt;url&gt;https:&#x2F;&#x2F;repository.cloudera.com&#x2F;artifactory&#x2F;cloudera-repos&#x2F;&lt;&#x2F;url&gt;</span><br><span class="line">        &lt;name&gt;Cloudera Repositories&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;snapshots&gt;</span><br><span class="line">            &lt;enabled&gt;false&lt;&#x2F;enabled&gt;</span><br><span class="line">        &lt;&#x2F;snapshots&gt;</span><br><span class="line">    &lt;&#x2F;repository&gt;</span><br><span class="line">&lt;&#x2F;repositories&gt;</span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.apache.hadoop&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;hadoop-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;2.6.0-cdh5.7.1&lt;&#x2F;version&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">    &lt;!-- https:&#x2F;&#x2F;mvnrepository.com&#x2F;artifact&#x2F;org.apache.hbase&#x2F;hbase-client --&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.apache.hbase&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;hbase-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;1.2.0-cdh5.7.1&lt;&#x2F;version&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;junit&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;junit&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;3.8.1&lt;&#x2F;version&gt;</span><br><span class="line">        &lt;scope&gt;test&lt;&#x2F;scope&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">&lt;&#x2F;dependencies&gt;</span><br></pre></td></tr></table></figure>
+
+<p>上传文件到HBase的Java代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br></pre></td><td class="code"><pre><span class="line">package cn.lihm.hbaseproj;</span><br><span class="line"></span><br><span class="line">import java.io.File;</span><br><span class="line">import java.io.FileOutputStream;</span><br><span class="line">import java.io.IOException;</span><br><span class="line">import java.net.URI;</span><br><span class="line">import java.net.URISyntaxException;</span><br><span class="line"></span><br><span class="line">import org.apache.commons.io.IOUtils;</span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.fs.FSDataInputStream;</span><br><span class="line">import org.apache.hadoop.fs.FileStatus;</span><br><span class="line">import org.apache.hadoop.fs.FileSystem;</span><br><span class="line">import org.apache.hadoop.fs.Path;</span><br><span class="line">import org.apache.hadoop.hbase.HBaseConfiguration;</span><br><span class="line">import org.apache.hadoop.hbase.TableName;</span><br><span class="line">import org.apache.hadoop.hbase.client.*;</span><br><span class="line">import org.apache.hadoop.hbase.util.Bytes;</span><br><span class="line">import org.apache.hadoop.io.BytesWritable;</span><br><span class="line">import org.apache.hadoop.io.SequenceFile;</span><br><span class="line">import org.apache.hadoop.io.Text;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line"> * @author lihm</span><br><span class="line"> * @date 2019-06-01 15:26</span><br><span class="line"> * @description TODO</span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">public class SequenceFileTest &#123;</span><br><span class="line"></span><br><span class="line">    private static String inpath &#x3D; &quot;&#x2F;tmp&#x2F;lihm&#x2F;picHbase&quot;;</span><br><span class="line">    private static String outpath &#x3D; &quot;&#x2F;tmp&#x2F;lihm&#x2F;out&quot;;</span><br><span class="line">    private static SequenceFile.Writer writer &#x3D; null;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 递归文件;并将文件写成SequenceFile文件</span><br><span class="line">     *</span><br><span class="line">     * @param fileSystem</span><br><span class="line">     * @param path</span><br><span class="line">     * @throws Exception</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void listFileAndWriteToSequenceFile(FileSystem fileSystem, String path) throws Exception&#123;</span><br><span class="line">        final FileStatus[] listStatuses &#x3D; fileSystem.listStatus(new Path(path));</span><br><span class="line">        for (FileStatus fileStatus : listStatuses) &#123;</span><br><span class="line">            if(fileStatus.isFile())&#123;</span><br><span class="line">                Text fileText &#x3D; new Text(fileStatus.getPath().toString());</span><br><span class="line">                System.out.println(fileText.toString());</span><br><span class="line">                &#x2F;&#x2F;返回一个SequenceFile.Writer实例 需要数据流和path对象 将数据写入了path对象</span><br><span class="line">                FSDataInputStream in &#x3D; fileSystem.open(new Path(fileText.toString()));</span><br><span class="line">                byte[] buffer &#x3D; IOUtils.toByteArray(in);</span><br><span class="line">                in.read(buffer);</span><br><span class="line">                BytesWritable value &#x3D; new BytesWritable(buffer);</span><br><span class="line">                &#x2F;&#x2F;写成SequenceFile文件</span><br><span class="line">                writer.append(fileText, value);</span><br><span class="line">            &#125;</span><br><span class="line">            if(fileStatus.isDirectory())&#123;</span><br><span class="line">                listFileAndWriteToSequenceFile(fileSystem,fileStatus.getPath().toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 将二进制流转化后的图片输出到本地</span><br><span class="line">     *</span><br><span class="line">     * @param bs 二进制图片</span><br><span class="line">     * @param picPath 本地路径</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void picFileOutput(byte[] bs, String picPath) &#123;</span><br><span class="line">        &#x2F;&#x2F; 将输出的二进制流转化后的图片的路径</span><br><span class="line">        File file &#x3D; new File(picPath);</span><br><span class="line">        try &#123;</span><br><span class="line">            FileOutputStream fos &#x3D; new FileOutputStream(file);</span><br><span class="line">            fos.write(bs);</span><br><span class="line">            fos.close();</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 读 hbase 图片</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void readPicHBase() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Configuration hbaseConf &#x3D; HBaseConfiguration.create();</span><br><span class="line">            &#x2F;&#x2F; 公司 HBase 集群</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;100.73.12.11&quot;);</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.property.clientPort&quot;, &quot;2181&quot;);</span><br><span class="line">            hbaseConf.set(&quot;zookeeper.znode.parent&quot;, &quot;&#x2F;hbase&quot;);</span><br><span class="line">            Connection connection &#x3D; ConnectionFactory.createConnection(hbaseConf);</span><br><span class="line">            Table table &#x3D; connection.getTable(TableName.valueOf(&quot;tu&quot;));</span><br><span class="line">            Get get &#x3D; new Get(&quot;8cd2f12410037fe73cfeb7b6a65be935.jpg&quot;.getBytes());</span><br><span class="line">            Result rs &#x3D; table.get(get);</span><br><span class="line">            &#x2F;&#x2F; 保存get result的结果，字节数组形式</span><br><span class="line">            byte[] bs &#x3D; rs.value();</span><br><span class="line">            picFileOutput(bs, &quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;picHBase&#x2F;8cd2f12410037fe73cfeb7b6a65be935.jpg&quot;);</span><br><span class="line">            table.close();</span><br><span class="line">            connection.close();</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 将图片文件转成sequence file，然后保存到HBase</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void picToHBase() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Configuration hbaseConf &#x3D; HBaseConfiguration.create();</span><br><span class="line">            &#x2F;&#x2F; 公司 HBase 集群</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;100.73.12.11&quot;);</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.property.clientPort&quot;, &quot;2181&quot;);</span><br><span class="line">            hbaseConf.set(&quot;zookeeper.znode.parent&quot;, &quot;&#x2F;hbase&quot;);</span><br><span class="line">            Connection connection &#x3D; ConnectionFactory.createConnection(hbaseConf);</span><br><span class="line">            Table table &#x3D; connection.getTable(TableName.valueOf(&quot;tu&quot;));</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 设置读取本地磁盘文件</span><br><span class="line">            Configuration conf &#x3D; new Configuration();</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;core-site.xml&quot;));</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;yarn-site.xml&quot;));</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;hdfs-site.xml&quot;));</span><br><span class="line">            URI uri &#x3D; new URI(inpath);</span><br><span class="line">            FileSystem fileSystem &#x3D; FileSystem.get(uri, conf,&quot;hdfs&quot;);</span><br><span class="line">            &#x2F;&#x2F; 实例化writer对象</span><br><span class="line">            writer &#x3D; SequenceFile.createWriter(fileSystem, conf, new Path(outpath), Text.class, BytesWritable.class);</span><br><span class="line">            &#x2F;&#x2F; 递归遍历文件夹，并将文件下的文件写入 sequenceFile 文件</span><br><span class="line">            listFileAndWriteToSequenceFile(fileSystem, inpath);</span><br><span class="line">            &#x2F;&#x2F; 关闭流</span><br><span class="line">            org.apache.hadoop.io.IOUtils.closeStream(writer);</span><br><span class="line">            &#x2F;&#x2F; 读取所有文件</span><br><span class="line">            URI seqURI &#x3D; new URI(outpath);</span><br><span class="line">            FileSystem fileSystemSeq &#x3D; FileSystem.get(seqURI, conf);</span><br><span class="line">            SequenceFile.Reader reader &#x3D; new SequenceFile.Reader(fileSystemSeq, new Path(outpath), conf);</span><br><span class="line">            Text key &#x3D; new Text();</span><br><span class="line">            BytesWritable val &#x3D; new BytesWritable();</span><br><span class="line">            &#x2F;&#x2F; key &#x3D; (Text) ReflectionUtils.newInstance(reader.getKeyClass(), conf);</span><br><span class="line">            &#x2F;&#x2F; val &#x3D; (BytesWritable) ReflectionUtils.newInstance(reader.getValueClass(), conf);</span><br><span class="line">            int i &#x3D; 0;</span><br><span class="line">            while(reader.next(key, val))&#123;</span><br><span class="line">                &#x2F;&#x2F; 读取图片文件的文件名作为 Rowkey</span><br><span class="line">                String temp &#x3D; key.toString();</span><br><span class="line">                temp &#x3D; temp.substring(temp.lastIndexOf(&quot;&#x2F;&quot;) + 1);</span><br><span class="line">                &#x2F;&#x2F; rowKey 设计</span><br><span class="line">                String rowKey &#x3D; temp;</span><br><span class="line">                &#x2F;&#x2F; String rowKey &#x3D; Integer.valueOf(tmp[0])-1+&quot;_&quot;+Integer.valueOf(tmp[1])&#x2F;2+&quot;_&quot;+Integer.valueOf(tmp[2])&#x2F;2;</span><br><span class="line">                System.out.println(rowKey);</span><br><span class="line">                &#x2F;&#x2F; 构造 Put</span><br><span class="line">                Put put &#x3D; new Put(Bytes.toBytes(rowKey));</span><br><span class="line">                &#x2F;&#x2F; 指定列簇名称、列修饰符、列值 temp.getBytes()</span><br><span class="line">                put.addColumn(&quot;picinfo&quot;.getBytes(), &quot;content&quot;.getBytes() , val.getBytes());</span><br><span class="line">                table.put(put);</span><br><span class="line">            &#125;</span><br><span class="line">            table.close();</span><br><span class="line">            connection.close();</span><br><span class="line">            org.apache.hadoop.io.IOUtils.closeStream(reader);</span><br><span class="line"></span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (URISyntaxException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        picToHBase();</span><br><span class="line">        readPicHBase();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="运行代码"><a href="#运行代码" class="headerlink" title="运行代码"></a>运行代码</h4><p>首先在 HBase 中建一张表用来保存文本文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">create &#39;tu&#39;,  &#39;picinfo&#39;</span><br></pre></td></tr></table></figure>
+
+<p>注意修改代码中的配置项，如文本文件所在的 HDFS 目录，集群的 Zookeeper 地址，conf 配置路径等。</p>
+<p>我是在本地电脑上运行的。也可以将代码打成jar包并上传到集群服务器节点。该过程略。</p>
+<h4 id="HBase-查询验证"><a href="#HBase-查询验证" class="headerlink" title="HBase 查询验证"></a>HBase 查询验证</h4><p>我是将其输出到本地路径下</p>
+<p><img src="/images/blog/2019-06-01-3.png" alt>{:height=”80%” width=”80%”} </p>
+<p>也可以用 Hue 中查询验证。</p>
+<p><img src="/images/blog/2019-06-19-4.png" alt>{:height=”80%” width=”80%”} </p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/KA1EupPqm8uzRk7_-8D3KA" target="_blank" rel="noopener">HBase实操 如何使用HBase存储图片</a></li>
+<li><a href="https://blog.csdn.net/love666666shen/article/details/82931783" target="_blank" rel="noopener">HBase存储、插入、修改、读取图片操作</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/01/Java-Tools/" rel="prev" title="JVM 板斧">
+      <i class="fa fa-chevron-left"></i> JVM 板斧
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/03/WAL-of-HBase-Source-Code-Analysis/" rel="next" title="HBase 源码分析之 WAL">
+      HBase 源码分析之 WAL <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤"><span class="nav-number">2.</span> <span class="nav-text">步骤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理流程"><span class="nav-number">3.</span> <span class="nav-text">处理流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#准备上传文件的-Java-代码"><span class="nav-number">4.</span> <span class="nav-text">准备上传文件的 Java 代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#运行代码"><span class="nav-number">5.</span> <span class="nav-text">运行代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HBase-查询验证"><span class="nav-number">6.</span> <span class="nav-text">HBase 查询验证</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'daa176f41b3ba9f2eff07ddf415b3cf3',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

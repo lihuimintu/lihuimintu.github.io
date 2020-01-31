@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="YARN 中用户日志的管理和使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="YARN 中用户日志的管理和使用">
+<meta property="og:url" content="http://yoursite.com/2019/04/19/yarn-log/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="YARN 中用户日志的管理和使用">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-04-19-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-04-19-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-04-19-3.png">
+<meta property="article:published_time" content="2019-04-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-01-20T05:09:39.058Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="yarn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-04-19-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/04/19/yarn-log/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>YARN 中用户日志的管理和使用 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/19/yarn-log/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          YARN 中用户日志的管理和使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-04-19 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-19T00:00:00+08:00">2019-04-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-01-20 13:09:39" itemprop="dateModified" datetime="2020-01-20T13:09:39+08:00">2020-01-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Yarn/" itemprop="url" rel="index">
+                    <span itemprop="name">Yarn</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">YARN 中用户日志的管理和使用</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>YARN 中用户日志的管理和使用</p>
+<hr>
+<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>在以前, 处理应用(application)生成的用户日志已经成了安装 Hadoop 过程中的一个最大痛点.<br>在 Hadoop 1.x, 用户日志被 TaskTracker 留在每个节点上,<br>这样长期来看在各个节点上的用户日志的是难于管理并且也很难被获取和使用到的.<br>YARN 处理日志管理问题的办法是让 NodeManagers(NMs) 提供一个选项,<br>可以在应用结束后将日志文件安全地移到一个分布式文件系统中, 比如 HDFS.</p>
+<h4 id="YARN-中日志聚合的详细描写"><a href="#YARN-中日志聚合的详细描写" class="headerlink" title="YARN 中日志聚合的详细描写"></a>YARN 中日志聚合的详细描写</h4><p>NodeManager 就没有像之前 TaskTracker 那样去截断用户日志, 把日志留在每个节点的本地, 它通过提供一个选项可以在应用结束后将日志安全地移动到分布式文件系统中, 比如 HDFS.</p>
+<ul>
+<li><p>对属于同一个应用(Application), 跑在一个 NM 上的所有容器(containers)的日志都会被聚合并写入一个配置好地址的(很可能是压缩过的)日志文件中.</p>
+</li>
+<li><p>在当前的实现中, 一个应用一结束就会得到如下:</p>
+<ul>
+<li><p>应用级别的日志日志目录 (在 HDFS 上体现  /tmp/logs/{user}/logs)</p>
+</li>
+<li><p>此节点上该应用的所有的容器的日志文件  (/tmp/logs/{user}/logs 目录下以机器节点区分日志文件)</p>
+</li>
+</ul>
+</li>
+<li><p>用户能通过 YARN 的命令行工具, 网页端或者直接从文件系统(FS)中来查看这些日志, 没必要只局限于网页端一种形式.</p>
+</li>
+<li><p>通过将日志文件存储在分布式文件系统中, 比起第一代的实现, 现在可以让日志文件存储更长的时间.</p>
+</li>
+<li><p>我们不再需要去截断日志文件, 只要日志文件的长度是合理的, 我们就会保存整个日志文件.</p>
+</li>
+</ul>
+<h4 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h4><h5 id="1-网页端访问-Web-UI"><a href="#1-网页端访问-Web-UI" class="headerlink" title="1. 网页端访问(Web UI)"></a>1. 网页端访问(Web UI)</h5><p>通过网页端访问, 需要知道的事情是, 日志的聚合操作用户是感觉不到的.</p>
+<p>当 MapReduce 应用还在执行中时, 用户查看日志是通过 ApplicationMaster UI 来访问的, 后者会自动跳转到 NodeManager UI 上.</p>
+<p>一旦应用结束, 所有的日志都会归属到 MapReduce 的 JobHistoryServer 中, 此时将由后者来提供日志访问.</p>
+<p>对于 非-MapReduce 应用, 由更一般性质的 ApplicationHistoryServer 来提供一样的日志访问服务.</p>
+<p><img src="/images/blog/2019-04-19-1.png" alt></p>
+<p><img src="/images/blog/2019-04-19-2.png" alt></p>
+<p>MR 的作业我用其打开一般看不到实质性的帮助。Spark 的作业打开页面友好。且帮助信息大。</p>
+<h5 id="2-命令行访问"><a href="#2-命令行访问" class="headerlink" title="2. 命令行访问"></a>2. 命令行访问</h5><p>个人比较喜欢命令行访问方式。</p>
+<p><img src="/images/blog/2019-04-19-3.png" alt></p>
+<p>要打印出一个给定应用的所有日志, 命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn logs -applicationId &lt;application ID&gt; -appOwner &lt;userId&gt;</span><br></pre></td></tr></table></figure>
+
+<p>如果只要一个给定容器的所有日志, 可以如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn logs -applicationId &lt;application ID&gt; -appOwner &lt;userId&gt; -containerId &lt;Container ID&gt; -nodeAddress &lt;Node Address&gt;</span><br></pre></td></tr></table></figure>
+
+<p>使用命令行工具的一个显著优势是可以使用常规的 shell 工具, 如 grep, sort 等等, 来过滤出我们想要的信息.</p>
+<h4 id="管理"><a href="#管理" class="headerlink" title="管理"></a>管理</h4><h5 id="1-日志相关的一般配置项"><a href="#1-日志相关的一般配置项" class="headerlink" title="1. 日志相关的一般配置项"></a>1. 日志相关的一般配置项</h5><p>yarn.nodemanager.log-dirs: 确定当容器还在执行中时, 容器日志在节点上的存储位置, 默认值是 ${yarn.log.dir}/userlogs.</p>
+<ul>
+<li><p>一个应用的本地化日志目录是这样的格式 ${yarn.nodemanager.log-dirs}/application_${appid}</p>
+</li>
+<li><p>一个独立的容器的日志文件夹会在上面的文件夹下, 文件夹命名格式是这样 container_${containerid}</p>
+</li>
+<li><p>对于 MapReduce 的应用, 每个容器目录下会包含容器生成的三个文件, stderr, stdin 和 syslog</p>
+</li>
+<li><p>其他的框架可以自行选择放置多少个日志文件, YARN 对文件名的文件数量都没有限制</p>
+</li>
+</ul>
+<p>yarn.log-aggregation-enable: 选择是否启用日志聚合. 如果不启用聚合, NMs 会把日志存储在节点本地(就像第一代所做的那样).</p>
+<h5 id="2-日志聚合启用后的相关配置"><a href="#2-日志聚合启用后的相关配置" class="headerlink" title="2. 日志聚合启用后的相关配置"></a>2. 日志聚合启用后的相关配置</h5><p>yarn.nodemanager.remote-app-log-dir: 这是 NMs 将日志聚合后存放在默认的文件系统(一般就是 HDFS 上的)上的地址. 这个地址不应是本地的文件系统, 否则日志服务器会无法提供聚合后日志的能力. 默认值是 /tmp/logs.</p>
+<p>yarn.nodemanager.remote-app-log-dir-suffix: 日志目录会这样创建 {yarn.nodemanager.remote-app-log-dir}/${user}/{thisParam}, 默认值是 logs.</p>
+<p>yarn.log-aggregation.retain-seconds: 配置多久后聚合后的日志文件被删除, 默认是7天，如果配置成 -1 或者一个负值就不会删除聚合日志.</p>
+<p>yarn.log-aggregation.retain-check-interval-seconds: 确定多长时间去检查一次聚合日志的留存情况以执行日志的删除. 如果设置为 0 或者负值, 那这个值就会用聚合日志的留存时间的十分之一来自动配置, 默认值是 -1.</p>
+<h5 id="3-日志聚合未启用的相关配置"><a href="#3-日志聚合未启用的相关配置" class="headerlink" title="3. 日志聚合未启用的相关配置"></a>3. 日志聚合未启用的相关配置</h5><p>yarn.nodemanager.log.retain-seconds: 保存在本地节点的日志的留存时间, 默认值是 10800.</p>
+<p>yarn.nodemanager.log.deletion-threads-count: 确定 NMs 启动的进程数去删除本地的日志文件.</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://segmentfault.com/a/1190000007466722#articleHeader5" target="_blank" rel="noopener">在 YARN 中简化用户日志的管理和使用</a></li>
+<li><a href="https://www.jianshu.com/p/26429616b441" target="_blank" rel="noopener">查看YARN任务日志的几种方式</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/04/10/postman-post-put/" rel="prev" title="PostMan 的基本使用汇总">
+      <i class="fa fa-chevron-left"></i> PostMan 的基本使用汇总
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/04/22/concept-learning/" rel="next" title="概念解释">
+      概念解释 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#YARN-中日志聚合的详细描写"><span class="nav-number">2.</span> <span class="nav-text">YARN 中日志聚合的详细描写</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用法"><span class="nav-number">3.</span> <span class="nav-text">用法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-网页端访问-Web-UI"><span class="nav-number">3.1.</span> <span class="nav-text">1. 网页端访问(Web UI)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-命令行访问"><span class="nav-number">3.2.</span> <span class="nav-text">2. 命令行访问</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#管理"><span class="nav-number">4.</span> <span class="nav-text">管理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-日志相关的一般配置项"><span class="nav-number">4.1.</span> <span class="nav-text">1. 日志相关的一般配置项</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-日志聚合启用后的相关配置"><span class="nav-number">4.2.</span> <span class="nav-text">2. 日志聚合启用后的相关配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-日志聚合未启用的相关配置"><span class="nav-number">4.3.</span> <span class="nav-text">3. 日志聚合未启用的相关配置</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '42b11d308ebe36e7bdf8e32321281cc7',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

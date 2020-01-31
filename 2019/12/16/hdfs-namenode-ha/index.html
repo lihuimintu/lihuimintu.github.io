@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="HDFS NameNode HA 实现综述">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HDFS NameNode HA 实现综述">
+<meta property="og:url" content="http://yoursite.com/2019/12/16/hdfs-namenode-ha/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="HDFS NameNode HA 实现综述">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-12-16-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-12-16-2.png">
+<meta property="article:published_time" content="2019-12-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-12-16T12:16:03.979Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HDFS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-12-16-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/12/16/hdfs-namenode-ha/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HDFS NameNode HA 实现综述 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/16/hdfs-namenode-ha/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HDFS NameNode HA 实现综述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2019-12-16 00:00:00 / 修改时间：20:16:03" itemprop="dateCreated datePublished" datetime="2019-12-16T00:00:00+08:00">2019-12-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HDFS/" itemprop="url" rel="index">
+                    <span itemprop="name">HDFS</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">HDFS NameNode HA 实现综述</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>通过 JN 集群共享 NN 节点状态，通过 ZKFC 选举active NN，自动监控 NN 节点状态，自动切换</p>
+<hr>
+<h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">作者：lipeng_bigdata</span><br><span class="line">链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lipeng_bigdata&#x2F;article&#x2F;details&#x2F;53637562</span><br><span class="line">来源：CSDN</span><br></pre></td></tr></table></figure>
+
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>HDFS 中 NameNode 等的 HA 是基于 ZooKeeper 实现的</p>
+<p>它应用了ZooKeeper集群的如下功能或特性</p>
+<ol>
+<li>只要半数以上节点还存活，就继续能对外提供服务</li>
+<li>ZooKeeper通过Paxos算法提供了leader选举功能，其它follower learn leader</li>
+<li>ZooKeeper提供了watcher机制，只要ZooKeeper上znode增减，或内容发生变化，或其子znode有增减，客户端都可以通过注册的watcher获得通知</li>
+<li>ZooKeeper提供了持久化节点和临时节点，尤其是临时节点EPHEMERAL，其在ZooKeeper客户端连接断掉后，会自动删除</li>
+</ol>
+<p>正是基于ZooKeeper的上述特性，HDFS的NameNode实现了HA，<br>NameNode的状态大致可分为Active和Standby两种，<br>NameNode竞争在ZooKeeper指定路径上注册临时节点，<br>将自己的host、port、nameserviceId、namenodeId等数据写入节点，<br>哪个NameNode争先写入成功，哪个就成为Active NameNode。<br>然后，会有后台工作线程周期性检查NameNode状态，<br>并在一定条件下（比如Active NameNode节点发生故障等）发生竞选，<br>由NameNode再去竞争，实现故障转移和状态切换。</p>
+<p>上述就是HDFS NameNode HA实现的大体思路。</p>
+<p>而HDFS NameNode HA的架构和实现细节是怎么样的？下面我来介绍下。</p>
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>首先上一张Hadoop HDFS NameNode HA的设计图，如下: </p>
+<p><img src="/images/blog/2019-12-16-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p>简单描述下这张图</p>
+<p>首先，NameNode（NN）、DataNode（DN）均是HDFS中的组件或节点，NN有两个，分为Active和Standby状态，DN有多个，DN周期性向Active和Standby做数据块汇报</p>
+<p>其次，处于中间位置的，实现HDFS NameNode HA最关键的组件是FailoverController，它是运行在NameNode节点上的守护进程，将Active NN节点的信息通过竞争的方式注册到ZooKeeper上，并实现以下三个基本功能</p>
+<p>1) 有一个后台线程，周期性的检查NameNode的健康状况，即粗的红色拐弯箭头的Monitor Health，触发状态选举等  </p>
+<p>2) 定期保持与ZooKeeper的心跳，完成Leader选举（即Active节点选举）和检查Active NN ZNode节点状态等工作，即最上面与ZooKeeper交互的蓝色箭头</p>
+<p>3) 向NameNode发送一些命令，完成状态切换</p>
+<p>所以，NN HA 的主体思路就是</p>
+<p>1、NN竞争在ZooKeeper上注册，即create一个临时节点，写入NN的host、port、nameserviceId、namenodeI等信息，那个写入成功，那个就是Active状态；</p>
+<p>2、注册成功后，通过create后的watcher机制，FailoverController会发送命令给各个NN，让其确定各自状态和职责；</p>
+<p>3、Monitor Health会周期性连接NN，检查NN状态，并由可能触发重新选举，即重复1-2；</p>
+<p>4、FailoverController会与ZooKeeper保持心跳，注册的临时节点消失后，也会触发重新选举。</p>
+<p>那么，HDFS 是如何实现 NameNode HA 的呢？对应上图，Hadoop 中实现了以下模型</p>
+<p><img src="/images/blog/2019-12-16-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p>上图的三个关键组件即是：</p>
+<p>1、DFSZKFailoverController（继承自抽象类ZKFailoverController）：ZKFC，故障转移控制器，守护进程，负责总体故障转移和命令发布；</p>
+<p>2、ActiveStandbyElector：Active、Standby选举器，实现选举功能；</p>
+<p>3、HealthMonitor：健康监视器，实现NN状态的定时监控。</p>
+<p>上述组件各自是如何实现的，可以参阅下方链接</p>
+<ul>
+<li><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/index.html" target="_blank" rel="noopener">Hadoop NameNode 高可用 (High Availability) 实现解析</a></li>
+<li><a href="https://blog.csdn.net/likaiasddsa/article/details/89678455" target="_blank" rel="noopener">HDFS NameNode HA架构分析</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/12/14/Maven-SkipTest/" rel="prev" title="Maven 两种方式跳过编译 test">
+      <i class="fa fa-chevron-left"></i> Maven 两种方式跳过编译 test
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/12/16/hbase-hbck2/" rel="next" title="CDH-HBase 使用 HBCK2 运维">
+      CDH-HBase 使用 HBCK2 运维 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#转载来源"><span class="nav-number">1.</span> <span class="nav-text">转载来源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#原理"><span class="nav-number">2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现"><span class="nav-number">3.</span> <span class="nav-text">实现</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'd81b39d2146a4ff193ac3a14c8b5a8e0',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

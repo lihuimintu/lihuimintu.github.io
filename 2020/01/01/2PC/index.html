@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="在分布式环境下，所有节点进行事务提交，保持一致性的算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二阶段提交（2PC）">
+<meta property="og:url" content="http://yoursite.com/2020/01/01/2PC/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="在分布式环境下，所有节点进行事务提交，保持一致性的算法">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-01-01-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-01-01-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-01-01-3.png">
+<meta property="article:published_time" content="2019-12-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-01-05T03:45:46.485Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Distributed">
+<meta property="article:tag" content=" 2PC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2020-01-01-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/01/01/2PC/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>二阶段提交（2PC） | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/2PC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          二阶段提交（2PC）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-01 00:00:00" itemprop="dateCreated datePublished" datetime="2020-01-01T00:00:00+08:00">2020-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-01-05 11:45:46" itemprop="dateModified" datetime="2020-01-05T11:45:46+08:00">2020-01-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Distributed/" itemprop="url" rel="index">
+                    <span itemprop="name">Distributed</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">在分布式环境下，所有节点进行事务提交，保持一致性的算法</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在分布式环境下，所有节点进行事务提交，保持一致性的算法</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>今天是2020年的元旦，在这先祝自己开心快乐</p>
+<p>2PC 在之前学习 HBase Snapshot 时了解过，这次通过文档的记录的方式再过一遍</p>
+<p>本人主要是阅读下方学习了解的</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/kXtliHCqtrTjlWFm1aHtVQ" target="_blank" rel="noopener">分布式基础，啥是两阶段提交？</a></li>
+<li><a href="https://mp.weixin.qq.com/s/QS01KCQ4u2DhNHww_A2Xtw" target="_blank" rel="noopener">漫话：如何给女朋友解释什么是2PC（二阶段提交）？</a></li>
+</ul>
+<h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><p>2PC 是解决分布式系统中数据一致性问题，即分布式事务</p>
+<p><strong>为什么分布式事务为什么难？</strong></p>
+<p>在分布式环境下，每个节点都可以知晓自己操作的成功或者失败，却无法知道其他节点操作的成功或失败。当一个分布式事务跨多个节点时，保持事务的原子性与一致性，是非常困难的。</p>
+<p>举个例子: 在电商网站下单的时候，需要有多个分布式服务同时服务，如支付系统进行支付、红包系统进行红包扣减、库存系统扣减库存、物流系统更新物流信息等。</p>
+<p>但是，如果其中某一个系统在执行过程中失败了，或者由于网络原因没有收到请求，那么，整个系统可能就有不一致的现象了，<br>即：付了钱，扣了红包，但是库存没有扣减</p>
+<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>通过引入一个协调者（Coordinator）来统一掌控所有参与者（Participant）的操作结果，<br>并指示它们是否要把操作结果进行真正的提交（commit）或者回滚（rollback）</p>
+<p>2PC分为两个阶段:</p>
+<ul>
+<li>投票阶段（voting phase）参与者通知协调者，协调者反馈结果</li>
+<li>提交阶段（commit phase）收到参与者的反馈后，协调者再向参与者发出通知，根据反馈情况决定各参与者是否要提交还是回滚</li>
+</ul>
+<h5 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h5><p>准备阶段分为以下三个步骤</p>
+<ol>
+<li>协调者节点向所有参与者节点询问是否可以执行提交操作，并开始等待各参与者节点的响应</li>
+<li>参与者节点执行询问发起为止的所有事务操作，并将Undo信息和Redo信息写入日志 (HBase SnapShot 是将执行操作写入到临时文件，回滚就直接删除，执行就移动到目标目录)</li>
+<li>各参与者节点响应协调者节点发起的询问。如果参与者节点的事务操作实际执行成功，则它返回一个”OK”消息, 如果参与者节点的事务操作实际执行失败，则它返回一个”NO”消息</li>
+</ol>
+<p><img src="/images/blog/2020-01-01-1.png" alt>{:height=”80%” width=”80%”}</p>
+<h5 id="提交阶段"><a href="#提交阶段" class="headerlink" title="提交阶段"></a>提交阶段</h5><p>如果协调者收到了参与者的失败消息或者超时，直接给每个参与者发送回滚消息；否则，发送提交消息；参与者根据协调者的指令执行提交或者回滚操作</p>
+<p>当协调者节点从所有参与者节点获得的相应消息都为”OK”时</p>
+<ol>
+<li>协调者节点向所有参与者节点发出”正式提交”的请求</li>
+<li>参与者节点正式完成操作，并释放在整个事务期间内占用的资源</li>
+<li>参与者节点向协调者节点发送”完成”消息</li>
+<li>协调者节点受到所有参与者节点反馈的”完成”消息后，完成事务</li>
+</ol>
+<p><img src="/images/blog/2020-01-01-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p>如果任一参与者节点在第一阶段返回的响应消息为”NO”时，或者 协调者节点在第一阶段的询问超时之前无法获取所有参与者节点的响应消息时</p>
+<ol>
+<li>协调者节点向所有参与者节点发出”回滚操作”的请求</li>
+<li>参与者节点利用之前写入的Undo信息执行回滚，并释放在整个事务期间内占用的资源</li>
+<li>参与者节点向协调者节点发送”回滚完成”消息</li>
+<li>协调者节点受到所有参与者节点反馈的”回滚完成”消息后，取消事务</li>
+</ol>
+<p><img src="/images/blog/2020-01-01-3.png" alt>{:height=”80%” width=”80%”}</p>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><p>1、同步阻塞问题。执行过程中，所有参与节点都是事务阻塞型的。当参与者占有公共资源时，其他第三方节点访问公共资源不得不处于阻塞状态。</p>
+<p>2、单点故障。由于协调者的重要性，一旦协调者发生故障。参与者会一直阻塞下去。尤其在第二阶段，协调者发生故障，那么所有的参与者还都处于锁定事务资源的状态中，而无法继续完成事务操作。（如果是协调者挂掉，可以重新选举一个协调者，但是无法解决因为协调者宕机导致的参与者处于阻塞状态的问题）</p>
+<p>3、数据不一致。在二阶段提交的阶段二中，当协调者向参与者发送commit请求之后，发生了局部网络异常或者在发送commit请求过程中协调者发生了故障，这回导致只有一部分参与者接受到了commit请求。而在这部分参与者接到commit请求之后就会执行commit操作。但是其他部分未接到commit请求的机器则无法执行事务提交。于是整个分布式系统便出现了数据部一致性的现象。</p>
+<p>4、二阶段无法解决的问题：协调者再发出commit消息之后宕机，而唯一接收到这条消息的参与者同时也宕机了。那么即使协调者通过选举协议产生了新的协调者，这条事务的状态也是不确定的，没人知道事务是否被已经提交。</p>
+<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><ul>
+<li><a href="https://mp.weixin.qq.com/s/lxc-JvDRkoR9tXLpsTqGeA" target="_blank" rel="noopener">漫话：如何给女朋友解释什么是3PC？</a></li>
+</ul>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/kXtliHCqtrTjlWFm1aHtVQ" target="_blank" rel="noopener">分布式基础，啥是两阶段提交？</a></li>
+<li><a href="https://mp.weixin.qq.com/s/QS01KCQ4u2DhNHww_A2Xtw" target="_blank" rel="noopener">漫话：如何给女朋友解释什么是2PC（二阶段提交）？</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/12/27/CM-API/" rel="prev" title="Cloudera Manager API 使用">
+      <i class="fa fa-chevron-left"></i> Cloudera Manager API 使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/01/02/Yarn-Fair-Scheduler/" rel="next" title="YARN Fair scheduler">
+      YARN Fair scheduler <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#问题"><span class="nav-number">2.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#概念"><span class="nav-number">3.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#准备阶段"><span class="nav-number">3.1.</span> <span class="nav-text">准备阶段</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#提交阶段"><span class="nav-number">3.2.</span> <span class="nav-text">提交阶段</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缺点"><span class="nav-number">4.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#扩展"><span class="nav-number">5.</span> <span class="nav-text">扩展</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '44116407e6bc2826a529cfbb6097e42d',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

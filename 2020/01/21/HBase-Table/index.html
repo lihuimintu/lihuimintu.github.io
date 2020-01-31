@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="HBase 表存储层次">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase 表存储层次">
+<meta property="og:url" content="http://yoursite.com/2020/01/21/HBase-Table/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="HBase 表存储层次">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-01-21-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-01-21-2.png">
+<meta property="article:published_time" content="2020-01-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-01-21T06:16:06.478Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2020-01-21-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/01/21/HBase-Table/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HBase 表存储层次 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/21/HBase-Table/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HBase 表存储层次
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-01-21 00:00:00 / 修改时间：14:16:06" itemprop="dateCreated datePublished" datetime="2020-01-21T00:00:00+08:00">2020-01-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">HBase 表存储层次</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>对 HBase 表存储层次梳理</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 表是由一个或者多个 region 组成，一个 region 由一个或者多个列蔟组成，一个列蔟由一个 store 组成，一个 store 由唯一 memstore 加上一个或者多个 HFile 组成，HFile 又是由 block 组成，而 block 是由多个 cell 组成。</p>
+<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><h5 id="Region"><a href="#Region" class="headerlink" title="Region"></a>Region</h5><p>Region 类似于数据库的分片和分区的概念，每个 Region 负责一小部分 Rowkey 范围的数据的读写和维护，这样即使是一张巨大的表，由于被切割到不同的 Region，访问起来的时延也很低。<br>Region 包含了对应的起始行到结束行的所有信息。</p>
+<p><img src="/images/blog/2020-01-21-1.png" alt>{:height=”80%” width=”80%”}</p>
+<h5 id="Store"><a href="#Store" class="headerlink" title="Store"></a>Store</h5><p>Store 是存储所有写入表中信息的实体，并且当数据需要从表中读取时也将被用到。A Store is the same thing as a ColumnFamily. 一个 Store 等价一个列簇 </p>
+<h5 id="Memstore"><a href="#Memstore" class="headerlink" title="Memstore"></a>Memstore</h5><p>HBase 是基于 LSM-Tree 模型的，所有的数据更新插入操作都首先写入 Memstore 中（同时会顺序写到日志HLog中），达到指定大小之后再将这些修改操作批量写入磁盘，生成一个新的 HFile 文件，这种设计可以极大地提升 HBase 的写入性能。每一个 Store 里面都有一个 Memstore, MemStore 保存对 Store 的内存修改。修改是 Cells / KeyValues。</p>
+<h5 id="StoreFile"><a href="#StoreFile" class="headerlink" title="StoreFile"></a>StoreFile</h5><p>StoreFile 为 HFile 上的一层类封装。A StoreFile is a facade of HFile.</p>
+<h5 id="HFile"><a href="#HFile" class="headerlink" title="HFile"></a>HFile</h5><p>HFile 对应的列蔟。当内存写满必须要刷新到磁盘时，HFile 就会被创建，所以 HFile 存放的是某个时刻的  MemStore 刷写时的快照，一个完整的行的数据可能存放在多个 HFile 里。 随着时间推移，HFile 最终会被压缩（即合并）成大文件。HFile 是 HBase 用来存储数据的文件格式。</p>
+<p>HFile 由不同种类的 block 块组成（索引块和数据块）。HFile 存储在 HDFS 上，因此获得 HDFS 的持久化和多副本的优势。</p>
+<h5 id="Block"><a href="#Block" class="headerlink" title="Block"></a>Block</h5><p>HFile 由 block 组成，不要与 HDFS 的 block 混淆了。一个 HDFS 数据块可以包含很多 HFile block。HFile block 通常在 8kb 和 1MB 之间，默认大小是 64kb(在建表语句中可以通过参数 BlockSize 指定)。如果一个表配置了压缩选项，HBase 仍会产生了 64kb 大小 block，然后压缩 block。根据数据的大小以及压缩格式，压缩后的 block 存储在磁盘的大小也不一样。</p>
+<p>每个 block 的大小可以在创建表列簇的时候通过参数 <code>blocksize ＝&gt; &#39;65535&#39;</code> 进行指定，默认为 64k，大号的 Block 有利于顺序 Scan，小号 Block 利于随机查询，因而需要权衡。</p>
+<p>如果将 block size 配置得很小，将会产生过多的 HFile block 索引，这将会给内存造成压力 （《HBase 实战》P27 《HBase应用架构》P19）</p>
+<h5 id="KeyValue"><a href="#KeyValue" class="headerlink" title="KeyValue"></a>KeyValue</h5><p><img src="/images/blog/2020-01-21-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p>KeyValue 是 HBase 数据存储的核心，KeyValue 并不是简单的 KV 数据对，是一个具有复杂元素的结构体</p>
+<p>由 keylength、valuelength、key、value 四个部分组成，其中 Key 又由 Row Length、Row、Column Family Length、Column Family、Column Qualifier、TimeStamp、Key Type 七部分组成。 </p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+<th>长度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Key Length</td>
+<td>存储Key的长度</td>
+<td>4个字节</td>
+</tr>
+</tbody></table>
+<p>Value Length | 存储Value的长度 | 4个字节</p>
+<p>Row Length | 存储 Row 的长度，即 Rowkey 的长度 |  2个字节</p>
+<p>Row | 存储 Rowkey | Row Length</p>
+<p>Column Family Length | 存储列簇 Column Family 的长度 | 1个字节</p>
+<p>Column Family | 存储 Column Family 实际内容 | Column Family Length</p>
+<p>Column Qualifier | 存储 Column Qualifier 对应的数据 |  -          </p>
+<p>Time Stamp | 存储时间戳 TimeStamp | 8个字节</p>
+<p>Key Type | 存储 Key 类型 KeyType | 1个字节</p>
+<p>Value | 存储单元格 Cell 对应的实际的值Value | Value Length</p>
+<p>“key type” 字段代表不同可能的HBase操作</p>
+<ul>
+<li>Put</li>
+<li>Delete</li>
+<li>DeleteColumn</li>
+<li>DeleteFamily</li>
+</ul>
+<p>KeyValue 保存了这个 value 的所有信息，这也是为什么面向列的原因</p>
+<blockquote>
+<p>Q: Row，Column Family 都有一个 length 标志，为什么 Column Qualifier 没有呢？<br>A: 由于 Key 中其它的字段占用大小已经知道，并且知道整个 Key 的大小，因此没有存储 Column Qualifier 的大小。 Column Qualifier 的 Length 可以由 key length 减去其他 length 得到，这样可以减少一定的存储量。</p>
+</blockquote>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/bitcarmanlee/article/details/78979836" target="_blank" rel="noopener">Hbase KeyValue结构详解</a></li>
+<li><a href="https://blog.csdn.net/ping_hu/article/details/77115998" target="_blank" rel="noopener">HBase的KeyValue分析</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/20/Spark-submit/" rel="prev" title="Spark-Submit 参数说明">
+      <i class="fa fa-chevron-left"></i> Spark-Submit 参数说明
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/01/22/HDFS-Federation/" rel="next" title="HDFS Federation 发展历程">
+      HDFS Federation 发展历程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#概述"><span class="nav-number">2.</span> <span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Region"><span class="nav-number">2.1.</span> <span class="nav-text">Region</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Store"><span class="nav-number">2.2.</span> <span class="nav-text">Store</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Memstore"><span class="nav-number">2.3.</span> <span class="nav-text">Memstore</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#StoreFile"><span class="nav-number">2.4.</span> <span class="nav-text">StoreFile</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#HFile"><span class="nav-number">2.5.</span> <span class="nav-text">HFile</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Block"><span class="nav-number">2.6.</span> <span class="nav-text">Block</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#KeyValue"><span class="nav-number">2.7.</span> <span class="nav-text">KeyValue</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '2fae81be06f8fa0e531457cf71e84058',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

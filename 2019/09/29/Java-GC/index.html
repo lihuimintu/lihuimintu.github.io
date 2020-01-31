@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Java GC 原理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java GC 原理">
+<meta property="og:url" content="http://yoursite.com/2019/09/29/Java-GC/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="Java GC 原理">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-09-29-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-09-29-4.png">
+<meta property="article:published_time" content="2019-09-28T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-10-29T02:37:17.635Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content=" GC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-09-29-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/09/29/Java-GC/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Java GC 原理 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/29/Java-GC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java GC 原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-29 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-29T00:00:00+08:00">2019-09-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-29 10:37:17" itemprop="dateModified" datetime="2019-10-29T10:37:17+08:00">2019-10-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">JVM</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+            <div class="post-description">Java GC 原理</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>介绍 GC 基础原理和理论</p>
+<hr>
+<h4 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h4><p>大多数情况下对 Java 程序进行 GC 调优, 主要关注两个目标: 响应速度、吞吐量</p>
+<ul>
+<li><p><strong>响应速度(Responsiveness)</strong> 响应速度指程序或系统对一个请求的响应有多迅速。比如，用户订单查询响应时间，对响应速度要求很高的系统，较大的停顿时间是不可接受的。调优的重点是在短的时间内快速响应</p>
+</li>
+<li><p><strong>吞吐量(Throughput)</strong> 吞吐量关注在一个特定时间段内应用系统的最大工作量，例如每小时批处理系统能完成的任务数量，在吞吐量方面优化的系统，较长的GC停顿时间也是可以接受的，因为高吞吐量应用更关心的是如何尽可能快地完成整个任务，不考虑快速响应用户请求</p>
+</li>
+</ul>
+<p>GC调优中，GC导致的应用暂停时间影响系统响应速度，GC处理线程的CPU使用率影响系统吞吐量</p>
+<h4 id="GC-垃圾回收算法"><a href="#GC-垃圾回收算法" class="headerlink" title="GC 垃圾回收算法"></a>GC 垃圾回收算法</h4><h5 id="标记-清除算法-Mark-Sweep"><a href="#标记-清除算法-Mark-Sweep" class="headerlink" title="标记-清除算法(Mark-Sweep)"></a>标记-清除算法(Mark-Sweep)</h5><p>最基础的垃圾回收算法，之所以说它是最基础的是因为它最容易实现，思想也是最简单的。标记-清除算法分为两个阶段：标记阶段和清除阶段。标记阶段的任务是标记出所有需要被回收的对象，清除阶段就是回收被标记的对象所占用的空间。</p>
+<p>标记-清除算法采用从根集合（GC Roots）进行扫描，对存活的对象进行标记，标记完毕后，再扫描整个空间中未被标记的对象，进行回收，如下图所示。标记-清除算法不需要进行对象的移动，只需对不存活的对象进行处理，在存活对象比较多的情况下极为高效，但由于标记-清除算法直接回收不存活的对象，因此会造成内存碎片。</p>
+<h5 id="复制算法-Copying"><a href="#复制算法-Copying" class="headerlink" title="复制算法(Copying)"></a>复制算法(Copying)</h5><p>为了解决Mark-Sweep算法的缺陷，Copying算法就被提了出来。它将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用的内存空间一次清理掉，这样一来就不容易出现内存碎片的问题。</p>
+<p>这种算法虽然实现简单，运行高效且不容易产生内存碎片，但是却对内存空间的使用做出了高昂的代价，因为能够使用的内存缩减到原来的一半。</p>
+<p>Copying算法的效率跟存活对象的数目多少有很大的关系，如果存活对象很多，那么Copying算法的效率将会大大降低。</p>
+<h5 id="标记-整理算法-Mark-compact"><a href="#标记-整理算法-Mark-compact" class="headerlink" title="标记-整理算法(Mark-compact)"></a>标记-整理算法(Mark-compact)</h5><p>标记-整理算法采用标记-清除算法一样的方式进行对象的标记，但在清除时不同，在回收不存活的对象占用的空间后，会将所有的存活对象往左端空闲空间移动，并更新对应的指针<strong>。标记-整理算法是在标记-清除算法的基础上，又进行了对象的移动</strong>，因此成本更高，但是却解决了内存碎片的问题。</p>
+<h5 id="分代收集算法-Generational-Collection（分代收集）算法"><a href="#分代收集算法-Generational-Collection（分代收集）算法" class="headerlink" title="分代收集算法 Generational Collection（分代收集）算法"></a>分代收集算法 Generational Collection（分代收集）算法</h5><p>分代收集算法就是目前虚拟机使用的回收算法，它解决了标记整理不适用于老年代的问题，将内存分为各个年代，在不同年代使用不同的算法，从而使用最合适的算法，新生代存活率低，可以使用复制算法。而老年代对象存活率高，没有额外空间对它进行分配担保，所以使用标记整理算法。具体请看下面介绍</p>
+<h4 id="GC-分代收集算法"><a href="#GC-分代收集算法" class="headerlink" title="GC 分代收集算法"></a>GC 分代收集算法</h4><p>将 Java 的堆内存逻辑上分成两块: 新生代、老年代，针对不同存活周期、不同大小的对象采取不同的垃圾回收策略</p>
+<p>“分代回收”是基于这样一个事实: 对象的生命周期不同，所以针对不同生命周期的对象可以采取不同的回收方式，以便提高回收效率。</p>
+<p><img src="/images/blog/2019-09-29-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><strong>新生代（Young Generation）</strong></p>
+<p>新生代又叫年轻代，大多数对象在新生代中被创建，很多对象的生命周期很短。每次新生代的垃圾回收（又称Young GC、Minor GC、YGC）后只有少量对象存活，所以使用复制算法，只需少量的复制操作成本就可以完成回收</p>
+<p>新生代内又分三个区：一个Eden区，两个Survivor区(S0、S1，又称From Survivor、To Survivor)，大部分对象在Eden区中生成。   </p>
+<p>两个Surviver区分别称为“From”区和“To”区。对象在Eden区创建，经过一次Yong GC后，还存活的对象将会被复制到Surviver区的“From”区，此时“To”区是空的。到了下一次GC的时候，Eden区还存活的对象会直接移动到Surviver区的“To”区，而“Form”区的对象有两个去处，“From”区的对象会根据经过的GC次数计算年龄，如果年龄到达了阈值（默认15），则会被移动到老年代中，否则就复制到“To”区，此时“From”区变成了空的，然后“From”区和“To”区进行角色互换，到下一次进行GC时，还是有一块空的“To”区，用来存放从eden区和“From”区移动过来的对象。</p>
+<p><strong>老年代（Old Generation）</strong></p>
+<p>在新生代中经历了N次垃圾回收后仍然存活的对象，就会被放到老年代，该区域中对象存活率高。老年代的垃圾回收通常使用“标记-整理”算法</p>
+<h4 id="GC-事件分类"><a href="#GC-事件分类" class="headerlink" title="GC 事件分类"></a>GC 事件分类</h4><p>根据垃圾收集回收的区域不同，垃圾收集主要通常分为Young GC、Old GC、Full GC、Mixed GC</p>
+<p><strong>Young GC</strong></p>
+<p>新生代内存的垃圾收集事件称为Young GC(又称Minor GC)，当JVM无法为新对象分配在新生代内存空间时总会触发 Young GC，比如 Eden 区占满时。新对象分配频率越高, Young GC 的频率就越高<br>Young GC 每次都会引起全线停顿(Stop-The-World)，暂停所有的应用线程，停顿时间相对老年代GC的造成的停顿，几乎可以忽略不计</p>
+<p><strong>Old GC 、Full GC、Mixed GC</strong></p>
+<p>Old GC，只清理老年代空间的GC事件，只有CMS的并发收集是这个模式</p>
+<p>Full GC，清理整个堆的GC事件，包括新生代、老年代、元空间等</p>
+<p>Mixed GC，清理整个新生代以及部分老年代的GC，只有G1有这个模式</p>
+<h4 id="GC日志分析"><a href="#GC日志分析" class="headerlink" title="GC日志分析"></a>GC日志分析</h4><p>GC日志是一个很重要的工具，它准确记录了每一次的GC的执行时间和执行结果，通过分析GC日志可以调优堆设置和GC设置，或者改进应用程序的对象分配模式</p>
+<p>可以查阅<a href="https://lihuimintu.github.io/2019/06/24/GC-Log-Detailed/" target="_blank" rel="noopener">GC 日志详解</a></p>
+<h4 id="内存分配策略"><a href="#内存分配策略" class="headerlink" title="内存分配策略"></a>内存分配策略</h4><p>Java提供的自动内存管理，可以归结为解决了对象的内存分配和回收的问题，前面已经介绍了内存回收，下面介绍几条最普遍的内存分配策略</p>
+<ul>
+<li><p><strong>对象优先在Eden区分配</strong><br>大多数情况下，对象在先新生代Eden区中分配。当Eden区没有足够空间进行分配时，虚拟机将发起一次Young GC</p>
+</li>
+<li><p><strong>大对象之间进入老年代</strong><br>JVM提供了一个对象大小阈值参数(-XX:PretenureSizeThreshold，默认值为0，代表不管多大都是先在Eden中分配内存)，大于参数设置的阈值值的对象直接在老年代分配，这样可以避免对象在Eden及两个Survivor直接发生大内存复制</p>
+</li>
+<li><p><strong>长期存活的对象将进入老年代</strong><br>对象每经历一次垃圾回收，且没被回收掉，它的年龄就增加1，大于年龄阈值参数(-XX:MaxTenuringThreshold，默认15)的对象，将晋升到老年代中</p>
+</li>
+<li><p><strong>空间分配担保</strong><br>当进行Young GC之前，JVM需要预估：老年代是否能够容纳Young GC后新生代晋升到老年代的存活对象，以确定是否需要提前触发GC回收老年代空间，基于空间分配担保策略来计算</p>
+</li>
+</ul>
+<p>continueSize: 老年代最大可用连续空间</p>
+<p><img src="/images/blog/2019-09-29-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p>Young GC之后如果成功(Young GC后晋升对象能放入老年代)，则代表担保成功，不用再进行Full GC，提高性能；如果失败，则会出现“promotion failed”错误，代表担保失败，需要进行Full GC</p>
+<p>动态年龄判定:<br>新生代对象的年龄可能没达到阈值(MaxTenuringThreshold参数指定)就晋升老年代，如果Young GC之后，新生代存活对象年龄从小到大的累加和总和大于任一Survivor空间(S0 或 S1总空间)的一半，此时S0或者S1区即将容纳不了存活的新生代对象，年龄大于或等于该年龄的对象就可以直接进入老年代，无须等到MaxTenuringThreshold中要求的年龄</p>
+<p>另外，如果Young GC后S0或S1区不足以容纳：未达到晋升老年代条件的新生代存活对象，会导致这些存活对象直接进入老年代，需要尽量避免</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/u014493323/article/details/82921740" target="_blank" rel="noopener">jvm误区–动态对象年龄判定</a></li>
+<li><a href="https://juejin.im/post/5b6b986c6fb9a04fd1603f4a?utm_source=gold_browser_extension" target="_blank" rel="noopener">老大难的GC原理及调优，这下全说清楚了</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/20/HDFS-HA-checkpoint/" rel="prev" title="HDFS checkpoint">
+      <i class="fa fa-chevron-left"></i> HDFS checkpoint
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/10/06/Linked-List/" rel="next" title="双向链表的插入及删除">
+      双向链表的插入及删除 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#目标"><span class="nav-number">1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GC-垃圾回收算法"><span class="nav-number">2.</span> <span class="nav-text">GC 垃圾回收算法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#标记-清除算法-Mark-Sweep"><span class="nav-number">2.1.</span> <span class="nav-text">标记-清除算法(Mark-Sweep)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#复制算法-Copying"><span class="nav-number">2.2.</span> <span class="nav-text">复制算法(Copying)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#标记-整理算法-Mark-compact"><span class="nav-number">2.3.</span> <span class="nav-text">标记-整理算法(Mark-compact)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分代收集算法-Generational-Collection（分代收集）算法"><span class="nav-number">2.4.</span> <span class="nav-text">分代收集算法 Generational Collection（分代收集）算法</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GC-分代收集算法"><span class="nav-number">3.</span> <span class="nav-text">GC 分代收集算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GC-事件分类"><span class="nav-number">4.</span> <span class="nav-text">GC 事件分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GC日志分析"><span class="nav-number">5.</span> <span class="nav-text">GC日志分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存分配策略"><span class="nav-number">6.</span> <span class="nav-text">内存分配策略</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'dac9722ef2835c1e247777490e802ad9',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

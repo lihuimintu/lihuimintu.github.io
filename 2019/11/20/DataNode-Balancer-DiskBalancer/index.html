@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="节点间平衡与节点内平衡">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HDFS 数据平衡">
+<meta property="og:url" content="http://yoursite.com/2019/11/20/DataNode-Balancer-DiskBalancer/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="节点间平衡与节点内平衡">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-20-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-20-2.png">
+<meta property="article:published_time" content="2019-11-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-12-20T11:34:43.457Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HDFS">
+<meta property="article:tag" content=" Balance">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-11-20-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/11/20/DataNode-Balancer-DiskBalancer/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HDFS 数据平衡 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/20/DataNode-Balancer-DiskBalancer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HDFS 数据平衡
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-20 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-20T00:00:00+08:00">2019-11-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-20 19:34:43" itemprop="dateModified" datetime="2019-12-20T19:34:43+08:00">2019-12-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HDFS/" itemprop="url" rel="index">
+                    <span itemprop="name">HDFS</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+            <div class="post-description">节点间平衡与节点内平衡</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>节点间平衡与节点内平衡</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HDFS容易发生数据不平衡的问题。这其中包括各个DataNode之间存储的数据量差异，以及一个DataNode内部各磁盘之间存储的数据量差异。</p>
+<p>HDFS专门提供了对应的机制来解决。</p>
+<h5 id="节点间平衡-Balancer"><a href="#节点间平衡-Balancer" class="headerlink" title="节点间平衡 Balancer"></a>节点间平衡 Balancer</h5><p>CDH在HDFS中提供了Balancer角色，使我们可以免于用命令行执行start-balancer.sh来手动配置。Cloudera Manager里与Balancer有关的配置项有以下这些。</p>
+<ul>
+<li>Balancing Threshold：Balancer平衡的阈值。平衡过程结束后，所有节点的磁盘占用率与集群的平均占用率之差必须小于threshold（按百分比计）。默认值是10，我们设成了5。</li>
+<li>Rebalancing Policy：计算平衡度的策略，有DataNode和BlockPool两种。前者是按节点级别来算，后者是按块池级别来算。后者只有对HDFS Federation才有效，所以我们选前者。</li>
+<li>Included/Excluded Hosts：分别用来指定参与平衡的节点和被排除的节点。这样可以先人为判断数据分布情况，然后只让我们认为需要平衡的节点来操作。</li>
+<li>dfs.balancer.moverThreads/dispatcherThreads：分别表示移动数据的线程池大小，和调度数据移动方案的线程池大小，默认值1000和200。</li>
+<li>dfs.datanode.balance.max.concurrent.moves：表示能够同时移动的块（英文说法叫in-flight）数量，默认值50。</li>
+<li>dfs.balancer.max-size-to-move：表示在Balancer的一次迭代（下面会提到）中，一个DataNode的最大数据交换量，默认值10G。</li>
+<li>另外，还有一个出现在DataNode参数但又与平衡相关的：dfs.datanode.balance.bandwidthPerSec，即每个节点可以用来做平衡的最大带宽，默认1MB/s。这个值在多数情况下是偏小的，可以适当增大，如10甚至20。千万注意不能挤占太多带宽，以保证正常业务的运行。</li>
+</ul>
+<p>CDH Balancer的用法很简单，只需要设定好上述参数，再点击Actions→Rebalance菜单项，就会自动开始平衡了。</p>
+<p><img src="/images/blog/2019-11-20-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p>那么Balancer内部是如何执行的呢？Balancer类的源码位于org.apache.hadoop.hdfs.server.balancer包中，限于篇幅，就不贴出来了，只简单叙述一下。<br>Balancer是迭代执行的，也就是说每次平衡都只移动一定量的数据，然后检查集群是否符合平衡的标准。迭代的大致步骤是：</p>
+<p>根据平衡度策略，计算出集群使用量均值，并与平衡阈值作比较，将节点按使用量从高到低划分为4类。<br>根据划分的4类节点，确认出需要平衡的源节点与目标节点对，并计算每对节点之间的数据交换量。<br>构造Dispatcher（这是与Balancer在同一个包中的类），初始化mover和dispatcher线程池。mover用来移动块，dispatcher用来调度节点对。<br>对每个节点上的块，确认它是否可以成为一个好的候选块。如果可以，那么它就会被移动到目标节点上去。</p>
+<p>从宏观上看，就是这张图。</p>
+<p><img src="/images/blog/2019-11-20-2.png" alt>{:height=”80%” width=”80%”}</p>
+<h4 id="节点内平衡-DiskBalancer"><a href="#节点内平衡-DiskBalancer" class="headerlink" title="节点内平衡 DiskBalancer"></a>节点内平衡 DiskBalancer</h4><p><a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HDFSDiskbalancer.html" target="_blank" rel="noopener">官网文档</a></p>
+<p>如果想要解决节点内多块磁盘数据不均衡的现象，就要借助DiskBalancer。在CDH 5.8.2+版本中，可以通过在CM中配置进行开启。</p>
+<p>在 HDFS 配置项中找到“DataNode Advanced Configuration Snippet (Safety Valve) for hdfs-site.xml”，中文为“hdfs-site.xml的HDFS服务⾼级配置代码段（安全阀）”，加入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;property&gt;</span><br><span class="line">  &lt;name&gt;dfs.disk.balancer.enabled&lt;&#x2F;name&gt;</span><br><span class="line">  &lt;value&gt;true&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">  &lt;name&gt;dfs.disk.balancer.max.disk.throughputInMBperSec&lt;&#x2F;name&gt;</span><br><span class="line">  &lt;value&gt;50&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">  &lt;name&gt;dfs.disk.balancer.plan.threshold.percent&lt;&#x2F;name&gt;</span><br><span class="line">  &lt;value&gt;2&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">  &lt;name&gt;dfs.disk.balancer.block.tolerance.percent&lt;&#x2F;name&gt;</span><br><span class="line">  &lt;value&gt;5&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>dfs.disk.balancer.max.disk.throughputInMBperSec：指定磁盘间平衡时占用的最大磁盘带宽，默认值10MB/s。在不影响读写性能的情况下可以适当调大。</li>
+<li>dfs.disk.balancer.plan.threshold.percent：各盘之间数据平衡的阈值。DiskBalancer中采用一种叫volume data density（卷数据密度）的度量来确定占用率的偏差值，该值越大，表明磁盘间的数据越不均衡。平衡过程结束后，每个盘的卷数据密度与平均密度之差必须小于threshold（按百分比计）。默认值是10，我们设成了5。</li>
+<li>dfs.disk.balancer.block.tolerance.percent：在每次移动块的过程中，移动块的数量与理想平衡状态之间的偏差容忍值（按百分比计）。一般也设成5。</li>
+</ul>
+<p>DiskBalancer的运行流程与Balancer类似，不过对象由节点变成了磁盘。它分为Discover、Plan与Execute三个阶段，分别是计算磁盘不平衡度、生成平衡计划与执行平衡计划。关于它的设计细节，可以参考JIRA中的HDFS-1312：<a href="https://issues.apache.org/jira/browse/HDFS-1312。" target="_blank" rel="noopener">https://issues.apache.org/jira/browse/HDFS-1312。</a><br>配置完成后，重启DataNode，然后SSH到该节点上，手动执行即可</p>
+<p>生成平衡计划（hadoop1为主机名）<br><code>hdfs diskbalancer -plan hadoop1</code></p>
+<p>执行平衡计划<br><code>hdfs diskbalancer -execute /system/diskbalancer/hadoop1.plan.json</code></p>
+<p>查看执行状态<br><code>hdfs diskbalancer -query hadoop1</code></p>
+<blockquote>
+<p><strong>什么时候手动或调度执行？</strong><br>a.新盘加入<br>b.监控服务器的磁盘剩余空间 小于阈值 10%，发邮件预警 手动执行</p>
+</blockquote>
+<p>多个磁盘作为 DN 数据目录时，是加在 <code>dfs.datanode.data.dir</code> 这个参数中，默认英文逗号(comma-delimited)分隔</p>
+<p>为什么datanode在生产上挂载多个物理的磁盘目录? 比如：<br>/data01 disk1<br>/data02 disk2<br>/data03 disk3   </p>
+<p>为了高效率写 ，高效率读，多个个磁盘并发读写</p>
+<h4 id="转载出处"><a href="#转载出处" class="headerlink" title="转载出处"></a>转载出处</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">作者：LittleMagic</span><br><span class="line">链接：https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;5c6459fbe9ee</span><br><span class="line">来源：简书</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/cuishuai/p/10026905.html" target="_blank" rel="noopener">HDFS集群数据不均衡处理</a></li>
+</ul>
+<ul>
+<li><a href="https://blog.csdn.net/nituoge/article/details/103447284" target="_blank" rel="noopener">Hadoop副本放置策略+读写流程+磁盘均衡+安全模式+hdfs dfs命令</a></li>
+<li><a href="https://blog.csdn.net/weixin_42868638/article/details/89451703" target="_blank" rel="noopener">Hadoop3.2.0 HDFS磁盘平衡器</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/19/Shell-Compare/" rel="prev" title="Shell 整数比较符号">
+      <i class="fa fa-chevron-left"></i> Shell 整数比较符号
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/26/CDH-Assign-Roles/" rel="next" title="CDH 如何给 Hadoop 集群划分角色">
+      CDH 如何给 Hadoop 集群划分角色 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#节点间平衡-Balancer"><span class="nav-number">1.1.</span> <span class="nav-text">节点间平衡 Balancer</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#节点内平衡-DiskBalancer"><span class="nav-number">2.</span> <span class="nav-text">节点内平衡 DiskBalancer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#转载出处"><span class="nav-number">3.</span> <span class="nav-text">转载出处</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'bc43f6ff41e3dd919de2881035bd1cd9',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="走进 BlockCache">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase BlockCache 读缓存">
+<meta property="og:url" content="http://yoursite.com/2019/02/27/hbase-blockcache/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="走进 BlockCache">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-02-27-1.png">
+<meta property="article:published_time" content="2019-02-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-02-27T09:37:48.213Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="HBase">
+<meta property="article:tag" content=" BlockCache">
+<meta property="article:tag" content=" LRUBlockCache">
+<meta property="article:tag" content=" BucketCache">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-02-27-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/02/27/hbase-blockcache/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>HBase BlockCache 读缓存 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/27/hbase-blockcache/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HBase BlockCache 读缓存
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2019-02-27 00:00:00 / 修改时间：17:37:48" itemprop="dateCreated datePublished" datetime="2019-02-27T00:00:00+08:00">2019-02-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+            <div class="post-description">走进 BlockCache</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>BlockCache也称为读缓存，HBase会将一次文件查找的Block块缓存到Cache中，<br>以便后续同一请求或者邻近数据查找请求直接从内存中获取，避免昂贵的IO操作，重要性不言而喻。</p>
+<hr>
+<h4 id="HBase-缓存"><a href="#HBase-缓存" class="headerlink" title="HBase 缓存"></a>HBase 缓存</h4><p>HBase提供了2种类型的缓存结构：MemStore &amp; BlockCache。其中 MemStore 是写缓存，BlockCache 是读缓存。</p>
+<p>MemStore： HBase写数据首先写入MemStore之中，并同时写入HLog，待满足一定条件后将MemStore中数据刷到磁盘，可以很大提升HBase的写性能。<br>而且对读也很有提升，如果没有MemStore，读取刚写入的数据需要从文件中通过I/O查找。</p>
+<p>BlockCache: HBase会将一次文件查找的Block块缓存到Cache中，以便后续同一请求或者相邻数据查找请求，可以直接从内存中获取，避免昂贵的IO操作。</p>
+<p><strong>读取数据时，首先到memestore上读数据，找不到再到blockcahce上找数据，再查不到则到磁盘查找，并把读入的数据同时放入blockcache。</strong></p>
+<h4 id="Block-Cache"><a href="#Block-Cache" class="headerlink" title="Block Cache"></a>Block Cache</h4><p>BlockCache 是 RegionServer 级别的，一个 RegionServer 只有一个 BlockCache，在RegionServer启动的时候完成Block Cache的初始化工作。</p>
+<p>HBase提供了两种不同的BlockCache实现，用于缓存从HDFS读出的数据。这两种分别为：</p>
+<ul>
+<li>默认的，存在于堆内存的（on-heap）LruBlockCache</li>
+<li>存在堆外内存的（off-heap）BucketCache</li>
+</ul>
+<p><strong>当blockcache达到heapsize * hfile.block.cache.size * 0.85时，会启用淘汰机制。(有待查看源码验证)</strong></p>
+<h4 id="缓存策略"><a href="#缓存策略" class="headerlink" title="缓存策略"></a>缓存策略</h4><p>常用的 BlockCache 包括 LruBlockCache，以及 CombinedBlockCache（LruBlockCache + BucketCache）。</p>
+<p>使用缓存有以下三个策略，有多种配置缓存的机制：</p>
+<blockquote>
+<ul>
+<li>LruBlockCache 缓存机制：把元数据和列族信息缓存在Java堆内存中。如果 BucketCache 机制没有启动时，默认是启动 LruBlockCache 的；</li>
+<li>CombinedBlockCache 缓存机制：运用 LruBlockCache 和 BucketCache 两个缓存：当BucketCache启用时，INDEX/BLOOM块会保存于LRUBlockCache的堆内存，数据块（DATA blocks）会一直保存于BucketCache。这时启动 BucketCache 缓存机制后默认的操作；</li>
+<li>一级和二级缓存机制 (Raw L1+L2)：这个机制把元数据和列族信息缓存在LruBlockCache (一级缓存)，然后从 LruBlockCache 读取数据缓存在 BucketCache (二级缓存)，如果要启动这个缓存机制，要先在 hbase-site.xml 中配置 hbase.bucketcache.combinedcache.enabled=false，这个参数默认是 true；</li>
+</ul>
+</blockquote>
+<p><strong>注意：从HBase 2.0.0 开始，L1与L2的概念便被弃用。第三种缓存方式只能在hbase 2.0.0之前，可以设置。</strong></p>
+<p>补充：<br>CombinedBlockCache是一个LRUBlockCache和BucketCache的混合体。<br>BucketCache是阿里贡献的。LRUBlockCache中主要存储Index Block和Bloom Block，<br>而将Data Block存储在BucketCache中。<br>因此一次随机读需要首先在LRUBlockCache中查到对应的Index Block，然后再到BucketCache查找对应数据块</p>
+<h5 id="1-开启缓存"><a href="#1-开启缓存" class="headerlink" title="1. 开启缓存"></a>1. 开启缓存</h5><blockquote>
+<ul>
+<li>当 BLOCKCACHE = false 和 IN_MEMORY = false，这意味著没有缓存；</li>
+<li>当 BLOCKCACHE = true 和 IN_MEMORY = false，这意味著使用 最近使用原则 Least Recently Used (LRU) 缓存；</li>
+<li>当 BLOCKCACHE = true 和 IN_MEMORY = true，这意味著缓存度是最長久的，有优先级别来缓存数据；</li>
+</ul>
+</blockquote>
+<h5 id="2-禁用缓存"><a href="#2-禁用缓存" class="headerlink" title="2. 禁用缓存"></a>2. 禁用缓存</h5><p>可以在每一个列族上禁用读取缓存，使用 HBase Shell 来将读取时不需要缓存的列族 BLOCKCACHE 参数设置为 false，<br>使用 Java APi 在 scan 和 get 操作时使用 setCacheBlocks(false) 方法来禁用缓存，<br>但注意是的我们不能禁用 metadata 的缓存，因为元数据信息会频繁地被使用，<strong>就算禁用了也回加载到缓存中</strong>。<br>那应该在什么情况下可以禁用缓存，如果数据只是使用一次，不用反覆检索或者查找就不需要使用缓存。</p>
+<p>永远不能禁用META块的缓存。由于<a href="https://issues.apache.org/jira/browse/HBASE-4683" target="_blank" rel="noopener">HBASE-4683</a>始终缓存索引和bloom块，<br>因此即使禁用BlockCache，也会缓存META块。</p>
+<h4 id="LRUBlockCache"><a href="#LRUBlockCache" class="headerlink" title="LRUBlockCache"></a>LRUBlockCache</h4><p>HBase默认的BlockCache实现方案。Block数据块都存储在 JVM heap内，由JVM进行垃圾回收管理。<br>其使用一个ConcurrentHashMap管理BlockKey到Block的映射关系，<br>缓存Block只需要将BlockKey和对应的Block放入该HashMap中，查询缓存就根据BlockKey从HashMap中获取即可。</p>
+<p>同时该方案采用严格的LRU淘汰算法，当Block Cache总量达到一定阈值之后就会启动淘汰机制，最近最少使用的Block会被置换出来。<br>在具体的实现细节方面，需要关注三点：</p>
+<h5 id="1-缓存分层策略"><a href="#1-缓存分层策略" class="headerlink" title="1. 缓存分层策略"></a>1. 缓存分层策略</h5><p>HBase在LRU缓存基础上，采用了缓存分层设计，将整个BlockCache分为三个部分：Single、Mutile和In-Memory。</p>
+<blockquote>
+<ul>
+<li>Single：当我们只有一次读取的数据，这个级别的数据块是第一时间就会被挤出去</li>
+<li>Mutile：读取多次数据的缓存，这个级别的数据块是当块中没有 SINGLE 级别的数据才会被挤出去</li>
+<li>In-Memory：对列族属性中的 IN_MEMEORY 设置为 true，这个级别的数据块是最后才会被挤出去，Catalog 表是默认启动了 IN_MEMORY 表的特性；</li>
+</ul>
+</blockquote>
+<p>将内存从逻辑上分为了三块, 分别占到整个BlockCache大小的25%、50%、25%。</p>
+<p>需要特别注意的是，<br><font color="#CD5C5C"><br>HBase系统元数据存放在InMemory区，因此设置数据属性InMemory = true需要非常谨慎，<br>确保此列族数据量很小且访问频繁，否则有可能会将hbase.meta元数据挤出内存，严重影响所有业务性能。<br></font></p>
+<h5 id="2-LRU淘汰算法实现"><a href="#2-LRU淘汰算法实现" class="headerlink" title="2. LRU淘汰算法实现"></a>2. LRU淘汰算法实现</h5><p>系统在每次cache block时将BlockKey和Block放入HashMap后都会检查BlockCache总量是否达到阈值，如果达到阈值，就会唤醒淘汰线程对Map中的Block进行淘汰。<br>系统设置三个MinMaxPriorityQueue队列，分别对应上述三个分层，每个队列中的元素按照最近最少被使用排列，系统会优先poll出最近最少使用的元素，将其对应的内存释放。<br>可见，三个分层中的Block会分别执行LRU淘汰算法进行淘汰。</p>
+<h5 id="3-LRU方案优缺点"><a href="#3-LRU方案优缺点" class="headerlink" title="3. LRU方案优缺点"></a>3. LRU方案优缺点</h5><p>LRU方案使用JVM提供的HashMap管理缓存，简单有效。<br>但随着数据从single-access区晋升到mutil-access区，基本就伴随着对应的内存对象从young区到old区 ，<br>晋升到old区的Block被淘汰后会变为内存垃圾，最终由CMS回收掉（Conccurent Mark Sweep，一种标记清除算法），<br>然而这种算法会带来大量的内存碎片，碎片空间一直累计就会产生臭名昭著的Full GC。<br>尤其在大内存条件下，一次Full GC很可能会持续较长时间，甚至达到分钟级别。<br>大家知道Full GC是会将整个进程暂停的（称为stop-the-wold暂停），<br>因此长时间Full GC必然会极大影响业务的正常读写请求。BucketCache方案才会横空出世。</p>
+<h4 id="BucketCache"><a href="#BucketCache" class="headerlink" title="BucketCache"></a>BucketCache</h4><p>BucketCache 大家自行阅读范欣欣的博客学习 <a href="http://hbasefly.com/2016/04/26/hbase-blockcache-2/" target="_blank" rel="noopener" title="HBase BlockCache系列 － 探求BlockCache实现机制">HBase BlockCache系列 － 探求BlockCache实现机制</a></p>
+<h4 id="BucketCache-工作模式"><a href="#BucketCache-工作模式" class="headerlink" title="BucketCache 工作模式"></a>BucketCache 工作模式</h4><p>BucketCache默认有三种工作模式：heap、offheap和file；这三种工作模式在内存逻辑组织形式以及缓存流程上都是相同的。<br>但是对应的最终存储介质不一样，也可以说对应的IOEngine不一样。</p>
+<p>其中heap 和 offheap都是用内存作为最终存储介质，内存分配查询也都使用Java NIO ByteBuffer技术。</p>
+<p>heap模式分配内存调用的是ByteBuffer.allocate方法，从JVM提供的heap区分配</p>
+<p>offheap调用的是ByteBuffer.allocateDirect()方法，直接从操作系统分配。</p>
+<p>这两种内存分配模式会对HBase性能产生一定影响，最大的是GC,和heap相比，offheap模式因为内存属于操作系统，所以基本不会产生CMS GC,也就在任何情况下都不会因为内存碎片导致触发Full GC</p>
+<p>除此之外，在内存分配以及读取方面，两者性能也有不同，比如内存分配时heap模式需要先从操作系统分了配内存然后再拷贝到JVM Heap，相比offheap直接从操作系统分配内存更耗时；但是反过来</p>
+<p>读取缓存是heap模式可以直接从JVM读取，而offheap需要首先从操作系统拷贝JVM heap在读取，后者显得更耗时</p>
+<p>file模式和前面两者不同，它使用Fussion-IO或者SSD等作为存储介质，相比昂贵的内存，这样可以提供更大的存储容量，因此可以极大地提升缓存命中率。</p>
+<h4 id="BucketCache-配置"><a href="#BucketCache-配置" class="headerlink" title="BucketCache 配置"></a>BucketCache 配置</h4><p>BucketCache配置使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;property&gt;</span><br><span class="line">  &lt;name&gt;hbase.bucketcache.ioengine&lt;&#x2F;name&gt;</span><br><span class="line">  &lt;value&gt;offheap&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">  &lt;name&gt;hfile.block.cache.size&lt;&#x2F;name&gt;</span><br><span class="line">  &lt;value&gt;0.2&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">  &lt;name&gt;hbase.bucketcache.size&lt;&#x2F;name&gt;</span><br><span class="line">  &lt;value&gt;4196&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br></pre></td></tr></table></figure>
+
+<p>hbase.bucketcache.size 在1.0 之前表示要提供给缓存的总堆内存大小的百分比，1.0 之后是BucketCache的总容量（兆字节）。默认值：0</p>
+<p><img src="/images/blog/2019-02-27-1.png" alt></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>因水平有限。大部分内容都是 copy 大神们的文章。我这只是把自己的理解汇总到一起。无意商业和彰显。</p>
+<p>HBase 的官方文档 <a href="http://hbase.apache.org/book.html#block.cache" target="_blank" rel="noopener">BlockCache</a> 也是挺不错的资料。</p>
+<p>找到一个翻译的中文博客，也可以参阅一下。<a href="https://www.cnblogs.com/zackstang/p/10061379.html" target="_blank" rel="noopener" title="HBase Block Cache（块缓存）">HBase Block Cache（块缓存)</a></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="http://www.cnblogs.com/jcchoiling/p/7360110.html" target="_blank" rel="noopener">第五章：大数据 の HBase 进阶</a></li>
+<li><a href="http://hbasefly.com/2016/04/26/hbase-blockcache-2/" target="_blank" rel="noopener" title="HBase BlockCache系列 － 探求BlockCache实现机制">HBase BlockCache系列 － 探求BlockCache实现机制</a></li>
+<li><a href="https://blog.csdn.net/yx_keith/article/details/79138974" target="_blank" rel="noopener">hbase缓存机制</a></li>
+<li><a href="https://www.cnblogs.com/zackstang/p/10061379.html" target="_blank" rel="noopener" title="HBase Block Cache（块缓存）">HBase Block Cache（块缓存</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/27639937" target="_blank" rel="noopener">1-游走HBase的Block Cache</a></li>
+<li><a href="http://hbasefly.com/2016/04/08/hbase-blockcache-1/" target="_blank" rel="noopener">HBase BlockCache系列 – 走进BlockCache</a></li>
+<li><a href="http://hbasefly.com/2016/05/06/hbase-blockcache-3/" target="_blank" rel="noopener">HBase BlockCache系列 － 性能对比测试报告</a></li>
+<li><a href="http://hbasefly.com/2016/06/18/hbase-practise-ram/" target="_blank" rel="noopener">HBase最佳实践－内存规划</a></li>
+<li><a href="https://blog.csdn.net/zhanglh046/article/details/78517812" target="_blank" rel="noopener">HBase之缓存</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/02/26/subscriber-apache/" rel="prev" title="订阅Apache ServiceComb的邮件列表">
+      <i class="fa fa-chevron-left"></i> 订阅Apache ServiceComb的邮件列表
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/03/03/read-bigtable/" rel="next" title="BigTable 学习笔记(转)">
+      BigTable 学习笔记(转) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#HBase-缓存"><span class="nav-number">1.</span> <span class="nav-text">HBase 缓存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Block-Cache"><span class="nav-number">2.</span> <span class="nav-text">Block Cache</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存策略"><span class="nav-number">3.</span> <span class="nav-text">缓存策略</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-开启缓存"><span class="nav-number">3.1.</span> <span class="nav-text">1. 开启缓存</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-禁用缓存"><span class="nav-number">3.2.</span> <span class="nav-text">2. 禁用缓存</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LRUBlockCache"><span class="nav-number">4.</span> <span class="nav-text">LRUBlockCache</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-缓存分层策略"><span class="nav-number">4.1.</span> <span class="nav-text">1. 缓存分层策略</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-LRU淘汰算法实现"><span class="nav-number">4.2.</span> <span class="nav-text">2. LRU淘汰算法实现</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-LRU方案优缺点"><span class="nav-number">4.3.</span> <span class="nav-text">3. LRU方案优缺点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BucketCache"><span class="nav-number">5.</span> <span class="nav-text">BucketCache</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BucketCache-工作模式"><span class="nav-number">6.</span> <span class="nav-text">BucketCache 工作模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BucketCache-配置"><span class="nav-number">7.</span> <span class="nav-text">BucketCache 配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'b12eca9b7a58f86fbf32abde5cea7d8e',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

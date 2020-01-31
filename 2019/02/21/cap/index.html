@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="CAP 定理的含义">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CAP 原理">
+<meta property="og:url" content="http://yoursite.com/2019/02/21/cap/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="CAP 定理的含义">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-02-21-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-06-18-1.png">
+<meta property="article:published_time" content="2019-02-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-06-18T03:35:24.821Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="CAP">
+<meta property="article:tag" content=" 分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-02-21-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/02/21/cap/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>CAP 原理 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/21/cap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CAP 原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-02-21 00:00:00" itemprop="dateCreated datePublished" datetime="2019-02-21T00:00:00+08:00">2019-02-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-06-18 11:35:24" itemprop="dateModified" datetime="2019-06-18T11:35:24+08:00">2019-06-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Distributed/" itemprop="url" rel="index">
+                    <span itemprop="name">Distributed</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">CAP 定理的含义</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>CAP 定理是分布式系统的基本定理，也是理解分布式系统的起点。</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在学习微服务概念时看到 CAP 概念。因此学习了解并记录。</p>
+<p><img src="/images/blog/2019-02-21-1.png" alt></p>
+<p>分布式系统（distributed system）正变得越来越重要，大型网站几乎都是分布式的，大数据体系也是分布式结构的。</p>
+<p>分布式系统的最大难点，就是各个节点的状态如何同步。</p>
+<p>CAP 定理是这方面的基本定理，也是理解分布式系统的起点。</p>
+<p>CAP理论是架构师在设计分布式系统过程中，处理数据一致性问题时必须考虑的基石级理论。</p>
+<h4 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h4><p>分布式系统非常关注三个指标</p>
+<h5 id="1-数据一致性"><a href="#1-数据一致性" class="headerlink" title="1. 数据一致性"></a>1. 数据一致性</h5><p>数据“强一致性”，是希望系统只读到最新写入的数据。</p>
+<p>通过单点串行化的方式，就能够达到这个效果。</p>
+<p><a href="https://lihuimintu.github.io/2019/04/24/uniformity/" target="_blank" rel="noopener">一致性模型</a></p>
+<h5 id="2-系统可用性"><a href="#2-系统可用性" class="headerlink" title="2. 系统可用性"></a>2. 系统可用性</h5><p>如果系统每运行100个时间单位，会有1个时间单位无法提供服务，则说系统的可用性是99%。</p>
+<p>可用性和可靠性是比较容易搞混的两个指标，以一台取款机为例：</p>
+<blockquote>
+<ul>
+<li>正确的输入，能够取到正确的钱，表示系统可靠</li>
+<li>取款机7*24小时提供服务，表示系统可用</li>
+</ul>
+</blockquote>
+<p>保证系统高可用的方法是：</p>
+<blockquote>
+<ul>
+<li>冗余</li>
+<li>故障自动转移</li>
+</ul>
+</blockquote>
+<h5 id="3-节点连通性与扩展性"><a href="#3-节点连通性与扩展性" class="headerlink" title="3. 节点连通性与扩展性"></a>3. 节点连通性与扩展性</h5><p>分布式系统，往往有多个节点，每个节点之间，都不是完全独立的，<br>需要相互通信，当发生节点无法联通时，数据是否还能保持一致，<br>系统要如何进行容错处理，是需要考虑的。</p>
+<h4 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h4><p>CAP定理是对上述分布式系统的三个特性进行归纳。</p>
+<blockquote>
+<ul>
+<li>Consistency 一致性</li>
+<li>Availability 可用性</li>
+<li>Partition Tolerance 分区容忍性</li>
+</ul>
+</blockquote>
+<p>等等。好像根本理解不了啊。</p>
+<p>没关系可以参看阮一峰老师的文章 <a href="http://www.ruanyifeng.com/blog/2018/07/cap.html" target="_blank" rel="noopener">CAP 定理的含义</a> 先有个概念印象。</p>
+<p>看完之后好像懂了，有种是懂非懂的感觉。</p>
+<p>没关系，本人结自己理解在叙述一遍</p>
+<p><strong>CAP理论核心思想是任何基于网络的数据共享系统最多只能满足两者，不可能三者兼顾。</strong></p>
+<blockquote>
+<ul>
+<li>Consistency: 一致性指”all nodes see the same data at the same time”，<br>即更新操作成功并返回客户端完成后，所有节点在同一时间的数据完全一致。等同于所有节点拥有数据的最新版本。</li>
+<li><em>这里对应一致性模型中的强一致性*</em></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>Availability: 可用性指”Reads and writes always succeed”，<br>意思是只要收到用户的读写请求，每一个非故障的节点就必须在有限的时间内给出回应。<br>用户都一定会收到回应数据，不会收到服务错误，但不保证用户收到的数据一定是最新的数据。</li>
+<li><em>两个指标”有限的时间内”，”给出回应”*</em></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>Partition tolerance: 分区容忍性具体指”the system continues to operate despite arbitrary message loss or failure of part of the system”<br>即分布式系统容忍因网络故障出现分区，分区之间网络不可达的情况。仍然需要能够保证对外提供满足一致性和可用性的服务，除非是整个网络环境都发生了故障。<br>特殊的原因导致这些子网络出现网络不连通的状况，但各个子网络的内部网络是正常的，从而导致整个系统的网络环境被切分成了若干个孤立的区域。</li>
+</ul>
+</blockquote>
+<p>“<br>提高分区容忍性的办法就是一个数据项复制到多个节点上，那么出现分区之后，这一数据项就可能分布到各个区里。分区容忍就提高了。然而，要把数据复制到多个节点，就会带来一致性的问题，就是多个节点上面的数据可能是不一致的。要保证一致，每次写操作就都要等待全部节点写成功，而这等待又会带来可用性的问题。<br>“</p>
+<p><img src="/images/blog/2019-06-18-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p>如图，ClientA 可以发送指令到 Server 并且设置更新X的值，Client1 从Server读取该值，在单点情况下，即没有网络分区的情况下，或者通过简单的事务机制，可以保证Client 1 读到的始终是最新的值，不存在一致性的问题。 </p>
+<p>如果在系统中增加一组节点，即设计为分布式系统，Write操作可能在 Server B 上成功，在 Server C 上失败，这时候对于 Client 1 和 Client 2，就会读取到不一致的值，出现不一致。如果要保持x值的一致性，Write 操作必须同时失败，降低系统的可用性。<br>如果 ClientA 写 ServerB 操作的时候，让 ServerB 向 ServerC 发送一条消息，要求 ServerC 的 X 也改成 1。即保证每次写操作就都要等待全部节点写成功，那这样”有限时间”过长会降低系统的可用性。</p>
+<p>因此设计分布式数据系统，就是在一致性和可用性之间取一个平衡。</p>
+<h4 id="强一致很难怎么办？"><a href="#强一致很难怎么办？" class="headerlink" title="强一致很难怎么办？"></a>强一致很难怎么办？</h4><p>在通常的分布式系统中，为了保证数据的高可用，通常会将数据保留多个副本(replica)，<br>网络分区是既成的现实，于是只能在可用性和一致性两者间做出选择。</p>
+<p>CAP理论关注的是绝对情况下，在工程上，可用性和一致性并不是完全对立，<br>我们关注的往往是如何在保持相对一致性的前提下，提高系统的可用性。</p>
+<p>单点串行化，虽然能保证“强一致”，但对系统的并发性能，以及高可用有较大影响，<br>互联网的玩法，更多的是“最终一致性”，短期内未必读到最新的数据，<br>但在一个可接受的时间窗口之后，能够读到最新的数据。</p>
+<p>当然，并不是完全不管数据的一致性。<br>牺牲一致性，只是不再要求关系型数据库中的强一致性，</p>
+<p>例如大多数web应用，其实并不需要强一致性，因此牺牲一致性而换取高可用性。达到最终一致性即可，<br>考虑到客户体验，这个最终一致的时间窗口，要尽可能的对用户透明，也就是需要保障“用户感知到的一致性”。</p>
+<p>用阮一峰老师的例子来说明：<br>举例来说，发布一张网页到 CDN，多个服务器有这张网页的副本。后来发现一个错误，需要更新网页，这时只能每个服务器都更新一遍。<br>一般来说，网页的更新不是特别强调一致性。短时期内，一些用户拿到老版本，另一些用户拿到新版本，问题不会特别大。当然，所有人最终都会看到新版本。所以，这个场合就是可用性高于一致性。</p>
+<p>通常是通过数据的多份异步复制来实现系统的高可用和数据的最终一致性的，<br>“用户感知到的一致性”的时间窗口则取决于数据复制到一致状态的时间。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>分布式系统本身就强调的是不挂掉。因此设计时架构师能够选择的只有C或者A，要么保证数据一致性（保证数据绝对正确），<br>要么保证可用性（保证是系统服务可用）。</p>
+<ul>
+<li><p>CAP可以理解为一致性，可用性，联通与扩展性</p>
+</li>
+<li><p>CAP三者只能取其二</p>
+</li>
+<li><p>最常见的实践是AP + 最终一致性</p>
+</li>
+</ul>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="http://www.ruanyifeng.com/blog/2018/07/cap.html" target="_blank" rel="noopener">CAP 定理的含义</a></li>
+<li><a href="https://blog.csdn.net/guitar___/article/details/80656681" target="_blank" rel="noopener">CAP原理这样理解最简单</a></li>
+<li><a href="https://www.jdon.com/bigdata/how-to-understand-cap.html" target="_blank" rel="noopener">如何正确理解CAP理论？</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/02/20/springboot-sendEmail/" rel="prev" title="SpringBoot 企业邮箱发送邮件">
+      <i class="fa fa-chevron-left"></i> SpringBoot 企业邮箱发送邮件
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/02/24/http/" rel="next" title="HTTP 超文本传输协议">
+      HTTP 超文本传输协议 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式系统"><span class="nav-number">2.</span> <span class="nav-text">分布式系统</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-数据一致性"><span class="nav-number">2.1.</span> <span class="nav-text">1. 数据一致性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-系统可用性"><span class="nav-number">2.2.</span> <span class="nav-text">2. 系统可用性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-节点连通性与扩展性"><span class="nav-number">2.3.</span> <span class="nav-text">3. 节点连通性与扩展性</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#理解"><span class="nav-number">3.</span> <span class="nav-text">理解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#强一致很难怎么办？"><span class="nav-number">4.</span> <span class="nav-text">强一致很难怎么办？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'ff72639a6b630c837592bf3cd3b1598f',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

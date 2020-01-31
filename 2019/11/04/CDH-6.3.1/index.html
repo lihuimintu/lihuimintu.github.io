@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="CDH 6.3.1 安装">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CDH 6.3.1 安装">
+<meta property="og:url" content="http://yoursite.com/2019/11/04/CDH-6.3.1/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="CDH 6.3.1 安装">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-04-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-08-02-5.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-13-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-13-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-12-02-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-12-02-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-12-02-3.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-12-02-3.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-04-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-04-3.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-04-4.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-05-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2019-11-04-5.png">
+<meta property="article:published_time" content="2019-11-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-12-03T15:01:10.915Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="CDH">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2019-11-04-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/11/04/CDH-6.3.1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>CDH 6.3.1 安装 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/04/CDH-6.3.1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CDH 6.3.1 安装
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-04 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-04T00:00:00+08:00">2019-11-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-03 23:01:10" itemprop="dateModified" datetime="2019-12-03T23:01:10+08:00">2019-12-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CDH/" itemprop="url" rel="index">
+                    <span itemprop="name">CDH</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+            <div class="post-description">CDH 6.3.1 安装</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>CDH 6.3.1 安装</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>CDH6集群的完全离线部署</p>
+<h4 id="环境要求"><a href="#环境要求" class="headerlink" title="环境要求"></a>环境要求</h4><p>安装之前查阅下<a href="https://docs.cloudera.com/documentation/enterprise/6/release-notes/topics/rg_requirements_supported_versions.html" target="_blank" rel="noopener">官方文档</a>的要求</p>
+<p><img src="/images/blog/2019-11-04-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p>个人关注 操作系统、数据库、JDK 三个点</p>
+<p><strong>操作系统</strong></p>
+<p>选用 <a href="http://mirrors.sohu.com/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso" target="_blank" rel="noopener">CentOS 7.5</a></p>
+<p>Cloudera Manager和CDH内置嵌入式PostgreSQL数据库，用于非生产环境。生产环境不支持PostgreSQL数据库，必须为集群配置专用外部数据库。</p>
+<p>注意:</p>
+<ul>
+<li>数据库需要使用UTF8编码。对于MySQL和MariaDB，必须使用UTF8编码，而不是utf8mb4</li>
+<li>对于MySQL5.7，必须要额外安装MySQL-shared-compat或者MySQL-shared包</li>
+</ul>
+<p><strong>Java要求</strong></p>
+<p>支持Oracle 64位JDK8，不支持JDK7，JDK9</p>
+<h4 id="安装之前"><a href="#安装之前" class="headerlink" title="安装之前"></a>安装之前</h4><h5 id="Host"><a href="#Host" class="headerlink" title="Host"></a>Host</h5><p><img src="/images/blog/2019-08-02-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p>主机YZ-JDB-106-38-13的名称中有大写字符。在这种情况下，通过Kerberos进行的身份验证将无法正常工作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 一定要注意 hostname 不能包含下划线</span><br><span class="line"># 设置唯一主机名</span><br><span class="line">  </span><br><span class="line"># 修改hostname</span><br><span class="line">hostname yz-100-73-18-59  # 直接修改命令</span><br><span class="line">hostname                  # 查看修改后的hostname</span><br><span class="line">  </span><br><span class="line"># 修改网络配置文件</span><br><span class="line">vim &#x2F;etc&#x2F;sysconfig&#x2F;network</span><br><span class="line">HOSTNAME&#x3D;yz-JDB-106-35-3</span><br><span class="line">  </span><br><span class="line"># 修改hosts文件</span><br><span class="line"># 把集群所有的ip与对应的hostname</span><br><span class="line">vim &#x2F;etc&#x2F;hosts     </span><br><span class="line">100.73.41.20 yz-100-73-41-20</span><br><span class="line">100.73.41.21 yz-100-73-41-21</span><br><span class="line">100.73.41.22 yz-100-73-41-22</span><br></pre></td></tr></table></figure>
+
+<h5 id="ssh免密"><a href="#ssh免密" class="headerlink" title="ssh免密"></a>ssh免密</h5><p>手动操作如下的代码块所示。 参考自<a href="https://www.cnblogs.com/keitsi/p/5653520.html" target="_blank" rel="noopener">CentOS 配置集群机器之间SSH免密码登录</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 集群密码登录</span><br><span class="line"># 集群中的每台主机上执行下面命令，一路回车，可生成本机的 rsa 类型的密钥</span><br><span class="line">ssh-keygen -t rsa</span><br><span class="line"># 执行完之后在 ~&#x2F;.ssh&#x2F; 目录下会生成一个保存有公钥的文件：id_rsa.pub</span><br><span class="line">   </span><br><span class="line"># 把公钥写入 authorized_keys 文件</span><br><span class="line"># 把自己的公钥拷贝到集群中的Master机</span><br><span class="line">ssh-copy-id root@HadoopMaster</span><br><span class="line">   </span><br><span class="line"># 最终Master机上生成~&#x2F;.ssh&#x2F;authorized_keys文件   该文件保存所有机器的公钥</span><br><span class="line"># 把~&#x2F;.ssh&#x2F;authorized_keys 拷贝到集群的其他机器上</span><br><span class="line">scp ~&#x2F;.ssh&#x2F;authorized_keys root@HadoopSlave1:~&#x2F;.ssh&#x2F;</span><br><span class="line">scp ~&#x2F;.ssh&#x2F;authorized_keys root@HadoopSlave2:~&#x2F;.ssh&#x2F;</span><br></pre></td></tr></table></figure>
+
+<h5 id="关闭防火墙"><a href="#关闭防火墙" class="headerlink" title="关闭防火墙"></a>关闭防火墙</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 查看防火墙</span><br><span class="line">systemctl status firewalld</span><br><span class="line"> </span><br><span class="line"># 关闭防火墙</span><br><span class="line">systemctl stop firewalld</span><br><span class="line"> </span><br><span class="line"># 开机禁用</span><br><span class="line">systemctl disable firewalld</span><br></pre></td></tr></table></figure>
+
+<h5 id="禁用-SELinux"><a href="#禁用-SELinux" class="headerlink" title="禁用 SELinux"></a>禁用 SELinux</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 关闭SELINUX</span><br><span class="line"># 临时生效</span><br><span class="line">setenforce 0</span><br><span class="line"> </span><br><span class="line"># 永久生效</span><br><span class="line">vim &#x2F;etc&#x2F;selinux&#x2F;config</span><br><span class="line">SELINUX&#x3D;disabled</span><br></pre></td></tr></table></figure>
+
+<h5 id="启用-NTP"><a href="#启用-NTP" class="headerlink" title="启用 NTP"></a>启用 NTP</h5><p>集群中所有节点的时间必须要保持同步，可以选择集群中其中一个节点作为ntp服务端，其余节点作为客户端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"># 停止影响的服务</span><br><span class="line">systemctl stop chronyd</span><br><span class="line">systemctl disable chronyd</span><br><span class="line"></span><br><span class="line"># 安装ntp软件</span><br><span class="line">yum -y install ntp</span><br><span class="line"></span><br><span class="line"># 配置主节点ntp配置文件</span><br><span class="line">vim &#x2F;etc&#x2F;ntp.conf</span><br><span class="line"></span><br><span class="line">driftfile &#x2F;var&#x2F;lib&#x2F;ntp&#x2F;drift</span><br><span class="line">restrict 127.0.0.1</span><br><span class="line">restrict -6 ::1</span><br><span class="line">restrict default nomodify notrap</span><br><span class="line">server ntp1.aliyun.com prefer</span><br><span class="line">minpoll 6</span><br><span class="line">includefile &#x2F;etc&#x2F;ntp&#x2F;crypto&#x2F;pw</span><br><span class="line">keys &#x2F;etc&#x2F;ntp&#x2F;keys </span><br><span class="line"></span><br><span class="line"># 配置其他节点ntp文件，同样修改ntp.conf文件</span><br><span class="line">driftfile &#x2F;var&#x2F;lib&#x2F;ntp&#x2F;drift</span><br><span class="line">restrict 127.0.0.1</span><br><span class="line">restrict -6 ::1</span><br><span class="line">restrict default kod nomodify notrap nopeer noquery</span><br><span class="line">restrict -6 default kod nomodify notrap nopeer noquery</span><br><span class="line">#这里是主节点的主机名或者ip</span><br><span class="line">server cdh-master.test.com</span><br><span class="line">minpoll 6</span><br><span class="line">includefile &#x2F;etc&#x2F;ntp&#x2F;crypto&#x2F;pw</span><br><span class="line">keys &#x2F;etc&#x2F;ntp&#x2F;keys</span><br><span class="line"> </span><br><span class="line"># 启动ntp服务</span><br><span class="line">systemctl start ntpd</span><br><span class="line"></span><br><span class="line"># 查看ntp服务</span><br><span class="line">systemctl status ntpd</span><br><span class="line"></span><br><span class="line"># 在其它节点上手动同步主节点的时间，换成你自己的主节点IP</span><br><span class="line">ntpdate -u 192.168.0.201</span><br><span class="line"></span><br><span class="line"># 配置开机自启动</span><br><span class="line">systemctl enable ntpd</span><br><span class="line"></span><br><span class="line"># 确认是否同步成功</span><br><span class="line">ntpstat (若网络没问题，过一会synchronised to NTP server ...)</span><br><span class="line">ntpq -p  (若网络没问题，过一会会看到有一行开头会有个星号)</span><br></pre></td></tr></table></figure>
+
+<p>NTP服务端重启后，客户机要等5分钟再与其进行时间同步，否则会提示“no server suitable for synchronization found”错误。</p>
+<h5 id="虚拟内存参数设置"><a href="#虚拟内存参数设置" class="headerlink" title="虚拟内存参数设置"></a>虚拟内存参数设置</h5><p>需要调整的参数为vm.swappiness，是一个0-100的值，用于控制应用数据从物理内存到磁盘上的虚拟内存的交换，值越高，交换越积极，值越小，交换的次数越少</p>
+<p>在大多数Linux系统上，该参数默认值为60，这并不适用于Hadoop集群，因为即使有足够的内存，也可能会进行进程的交换，从而可能会影响Hadoop的性能和稳定性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 查看当前该项参数值</span><br><span class="line">cat &#x2F;proc&#x2F;sys&#x2F;vm&#x2F;swappiness</span><br><span class="line"></span><br><span class="line"># 修改该项参数值（临时生效）</span><br><span class="line">sysctl -w vm.swappiness&#x3D;0</span><br><span class="line"></span><br><span class="line"># （重启后永久生效）</span><br><span class="line">echo vm.swappiness &#x3D; 0 &gt;&gt; &#x2F;etc&#x2F;sysctl.conf</span><br></pre></td></tr></table></figure>
+
+<h5 id="禁用-tuned-服务"><a href="#禁用-tuned-服务" class="headerlink" title="禁用 tuned 服务"></a>禁用 tuned 服务</h5><p>如果您的群集主机正在运行RHEL / CentOS 7.x，请通过运行以下命令禁用”tuned”服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 确保tuned服务已开启</span><br><span class="line">systemctl start tuned</span><br><span class="line"></span><br><span class="line"># 关闭tuned服务</span><br><span class="line">tuned-adm off</span><br><span class="line"></span><br><span class="line"># 确保没有已激活的配置</span><br><span class="line">tuned-adm list</span><br><span class="line">如果输出内容中包含No current active profile表示关闭成功</span><br><span class="line"></span><br><span class="line"># 关闭并且禁用tuned服务</span><br><span class="line">systemctl stop tuned</span><br><span class="line">systemctl disable tuned</span><br></pre></td></tr></table></figure>
+
+<p>官方文档<a href="https://docs.cloudera.com/documentation/enterprise/6/6.3/topics/cdh_admin_performance.html#cdh_performance__disable-tuned" target="_blank" rel="noopener">Disable the tuned Service</a></p>
+<h5 id="禁用-THP"><a href="#禁用-THP" class="headerlink" title="禁用 THP"></a>禁用 THP</h5><p>大多数Linux平台都包含一个名为transparent hugepages的功能，该功能可能会严重降低Hadoop集群的性能</p>
+<p>在root权限下，使用以下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 检查THP是否启用</span><br><span class="line">cat &#x2F;sys&#x2F;kernel&#x2F;mm&#x2F;transparent_hugepage&#x2F;enabled</span><br><span class="line">cat &#x2F;sys&#x2F;kernel&#x2F;mm&#x2F;transparent_hugepage&#x2F;defrag</span><br><span class="line"></span><br><span class="line">输出[always] never意味着THP已启用，always [never]意味着THP未启用</span><br></pre></td></tr></table></figure>
+
+<p>该图就表示THP已启用</p>
+<p><img src="/images/blog/2019-11-13-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p>要禁用透明大页面，请在所有群集主机上执行以下步骤</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># 编辑文件，最下面添加两行配置，重启服务器生效</span><br><span class="line">vim &#x2F;etc&#x2F;rc.d&#x2F;rc.local</span><br><span class="line">echo never &gt; &#x2F;sys&#x2F;kernel&#x2F;mm&#x2F;transparent_hugepage&#x2F;enabled</span><br><span class="line">echo never &gt; &#x2F;sys&#x2F;kernel&#x2F;mm&#x2F;transparent_hugepage&#x2F;defrag</span><br><span class="line"></span><br><span class="line"># 赋予&#x2F;etc&#x2F;rc.d&#x2F;rc.local文件可执行权限</span><br><span class="line">chmod +x &#x2F;etc&#x2F;rc.d&#x2F;rc.local</span><br><span class="line"></span><br><span class="line"># 修改GRUB配置, 仅RHEL&#x2F;CentOS 7.x需要进行该项操作</span><br><span class="line"># 在GRUB_CMDLINE_LINUX项目后面添加一个参数</span><br><span class="line">vim &#x2F;etc&#x2F;default&#x2F;grub </span><br><span class="line">transparent_hugepage&#x3D;never</span><br><span class="line"></span><br><span class="line"># 执行命令</span><br><span class="line">grub2-mkconfig -o &#x2F;boot&#x2F;grub2&#x2F;grub.cfg</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-11-13-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p>还可以使用以下命令即刻生效禁用透明的大页面, 但请记住，重新启动后它将失效</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo never &gt; &#x2F;sys&#x2F;kernel&#x2F;mm&#x2F;transparent_hugepage&#x2F;enabled</span><br><span class="line">echo never &gt; &#x2F;sys&#x2F;kernel&#x2F;mm&#x2F;transparent_hugepage&#x2F;defrag</span><br></pre></td></tr></table></figure>
+
+<p>官方文档介绍<a href="https://docs.cloudera.com/documentation/enterprise/6/6.3/topics/cdh_admin_performance.html#cdh_performance__section_hw3_sdf_jq" target="_blank" rel="noopener">Disabling Transparent Hugepages (THP)</a></p>
+<h5 id="安装-mysql5-7"><a href="#安装-mysql5-7" class="headerlink" title="安装 mysql5.7"></a>安装 mysql5.7</h5><p>只需要在集群中某一个节点上安装即可</p>
+<p>我这选用<a href="https://mirrors.tuna.tsinghua.edu.cn/mysql/downloads/MySQL-5.7/" target="_blank" rel="noopener">MySQL 5.7.25</a></p>
+<p><img src="/images/blog/2019-12-02-1.png" alt>{:height=”80%” width=”80%”}</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"># 首先卸载操作系统可能会自带的mariadb-libs</span><br><span class="line">yum -y remove mariadb-libs</span><br><span class="line"></span><br><span class="line">解压mysql rpm-bundle tar包</span><br><span class="line">tar -zxvf mysql-5.7.25-1.el7.x86_64.rpm-bundle.tar</span><br><span class="line"></span><br><span class="line"># 开始安装mysql, 一定要按照下面的顺序来安装，否则会安装不成功</span><br><span class="line">rpm -ivh mysql-community-common-5.7.25-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-libs-5.7.25-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-client-5.7.25-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-server-5.7.25-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-libs-compat-5.7.25-1.el7.x86_64.rpm #（安装Cloudera Manager6需要）</span><br><span class="line"></span><br><span class="line"># 启动mysql服务</span><br><span class="line">systemctl start mysqld</span><br><span class="line"># 如果无法启动，则需要修改mysql数据目录所有者：chown -R mysql:mysql &#x2F;var&#x2F;lib&#x2F;mysql&#x2F;</span><br><span class="line"></span><br><span class="line"># 查看root用户初始密码</span><br><span class="line">grep password &#x2F;var&#x2F;log&#x2F;mysqld.log</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-12-02-2.png" alt>{:height=”80%” width=”80%”}</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 登录mysql修改root密码</span><br><span class="line">mysql -uroot -p</span><br><span class="line"># 如果密码复杂度不够，则会禁止修改，默认密码规则为：包含数字、大小写字母、特殊字符，同时还有长度要求</span><br><span class="line"># 可以通过修改全局参数来解决，但是还是要求密码长度至少为8位</span><br><span class="line">mysql&gt; set global validate_password_policy&#x3D;0;</span><br><span class="line">mysql&gt; set password &#x3D; password(&#39;12345678&#39;);</span><br><span class="line"></span><br><span class="line"># 设置远程登录权限</span><br><span class="line">mysql&gt; grant all privileges on *.* to &#39;root&#39;@&#39;%&#39; identified by &#39;12345678&#39;;</span><br><span class="line">mysql&gt; flush privileges;</span><br><span class="line"></span><br><span class="line"># 修改mysql数据库默认编码</span><br><span class="line">查看原数据库编码：mysql&gt; SHOW VARIABLES LIKE &#39;char%&#39;;可以看到数据库和服务端的编码都还不是utf8：</span><br></pre></td></tr></table></figure>
+<p><img src="/images/blog/2019-12-02-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p>编辑/etc/my.cnf文件，在[mysqld]下面添加一行character-set-server=utf8</p>
+<p>重启mysql服务：systemctl restart mysqld，再次登录数据库查看编码，修改成功</p>
+<p><img src="/images/blog/2019-12-02-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p>这里我贴出我的 my.cnf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line">datadir&#x3D;&#x2F;var&#x2F;lib&#x2F;mysql</span><br><span class="line">socket&#x3D;&#x2F;var&#x2F;lib&#x2F;mysql&#x2F;mysql.sock</span><br><span class="line">transaction-isolation &#x3D; READ-COMMITTED</span><br><span class="line"># Disabling symbolic-links is recommended to prevent assorted security risks;</span><br><span class="line"># to do so, uncomment this line:</span><br><span class="line">symbolic-links &#x3D; 0</span><br><span class="line">key_buffer_size &#x3D; 32M</span><br><span class="line">max_allowed_packet &#x3D; 32M</span><br><span class="line">thread_stack &#x3D; 256K</span><br><span class="line">thread_cache_size &#x3D; 64</span><br><span class="line">query_cache_limit &#x3D; 8M</span><br><span class="line">query_cache_size &#x3D; 64M</span><br><span class="line">query_cache_type &#x3D; 1</span><br><span class="line">max_connections &#x3D; 550</span><br><span class="line">character-set-server &#x3D; utf8</span><br><span class="line">#expire_logs_days &#x3D; 10</span><br><span class="line">#max_binlog_size &#x3D; 100M</span><br><span class="line">#log_bin should be on a disk with enough free space.</span><br><span class="line">#Replace &#39;&#x2F;var&#x2F;lib&#x2F;mysql&#x2F;mysql_binary_log&#39; with an appropriate path for your</span><br><span class="line">#system and chown the specified folder to the mysql user.</span><br><span class="line">log_bin&#x3D;&#x2F;var&#x2F;lib&#x2F;mysql&#x2F;mysql_binary_log</span><br><span class="line">#In later versions of MySQL, if you enable the binary log and do not set</span><br><span class="line">#a server_id, MySQL will not start. The server_id must be unique within</span><br><span class="line">#the replicating group.</span><br><span class="line">server_id&#x3D;1</span><br><span class="line">binlog_format &#x3D; mixed</span><br><span class="line">read_buffer_size &#x3D; 2M</span><br><span class="line">read_rnd_buffer_size &#x3D; 16M</span><br><span class="line">sort_buffer_size &#x3D; 8M</span><br><span class="line">join_buffer_size &#x3D; 8M</span><br><span class="line"># InnoDB settings</span><br><span class="line">innodb_file_per_table &#x3D; 1</span><br><span class="line">innodb_flush_log_at_trx_commit  &#x3D; 2</span><br><span class="line">innodb_log_buffer_size &#x3D; 64M</span><br><span class="line">innodb_buffer_pool_size &#x3D; 4G</span><br><span class="line">innodb_thread_concurrency &#x3D; 8</span><br><span class="line">innodb_flush_method &#x3D; O_DIRECT</span><br><span class="line">innodb_log_file_size &#x3D; 512M</span><br><span class="line">[mysqld_safe]</span><br><span class="line">log-error&#x3D;&#x2F;var&#x2F;log&#x2F;mysqld.log</span><br><span class="line">pid-file&#x3D;&#x2F;var&#x2F;run&#x2F;mysqld&#x2F;mysqld.pid</span><br><span class="line">sql_mode&#x3D;STRICT_ALL_TABLES</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装-CM"><a href="#安装-CM" class="headerlink" title="安装 CM"></a>安装 CM</h4><h5 id="文件下载"><a href="#文件下载" class="headerlink" title="文件下载"></a>文件下载</h5><p>准备 CM 和 CDH 文件</p>
+<p>CM6.3.1</p>
+<ul>
+<li><a href="https://archive.cloudera.com/cm6/6.3.1/repo-as-tarball/cm6.3.1-redhat7.tar.gz" target="_blank" rel="noopener">https://archive.cloudera.com/cm6/6.3.1/repo-as-tarball/cm6.3.1-redhat7.tar.gz</a></li>
+</ul>
+<p>CDH6.3.1</p>
+<ul>
+<li><a href="https://archive.cloudera.com/cdh6/6.3.1/parcels/CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel" target="_blank" rel="noopener">https://archive.cloudera.com/cdh6/6.3.1/parcels/CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel</a></li>
+<li><a href="https://archive.cloudera.com/cdh6/6.3.1/parcels/CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel.sha1" target="_blank" rel="noopener">https://archive.cloudera.com/cdh6/6.3.1/parcels/CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel.sha1</a></li>
+<li><a href="https://archive.cloudera.com/cdh6/6.3.1/parcels/manifest.json" target="_blank" rel="noopener">https://archive.cloudera.com/cdh6/6.3.1/parcels/manifest.json</a></li>
+</ul>
+<p>ASC文件</p>
+<ul>
+<li><a href="https://archive.cloudera.com/cm6/6.3.1/allkeys.asc" target="_blank" rel="noopener">https://archive.cloudera.com/cm6/6.3.1/allkeys.asc</a></li>
+</ul>
+<p>repo 文件</p>
+<ul>
+<li><a href="https://archive.cloudera.com/cm6/6.3.1/redhat7/yum/cloudera-manager.repo" target="_blank" rel="noopener">https://archive.cloudera.com/cm6/6.3.1/redhat7/yum/cloudera-manager.repo</a></li>
+</ul>
+<p>同时还需要下载一个repo 文件、asc文件，同样保存到 Cloudera Manager 目录下</p>
+<p>Cloudera Manager 目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">cm6.3.1</span><br><span class="line">├── allkeys.asc</span><br><span class="line">├── cloudera-manager.repo</span><br><span class="line">├── repodata</span><br><span class="line">│   ├── 3662f97de72fd44c017bb0e25cee3bc9398108c8efb745def12130a69df2ecb2-filelists.sqlite.bz2</span><br><span class="line">│   ├── 43f3725f730ee7522712039982aa4befadae4db968c8d780c8eb15ae9872cd4d-primary.xml.gz</span><br><span class="line">│   ├── 49e4d60647407a36819f1d8ed901258a13361749b742e3be9065025ad31feb8e-filelists.xml.gz</span><br><span class="line">│   ├── 8afda99b921fd1538dd06355952719652654fc06b6cd14515437bda28376c03d-other.sqlite.bz2</span><br><span class="line">│   ├── b9300879675bdbc300436c1131a910a535b8b5a5dc6f38e956d51769b6771a96-primary.sqlite.bz2</span><br><span class="line">│   ├── e28836e19e07f71480c4dad0f7a87a804dc93970ec5277ad95614e8ffcff0d58-other.xml.gz</span><br><span class="line">│   ├── repomd.xml</span><br><span class="line">│   ├── repomd.xml.asc</span><br><span class="line">│   └── repomd.xml.key</span><br><span class="line">├── RPM-GPG-KEY-cloudera</span><br><span class="line">├── RPMS</span><br><span class="line">│   ├── noarch</span><br><span class="line">│   └── x86_64</span><br><span class="line">│       ├── cloudera-manager-agent-6.3.1-1466458.el7.x86_64.rpm</span><br><span class="line">│       ├── cloudera-manager-daemons-6.3.1-1466458.el7.x86_64.rpm</span><br><span class="line">│       ├── cloudera-manager-server-6.3.1-1466458.el7.x86_64.rpm</span><br><span class="line">│       ├── cloudera-manager-server-db-2-6.3.1-1466458.el7.x86_64.rpm</span><br><span class="line">│       ├── enterprise-debuginfo-6.3.1-1466458.el7.x86_64.rpm</span><br><span class="line">│       └── oracle-j2sdk1.8-1.8.0+update181-1.x86_64.rpm</span><br><span class="line">└── SRPMS</span><br></pre></td></tr></table></figure>
+
+<p>sha文件得重命名下，去掉末尾的数字</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel.sha1 &#x2F;var&#x2F;www&#x2F;html&#x2F;cdh6_parcel&#x2F;CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel.sha</span><br></pre></td></tr></table></figure>
+
+<p>CDH 目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cdh6.3.1</span><br><span class="line">├── CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel</span><br><span class="line">├── CDH-6.3.1-1.cdh6.3.1.p0.1470567-el7.parcel.sha</span><br><span class="line">└── manifest.json</span><br></pre></td></tr></table></figure>
+
+<h5 id="搭建-yum-库"><a href="#搭建-yum-库" class="headerlink" title="搭建 yum 库"></a>搭建 yum 库</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 安装 httpd</span><br><span class="line">yum -y install httpd</span><br><span class="line"></span><br><span class="line"># 启动httpd服务并设置开机自启动</span><br><span class="line">systemctl start httpd</span><br><span class="line">systemctl enable httpd</span><br></pre></td></tr></table></figure>
+
+<p>将 Cloudera Manager 目录、CDH 目录移动到 httpd 的 html 目录下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mv cm6.3.1  &#x2F;var&#x2F;www&#x2F;html</span><br><span class="line">mv cdh6.3.1 &#x2F;var&#x2F;www&#x2F;html</span><br></pre></td></tr></table></figure>
+
+<p>修改 repo 文件, {host}改为对应IP</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[cloudera-manager]</span><br><span class="line">name&#x3D;Cloudera Manager 6.3.1</span><br><span class="line">baseurl&#x3D;http:&#x2F;&#x2F;&#123;host&#125;&#x2F;cm6.3.1</span><br><span class="line">gpgcheck&#x3D;0</span><br><span class="line">enabled&#x3D;1</span><br></pre></td></tr></table></figure>
+
+<p>复制 repo 文件到 yum 文件夹</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp cloudera-manager.repo &#x2F;etc&#x2F;yum.repos.d</span><br></pre></td></tr></table></figure>
+
+<p>启动httpd服务并准备好目录之后浏览器打开 http://{host}/cm6.3.1 即可看到</p>
+<p><img src="/images/blog/2019-11-04-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p>清除yum缓存，查看机器是否识别</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum clean all </span><br><span class="line">yum list | grep cloudera</span><br></pre></td></tr></table></figure>
+
+<h5 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h5><p>在CM Server节点上操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install cloudera-manager-server</span><br></pre></td></tr></table></figure>
+
+<h5 id="jdbc-驱动"><a href="#jdbc-驱动" class="headerlink" title="jdbc 驱动"></a>jdbc 驱动</h5><p>下载<a href="https://cdn.mysql.com//Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz" target="_blank" rel="noopener">mysql-connector-java-5.1.47.tar.gz</a>包</p>
+<p>解压出mysql-connector-java-5.1.47-bin.jar文件</p>
+<p>将 mysql-connector-java-5.1.47-bin.jar 文件上传至 CM Server节点上的 /usr/share/java/ 目录下并重命名为mysql-connector-java.jar（如果/usr/share/java/目录不存在，需要手动创建）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tar zxvf mysql-connector-java-5.1.47.tar.gz</span><br><span class="line">mkdir -p &#x2F;usr&#x2F;share&#x2F;java&#x2F;</span><br><span class="line">cp mysql-connector-java-5.1.47-bin.jar &#x2F;usr&#x2F;share&#x2F;java&#x2F;mysql-connector-java.jar</span><br></pre></td></tr></table></figure>
+
+<h5 id="创建CDH所需要的数据库"><a href="#创建CDH所需要的数据库" class="headerlink" title="创建CDH所需要的数据库"></a>创建CDH所需要的数据库</h5><p>根据所需要安装的服务参照下表创建对应的数据库以及数据库用户，数据库必须使用utf8编码，创建数据库时要记录好用户名及对应密码</p>
+<p><img src="/images/blog/2019-11-04-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p>我这里就创建 cm 所需要的数据库</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE scm DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;</span><br><span class="line"></span><br><span class="line">GRANT ALL ON scm.* TO &#39;scm&#39;@&#39;%&#39; IDENTIFIED BY &#39;scm&#39;;</span><br><span class="line"></span><br><span class="line"># 查看授权是否正确</span><br><span class="line">SHOW GRANTS FOR &#39;scm&#39;@&#39;%&#39;;</span><br><span class="line"></span><br><span class="line"># 查看数据库和服务端的编码是不是utf8</span><br><span class="line">SHOW VARIABLES LIKE &#39;char%&#39;;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-11-04-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-11-05-2.png" alt>{:height=”80%” width=”80%”}</p>
+<h5 id="设置数据库"><a href="#设置数据库" class="headerlink" title="设置数据库"></a>设置数据库</h5><p>Cloudera Manager Server包含一个配置数据库的脚本</p>
+<p><strong>mysql数据库与CM Server是同一台主机</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;opt&#x2F;cloudera&#x2F;cm&#x2F;schema&#x2F;scm_prepare_database.sh mysql scm scm</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-11-04-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p><strong>mysql数据库与CM Server不在同一台主机上</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;opt&#x2F;cloudera&#x2F;cm&#x2F;schema&#x2F;scm_prepare_database.sh mysql -h &lt;mysql-host-ip&gt; --scm-host &lt;cm-server-ip&gt; scm scm</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装CDH节点"><a href="#安装CDH节点" class="headerlink" title="安装CDH节点"></a>安装CDH节点</h4><h5 id="启动-Server-服务"><a href="#启动-Server-服务" class="headerlink" title="启动 Server 服务"></a>启动 Server 服务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start cloudera-scm-server</span><br></pre></td></tr></table></figure>
+
+<p>然后等待Cloudera Manager Server启动，可能需要稍等一会儿</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 查看 server 端口、可能需要稍等一会儿</span><br><span class="line">netstat -anlp | grep 7180</span><br><span class="line"></span><br><span class="line"># 查看 server 服务状态，active 说明正常</span><br><span class="line">systemctl status cloudera-scm-server</span><br></pre></td></tr></table></figure>
+
+<p>如果启动报错，通过 /var/log/cloudera-scm-server/cloudera-scm-server.log 日志文件去查看状态</p>
+<h5 id="访问-WEB-界面"><a href="#访问-WEB-界面" class="headerlink" title="访问 WEB 界面"></a>访问 WEB 界面</h5><p>打开浏览器，访问地址：http://<server_host>:7180，默认账号和密码都为 admin</server_host></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.staroon.dev/2018/12/01/CDH6Install/" target="_blank" rel="noopener">CentOS7下完全离线安装CDH6集群</a></li>
+<li><a href="https://www.jianshu.com/p/33e8246c31fb" target="_blank" rel="noopener">CDH 6.3.1 rpm+http安装部署</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/04/yum-upgrade-update/" rel="prev" title="yum update操作导致系统版本升级">
+      <i class="fa fa-chevron-left"></i> yum update操作导致系统版本升级
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/05/Spark/" rel="next" title="CDH 使用原生 Apache Spark">
+      CDH 使用原生 Apache Spark <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#环境要求"><span class="nav-number">2.</span> <span class="nav-text">环境要求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装之前"><span class="nav-number">3.</span> <span class="nav-text">安装之前</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Host"><span class="nav-number">3.1.</span> <span class="nav-text">Host</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ssh免密"><span class="nav-number">3.2.</span> <span class="nav-text">ssh免密</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#关闭防火墙"><span class="nav-number">3.3.</span> <span class="nav-text">关闭防火墙</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#禁用-SELinux"><span class="nav-number">3.4.</span> <span class="nav-text">禁用 SELinux</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启用-NTP"><span class="nav-number">3.5.</span> <span class="nav-text">启用 NTP</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#虚拟内存参数设置"><span class="nav-number">3.6.</span> <span class="nav-text">虚拟内存参数设置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#禁用-tuned-服务"><span class="nav-number">3.7.</span> <span class="nav-text">禁用 tuned 服务</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#禁用-THP"><span class="nav-number">3.8.</span> <span class="nav-text">禁用 THP</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装-mysql5-7"><span class="nav-number">3.9.</span> <span class="nav-text">安装 mysql5.7</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装-CM"><span class="nav-number">4.</span> <span class="nav-text">安装 CM</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#文件下载"><span class="nav-number">4.1.</span> <span class="nav-text">文件下载</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#搭建-yum-库"><span class="nav-number">4.2.</span> <span class="nav-text">搭建 yum 库</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装"><span class="nav-number">4.3.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#jdbc-驱动"><span class="nav-number">4.4.</span> <span class="nav-text">jdbc 驱动</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建CDH所需要的数据库"><span class="nav-number">4.5.</span> <span class="nav-text">创建CDH所需要的数据库</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置数据库"><span class="nav-number">4.6.</span> <span class="nav-text">设置数据库</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装CDH节点"><span class="nav-number">5.</span> <span class="nav-text">安装CDH节点</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#启动-Server-服务"><span class="nav-number">5.1.</span> <span class="nav-text">启动 Server 服务</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#访问-WEB-界面"><span class="nav-number">5.2.</span> <span class="nav-text">访问 WEB 界面</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">433k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:34</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'a400db4f05287fbcea86a9e895b4314c',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
