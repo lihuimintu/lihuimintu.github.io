@@ -25,7 +25,7 @@
     version: '7.7.0',
     exturl: false,
     sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
-    copycode: {"enable":false,"show_result":false,"style":null},
+    copycode: {"enable":true,"show_result":true,"style":null},
     back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
     bookmark: {"enable":false,"color":"#222","save":"auto"},
     fancybox: false,
@@ -310,12 +310,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/11/26/CDH-Assign-Roles/" rel="prev" title="CDH 如何给 Hadoop 集群划分角色">
-      <i class="fa fa-chevron-left"></i> CDH 如何给 Hadoop 集群划分角色
+    <a href="/2019/11/20/DataNode-Balancer-DiskBalancer/" rel="prev" title="HDFS 数据平衡">
+      <i class="fa fa-chevron-left"></i> HDFS 数据平衡
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/11/27/HBase-WAL-Memestore/" rel="next" title="HBase 写 WAL 先还是 Memestore ？">
-      HBase 写 WAL 先还是 Memestore ？ <i class="fa fa-chevron-right"></i>
+    <a href="/2019/11/26/CDH-Assign-Roles/" rel="next" title="CDH 如何给 Hadoop 集群划分角色">
+      CDH 如何给 Hadoop 集群划分角色 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -393,7 +393,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">174</span>
+          <span class="site-state-item-count">175</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -445,12 +445,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">422k</span>
+    <span title="站点总字数">427k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:23</span>
+    <span title="站点阅读时长">6:28</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
@@ -532,6 +532,10 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
   }, window.Gitalk);
 });
 </script>
+
+  <!-- 代码块复制功能 -->
+  <script type="text/javascript" src="/js/clipboard.min.js"></script>	
+<script type="text/javascript" src="/js/custom.js"></script>
 
 </body>
 </html>

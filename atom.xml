@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-02-01T04:42:46.287Z</updated>
+  <updated>2020-02-01T09:36:58.656Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>内存缺页错误</title>
+    <link href="http://yoursite.com/2020/02/01/Page-Fault-md/"/>
+    <id>http://yoursite.com/2020/02/01/Page-Fault-md/</id>
+    <published>2020-01-31T16:00:00.000Z</published>
+    <updated>2020-02-01T09:36:58.656Z</updated>
+    
+    <content type="html"><![CDATA[<p>缺页中断就是要访问的页不在主存，需要操作系统将其调入主存后再进行访问。</p><hr><h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">作者：Liam Huang</span><br><span class="line">链接：https:&#x2F;&#x2F;liam.page&#x2F;2017&#x2F;09&#x2F;01&#x2F;page-fault&#x2F;</span><br></pre></td></tr></table></figure><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>众所周知，CPU 不能直接和硬盘进行交互。CPU 所作的一切运算，都是通过 CPU 缓存间接与内存进行操作的。若是 CPU 请求的内存数据在物理内存中不存在，那么 CPU 就会报告「缺页错误（Page Fault）」，提示内核产生中断，将所缺的页面装入内存。</p><p>在内核处理缺页错误时，就有可能进行磁盘的读写操作。这样的操作，相对 CPU 的处理是非常缓慢的。因此，发生大量的缺页错误，势必会对程序的性能造成很大影响。因此，在对性能要求很高的环境下，应当尽可能避免这种情况。</p><p>此篇介绍缺页错误本身，并结合一个实际示例作出一些实践分析。这里主要在 Linux 的场景下做讨论；其他现代操作系统，基本也是类似的。</p><h4 id="内存页和缺页错误"><a href="#内存页和缺页错误" class="headerlink" title="内存页和缺页错误"></a>内存页和缺页错误</h4><p>现代 CPU 都支持分段和分页的内存寻址模式。在 Linux 当中，实际起作用的只有分页模式。</p><p>具体来说，分页模式在逻辑上将虚拟内存和物理内存同时等分成固定大小的块。这些块在虚拟内存上称之为「页」，而在物理内存上称之为「页帧」，并交由 CPU 中的 MMU 模块来负责页帧和页之间的映射管理。</p><p>引入分页模式的好处，可以大致概括为两个方面: </p><ul><li>允许虚存空间远大于实际物理内存大小的情况。这是因为，分页之后，操作系统读入磁盘的文件时，无需以文件为单位全部读入，而可以以内存页为单位，分片读入。同时，考虑到 CPU 不可能一次性需要使用整个内存中的数据，因此可以交由特定的算法，进行内存调度: 将长时间不用的页帧内的数据暂存到磁盘上。</li><li>减少了内存碎片的产生。这是因为，引入分页之后，内存的分配管理都是以页大小（通常是 4KiB，扩展分页模式下是 4MiB）为单位的；虚拟内存中的页总是对应物理内存中实际的页帧。这样一来，在虚拟内存空间中，页内连续的内存在物理内存上也一定是连续的，不会产生碎片。</li></ul><h4 id="缺页错误"><a href="#缺页错误" class="headerlink" title="缺页错误"></a>缺页错误</h4><p>当进程在进行一些计算时，CPU 会请求内存中存储的数据。在这个请求过程中，CPU 发出的地址是逻辑地址（虚拟地址），然后交由 CPU 当中的 MMU 单元进行内存寻址，找到实际物理内存上的内容。若是目标虚存空间中的内存页（因为某种原因），在物理内存中没有对应的页帧，那么 CPU 就无法获取数据。这种情况下，CPU 是无法进行计算的，于是它就会报告一个缺页错误（Page Fault）。</p><p>因为 CPU 无法继续进行进程请求的计算，并报告了缺页错误，用户进程必然就中断了。这样的中断称之为缺页中断，因为由 CPU 以外的硬件产生的中断，也称之为硬中断。在报告 Page Fault 之后，进程会从用户态切换到系统态，交由操作系统内核的 Page Fault Handler 处理缺页错误。</p><h4 id="分类和处理"><a href="#分类和处理" class="headerlink" title="分类和处理"></a>分类和处理</h4><p>基本来说，缺页错误可以分为两类: 硬缺页错误（Hard Page Fault）和软缺页错误（Soft Page Fault）。这里，前者又称为主要缺页错误（Major Page Fault）；后者又称为次要缺页错误（Minor Page Fault）。当缺页中断发生后，Page Fault Handler 会判断缺页的类型，进而处理缺页错误，最终将控制权交给用户态代码。</p><p>若是此时物理内存里，已经有一个页帧正是此时 CPU 请求的内存页，那么这是一个软缺页错误；于是，Page Fault Hander 会指示 MMU 建立相应的页帧到页的映射关系。这一操作的实质是进程间共享内存——比如动态库（共享对象），比如 mmap 的文件。</p><p>若是此时物理内存中，没有相应的页帧，那么这就是一个硬缺页错误；于是 Page Fault Hander 会指示 CPU，从已经打开的磁盘文件中读取相应的内容到物理内存，而后交由 MMU 建立这份页帧到页的映射关系。</p><p>不难发现，软缺页错误只是在内核态里轻轻地走了一遭，而硬缺页错误则涉及到磁盘 I/O。因此，处理起来，硬缺页错误要比软缺页错误耗时长得多。这就是为什么我们要求高性能程序必须在对外提供服务时，尽可能少地发生硬缺页错误。</p><blockquote><p>除了硬缺页错误和软缺页错误之外，还有一类缺页错误是因为访问非法内存引起的。前两类缺页错误中，进程尝试访问的虚存地址尚为合法有效的地址，只是对应的物理内存页帧没有在物理内存当中。后者则不然，进程尝试访问的虚存地址是非法无效的地址。比如尝试对 nullptr 解引用，就会访问地址为 0x0 的虚存地址，这是非法地址。此时 CPU 报出无效缺页错误（Invalid Page Fault）。操作系统对无效缺页错误的处理各不相同：Windows 会使用异常机制向进程报告；*nix 则会通过向进程发送 SIGSEGV 信号（11），引发<a href="https://liam.page/2017/05/27/tutorial-to-GDB-taking-ncurses-as-an-example/" target="_blank" rel="noopener">内存转储</a>。</p></blockquote><h4 id="缺页错误的原因"><a href="#缺页错误的原因" class="headerlink" title="缺页错误的原因"></a>缺页错误的原因</h4><p>之前提到，物理内存中没有 CPU 所需的页帧，就会引发缺页错误。这一现象背后的原因可能有很多。</p><p>例如说，进程通过 mmap 系统调用，直接建立了磁盘文件和虚拟内存的映射关系。然而，在 mmap 调用之后，并不会立即从磁盘上读取这一文件。而是在实际需要文件内容时，通过 CPU 触发缺页错误，要求 Page Fault Handler 去将文件内容读入内存。</p><p>又例如说，一个进程启动了很久，但是长时间没有活动。若是计算机处在很高的内存压力下，则操作系统会将这一进程长期未使用的页帧内容，从物理内存转储到磁盘上。这个过程称为换出（swap out）。在 *nix 系统下，用于转储这部分内存内容的磁盘空间，称为交换空间；在 Windows 上，这部分磁盘空间，则被称为虚拟内存，对应磁盘上的文件则称为页面文件。在这个过程中，进程在内存中保存的任意内容，都可能被换出到交换空间：可以是数据内容，也可以是进程的代码段内容。</p><p>Windows 用户看到这里，应该能明白这部分空间为什么叫做「虚拟内存」——因为它于真实的内存条相对，是在硬盘上虚拟出来的一份内存。通过这样的方式，「好像」将内存的容量扩大了。同样，为什么叫「页面文件」也一目了然。因为事实上，文件内保存的就是一个个内存页帧。在 Windows 上经常能观察到「假死」的现象，就和缺页错误有关。这种现象，实际就是长期不运行某个程序，导致程序对应的内存被换出到磁盘；在需要响应时，由于需要从磁盘上读取大量内容，导致响应很慢，产生假死现象。这种现象发生时，若是监控系统硬错误数量，就会发现在短时间内，目标进程产生了大量的硬错误。</p><p>在 Windows XP 流行的年代，有很多来路不明的「系统优化建议」。其中一条就是「扩大页面文件的大小，有助于加快系统速度」。事实上，这种方式只能加大内存「看起来」的容量，却给内存整体（将物理内存和磁盘页面文件看做一个整体）的响应速度带来了巨大的负面影响。因为，尽管容量增大了，但是访问这部分增大的容量时，进程实际上需要先陷入内核态，从磁盘上读取内容做好映射，再继续执行。更有甚者，这些建议会要求「将页面文件分散在多个不同磁盘分区」，并美其名曰「分散压力」。事实上，从页面文件中读取内存页帧本就已经很慢；若是还要求磁盘不断在不同分区上寻址，那就更慢了。可见谣言害死人。</p><h4 id="观察缺页错误"><a href="#观察缺页错误" class="headerlink" title="观察缺页错误"></a>观察缺页错误</h4><p>Linux 系统，ps 是一个强大的命令，我们可以用 -o 选项指定希望关注的项目。比如</p><ul><li>min_flt: 进程启动至今软缺页中断数量</li><li>maj_flt: 进程启动至今硬缺页中断数量</li><li>cmd: 执行的命令</li><li>args: 执行的命令的参数（从 $0$ 开始）</li><li>uid: 执行命令的用户的 ID</li><li>gid: 执行命令的用户所在组的 ID</li></ul><p>因此，我们可以用 <code>ps -o min_flt,maj_flt,cmd,args,uid,gid 1</code> 来观察进程号为 1 的进程的缺页错误。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ps -o min_flt,maj_flt,cmd,args,uid,gid 1</span><br><span class="line"> MINFL  MAJFL CMD                         COMMAND                       UID   GID</span><br><span class="line">  3104     41 &#x2F;sbin&#x2F;init                  &#x2F;sbin&#x2F;init                      0     0</span><br></pre></td></tr></table></figure><p>结合 <code>watch</code> 命令，则可关注进程当前出发缺页中断的状态</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 --difference &quot;ps -o min_flt,maj_flt,cmd,args,uid,gid 1&quot;</span><br></pre></td></tr></table></figure><p>你还可以结合 <code>sort</code> 命令，动态观察产生缺页错误最多的几个进程。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ watch -n 1 &quot;ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8&quot;</span><br><span class="line"></span><br><span class="line">Every 1.0s: ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8</span><br><span class="line"></span><br><span class="line">3027665711  1 tmux -2 new -s yu-ws        tmux -2 new -s yu-ws        19879 19879</span><br><span class="line">1245846907 9082 tmux                      tmux                        20886 20886</span><br><span class="line">1082463126 57 &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux         &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux          5638  5638</span><br><span class="line">868590907   2 irqbalance                  irqbalance                      0     0</span><br><span class="line">662275941 289831 tmux                     tmux                         2612  2612</span><br><span class="line">424339087 247 perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl     0     0</span><br><span class="line">200045670   0 &#x2F;bin&#x2F;bash .&#x2F;t.sh            &#x2F;bin&#x2F;bash .&#x2F;t.sh            12498 12498</span><br><span class="line">151206845 10335 tmux new -s dev           tmux new -s dev             16629 16629</span><br></pre></td></tr></table></figure><p>这是公司开发服务器上的一瞥，不难发现，我司有不少 tmux 用户。（笑）</p><h4 id="一个硬缺页错误导致的问题"><a href="#一个硬缺页错误导致的问题" class="headerlink" title="一个硬缺页错误导致的问题"></a>一个硬缺页错误导致的问题</h4><p>我司的某一高性能服务采取了 mmap 的方式，从磁盘加载大量数据。由于调研测试需要，多名组内成员共享一台调研机器。现在的问题是，当共享的人数较多时，新启动的服务进程会在启动时耗费大量时间——以几十分钟计。那么，这是为什么呢？</p><blockquote><p>因为涉及到公司机密，这里不方便给截图。留待以后，做模拟实验后给出。</p></blockquote><p>以 top 命令观察，机器卡顿时，CPU 负载并不高：32 核只有 1.3 左右的 1min 平均负载。但是，iostat 观察到，磁盘正在以 10MiB/s 级别的速度，不断进行读取。由此判断，这种情况下，目标进程一定有大量的 Page Fault 产生。使用上述 watch -n 1 –difference “ps -o min_flt,maj_flt,cmd,args,uid,gid <pid>“ 观察，发现目标进程确实有大量硬缺页错误产生，肯定了这一推断。</pid></p><p>然而，诚然进程需要载入大量数据，但是以 mmap 的方式映射，为何会已有大量同类服务存在的情况下，大量读取硬盘呢？这就需要更加深入的分析了。</p><p>事实上，这里隐含了一个非常细小的矛盾。一方面，该服务需要从磁盘加载大量数据；另一方面，该服务对性能要求非常高。我们知道，mmap 只是对文件做了映射，不会在调用 mmap 时立即将文件内容加载进内存。这就导致了一个问题：当服务启动对外提供服务时，可能还有数据未能加载进内存；而这种加载是非常慢的，严重影响服务性能。因此，可以推断，为了解决这个问题，程序必然在 mmap 之后，尝试将所有数据加载进物理内存。</p><p>这样一来，先前遇到的现象就很容易解释了。</p><ul><li>一方面，因为公用机器的人很多，必然造成内存压力大，从而存在大量换出的内存；</li><li>另一方面，新启动的进程，会逐帧地扫描文件；</li><li>这样一来，新启动的进程，就必须在极大的内存压力下，不断逼迫系统将其它进程的内存换出，而后换入自己需要的内存，不断进行磁盘 I/O；</li><li>故此，新启动的进程会耗费大量时间进行不必要的磁盘 I/O。</li></ul>]]></content>
+    
+    <summary type="html">
+    
+      缺页错误（Page Fault）
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>HDFS 处理小文件方法</title>
@@ -28,27 +49,6 @@
     <summary type="html">
     
       Hadoop 中处理小文件
-    
-    </summary>
-    
-    
-      <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>HDFS 中 atime 与 mtime 解析</title>
-    <link href="http://yoursite.com/2020/01/27/HDFS-atime-ctime/"/>
-    <id>http://yoursite.com/2020/01/27/HDFS-atime-ctime/</id>
-    <published>2020-01-26T16:00:00.000Z</published>
-    <updated>2020-02-01T04:42:46.279Z</updated>
-    
-    <content type="html"><![CDATA[<p>HDFS 中 atime 和 mtime</p><hr><h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">作者：混绅士</span><br><span class="line">链接：http:&#x2F;&#x2F;bigdatadecode.club&#x2F;HDFS%E4%B8%ADatime%E5%92%8Cmtime.html</span><br><span class="line">来源：HDFS中atime与mtime解析</span><br></pre></td></tr></table></figure><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4>]]></content>
-    
-    <summary type="html">
-    
-      HDFS 中 atime 与 mtime 解析
     
     </summary>
     
@@ -75,6 +75,27 @@
     
     
       <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HDFS 中 atime 与 mtime 解析</title>
+    <link href="http://yoursite.com/2020/01/27/HDFS-atime-ctime/"/>
+    <id>http://yoursite.com/2020/01/27/HDFS-atime-ctime/</id>
+    <published>2020-01-26T16:00:00.000Z</published>
+    <updated>2020-02-01T07:24:01.825Z</updated>
+    
+    <content type="html"><![CDATA[<p>HDFS 中 atime 和 mtime</p><hr><h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">作者：混绅士</span><br><span class="line">链接：http:&#x2F;&#x2F;bigdatadecode.club&#x2F;HDFS%E4%B8%ADatime%E5%92%8Cmtime.html</span><br></pre></td></tr></table></figure><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4>]]></content>
+    
+    <summary type="html">
+    
+      HDFS 中 atime 与 mtime 解析
+    
+    </summary>
+    
+    
+      <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
     
     
   </entry>
@@ -185,27 +206,6 @@
   </entry>
   
   <entry>
-    <title>HBase CMS GC 配置参考</title>
-    <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
-    <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
-    <published>2020-01-17T16:00:00.000Z</published>
-    <updated>2020-02-01T04:42:46.257Z</updated>
-    
-    <content type="html"><![CDATA[<p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><p>参考自一下文章:</p><ul><li><a href="http://hbasefly.com/2016/05/21/hbase-gc-1/" target="_blank" rel="noopener">HBase GC的前生今世 – 身世篇</a></li><li><a href="http://hbasefly.com/2016/05/29/hbase-gc-2/" target="_blank" rel="noopener">HBase GC的前生今世 – 演进篇</a></li><li><a href="http://hbasefly.com/2016/08/09/hbase-cms-gc/" target="_blank" rel="noopener">HBase最佳实践－CMS GC调优</a></li><li><a href="https://mp.weixin.qq.com/s/GEwD1B-XqFIudWP_EbGgdQ" target="_blank" rel="noopener">HBase实战：记一次Safepoint导致长时间STW的踩坑之旅</a></li></ul><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">-Xms32g -Xmx32g -Xmn512m </span><br><span class="line">-XX:+UseParNewGC </span><br><span class="line">-XX:ParallelGCThreads&#x3D;8 </span><br><span class="line">-XX:+UseConcMarkSweepGC</span><br><span class="line"> -XX:+UseCMSCompactAtFullCollection </span><br><span class="line">-XX:CMSFullGCsBeforeCompaction&#x3D;1 </span><br><span class="line">-XX:CMSInitiatingOccupancyFraction&#x3D;65 </span><br><span class="line">-XX:+UseCMSInitiatingOccupancyOnly </span><br><span class="line">-XX:+PrintGC </span><br><span class="line">-XX:+PrintGCDetails </span><br><span class="line">-XX:+PrintGCDateStamps </span><br><span class="line">-XX:+PrintGCApplicationStoppedTime </span><br><span class="line">-XX:+PrintHeapAtGC  </span><br><span class="line">-XX:+PrintTenuringDistribution </span><br><span class="line">-Xloggc:&#x2F;var&#x2F;log&#x2F;hbase&#x2F;gc-regionserver-hbase.log </span><br><span class="line">-XX:+UseGCLogFileRotation  </span><br><span class="line">-XX:NumberOfGCLogFiles&#x3D;10  </span><br><span class="line">-XX:GCLogFileSize&#x3D;100M</span><br></pre></td></tr></table></figure>]]></content>
-    
-    <summary type="html">
-    
-      HBase CMS GC 配置参考
-    
-    </summary>
-    
-    
-      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>记一次 HBase Master is initializing 问题处理</title>
     <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
     <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
@@ -217,6 +217,27 @@
     <summary type="html">
     
       HBase Master is initializing 问题处理
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HBase CMS GC 配置参考</title>
+    <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
+    <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
+    <published>2020-01-17T16:00:00.000Z</published>
+    <updated>2020-02-01T04:42:46.257Z</updated>
+    
+    <content type="html"><![CDATA[<p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><p>参考自一下文章:</p><ul><li><a href="http://hbasefly.com/2016/05/21/hbase-gc-1/" target="_blank" rel="noopener">HBase GC的前生今世 – 身世篇</a></li><li><a href="http://hbasefly.com/2016/05/29/hbase-gc-2/" target="_blank" rel="noopener">HBase GC的前生今世 – 演进篇</a></li><li><a href="http://hbasefly.com/2016/08/09/hbase-cms-gc/" target="_blank" rel="noopener">HBase最佳实践－CMS GC调优</a></li><li><a href="https://mp.weixin.qq.com/s/GEwD1B-XqFIudWP_EbGgdQ" target="_blank" rel="noopener">HBase实战：记一次Safepoint导致长时间STW的踩坑之旅</a></li></ul><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">-Xms32g -Xmx32g -Xmn512m </span><br><span class="line">-XX:+UseParNewGC </span><br><span class="line">-XX:ParallelGCThreads&#x3D;8 </span><br><span class="line">-XX:+UseConcMarkSweepGC</span><br><span class="line"> -XX:+UseCMSCompactAtFullCollection </span><br><span class="line">-XX:CMSFullGCsBeforeCompaction&#x3D;1 </span><br><span class="line">-XX:CMSInitiatingOccupancyFraction&#x3D;65 </span><br><span class="line">-XX:+UseCMSInitiatingOccupancyOnly </span><br><span class="line">-XX:+PrintGC </span><br><span class="line">-XX:+PrintGCDetails </span><br><span class="line">-XX:+PrintGCDateStamps </span><br><span class="line">-XX:+PrintGCApplicationStoppedTime </span><br><span class="line">-XX:+PrintHeapAtGC  </span><br><span class="line">-XX:+PrintTenuringDistribution </span><br><span class="line">-Xloggc:&#x2F;var&#x2F;log&#x2F;hbase&#x2F;gc-regionserver-hbase.log </span><br><span class="line">-XX:+UseGCLogFileRotation  </span><br><span class="line">-XX:NumberOfGCLogFiles&#x3D;10  </span><br><span class="line">-XX:GCLogFileSize&#x3D;100M</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      HBase CMS GC 配置参考
     
     </summary>
     
@@ -411,27 +432,6 @@
     
     
       <category term="Distributed" scheme="http://yoursite.com/categories/Distributed/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Cloudera Manager API 使用</title>
-    <link href="http://yoursite.com/2019/12/27/CM-API/"/>
-    <id>http://yoursite.com/2019/12/27/CM-API/</id>
-    <published>2019-12-26T16:00:00.000Z</published>
-    <updated>2020-02-01T04:42:46.222Z</updated>
-    
-    <content type="html"><![CDATA[<p>Cloudera Manager API 简单使用</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Hadoop 是一个开源项目，所以很多公司在这个基础进行商业化，Cloudera 对 Hadoop 做了相应的改变，<br>Cloudera 公司的发行版，我们将该版本称为 CDH(Cloudera Distribution Hadoop)。</p><p>我司使用的就是 CDH 版本，方便快捷部署，同时指标可视化，健康检测也做的挺好的。</p><p>Clouder Manager 是管理 CDH 的管理平台，通过接入 Cloudera Manager 获取到一些信息，<br>然后基于信息做些监控报警和宕机重启操作</p><p>因为之前使用的是 CDH 5.7.1 版本的，API 直接可用，但是现在新集群使用的是 CDH 6.3.1 ，API 改版使用 Swagger 方式来<br>操作了，按以前的方法各种踩坑。</p><h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p><a href="http://cloudera.github.io/cm_api/" target="_blank" rel="noopener">Cloudera Manager API 官网地址</a></p><p>参考官网实例基本够用，同时注意选择 <a href="http://cloudera.github.io/cm_api/docs/releases/" target="_blank" rel="noopener">API 版本</a></p><p><img src="/images/blog/2019-12-27-1.png" alt></p><p>访问的cm地址可以直接查看 api 版本 <code>http://host:port/api/version</code>，参考自第一个链接</p><p>swagger 的方式与之前真不大相同，这里把写的 Python demo 保存下，方便以后查阅，注意注册一个可读账号来访问，避免密码泄露</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">import cm_client</span><br><span class="line">from cm_client.rest import ApiException</span><br><span class="line">from pprint import pprint</span><br><span class="line"></span><br><span class="line"># Configure HTTP basic authorization: basic</span><br><span class="line">cm_client.configuration.username &#x3D; &#39;hadoop&#39;</span><br><span class="line">cm_client.configuration.password &#x3D; &#39;xxxx&#39;</span><br><span class="line"></span><br><span class="line"># Create an instance of the API class</span><br><span class="line">api_host &#x3D; &#39;http:&#x2F;&#x2F;192.168.1.240&#39;</span><br><span class="line">port &#x3D; &#39;7180&#39;</span><br><span class="line">api_version &#x3D; &#39;v30&#39;</span><br><span class="line"># Construct base URL for API</span><br><span class="line"># http:&#x2F;&#x2F;cmhost:7180&#x2F;api&#x2F;v30</span><br><span class="line">api_url &#x3D; api_host + &#39;:&#39; + port + &#39;&#x2F;api&#x2F;&#39; + api_version</span><br><span class="line">api_client &#x3D; cm_client.ApiClient(api_url)</span><br><span class="line">cluster_api_instance &#x3D; cm_client.ClustersResourceApi(api_client)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Lists all known clusters.</span><br><span class="line">api_response &#x3D; cluster_api_instance.read_clusters(view&#x3D;&#39;SUMMARY&#39;)</span><br><span class="line">for cluster in api_response.items:</span><br><span class="line">    print (cluster.name , &quot;-&quot;, cluster.full_version)</span><br><span class="line">    if cluster.full_version.startswith(&quot;6.&quot;):</span><br><span class="line">        services_api_instance &#x3D; cm_client.ServicesResourceApi(api_client)</span><br><span class="line">        services &#x3D; services_api_instance.read_services(cluster.name, view&#x3D;&#39;FULL&#39;)</span><br><span class="line">        for service in services.items:</span><br><span class="line">            print (service.name, &quot;-&quot;, service.type)</span><br><span class="line">            if service.type &#x3D;&#x3D; &#39;HIVE&#39;:</span><br><span class="line">                hive &#x3D; service</span><br><span class="line">                print (&quot;lihm&quot;)</span><br><span class="line">                print (hive.name, hive.service_state, hive.health_summary)</span><br><span class="line">                for health_check in hive.health_checks:</span><br><span class="line">                    print (health_check.name, &quot;---&quot;, health_check.summary)</span><br><span class="line">                role_api_instance &#x3D; cm_client.RolesResourceApi(api_client)</span><br><span class="line">                roles &#x3D; role_api_instance.read_roles(cluster.name, hive.name)</span><br><span class="line">                for role in roles.items:</span><br><span class="line">                    if role.type &#x3D;&#x3D; &#39;NAMENODE&#39;:</span><br><span class="line">                        nn &#x3D; role</span><br><span class="line">                        print (nn.name, nn.role_state, nn.health_summary, nn.host_ref.host_id)</span><br><span class="line">                        for hc in nn.health_checks:</span><br><span class="line">                            print (hc.name, &quot;---&quot;, hc.summary)</span><br><span class="line">                cmd &#x3D; services_api_instance.restart_command(cluster.name, hive.name)</span><br><span class="line">                print (&quot;cmd.active&quot;)</span><br></pre></td></tr></table></figure><h4 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h4><p>从运维 CDH 集群以来，使用的场景无非就是监控、告警</p><ul><li>使用 Python 方式来做脚本获取信息，并接入第三方告警系统中，如 open-falcon</li><li>使用 Java 方式获取指标信息，接入自己开发的管理平台，可视化展示一些集群指标信息</li><li>使用 Java 方式获取角色异常退出信息并操作重启退出角色</li></ul><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/Leon_liuqinburen/article/details/82145355" target="_blank" rel="noopener">cm_api.api_client.ApiException: (error 404)</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Cloudera Manager API 使用
-    
-    </summary>
-    
-    
-      <category term="CDH" scheme="http://yoursite.com/categories/CDH/"/>
     
     
   </entry>
