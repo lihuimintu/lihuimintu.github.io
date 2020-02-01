@@ -59,7 +59,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-20-5.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-20-6.png">
 <meta property="article:published_time" content="2019-06-19T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-06-28T02:48:15.041Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:45.914Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HBase">
 <meta name="twitter:card" content="summary">
@@ -242,7 +242,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-06-28 10:48:15" itemprop="dateModified" datetime="2019-06-28T10:48:15+08:00">2019-06-28</time>
+                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -262,7 +262,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.5k</span>
+              <span>2.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -286,19 +286,19 @@
 <hr>
 <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>今天 HBase 维护过程中打开了 /hbase/archive 路径，发现该路径下面存在文件。</p>
 <p>/hbase/archive 为归档路径，HBase 在做 Split , Compact，Drop 操作完成之后，<br>会将 HFile 移到 archive 目录中, 然后将之前的 hfile 删除掉, 该目录由 HMaster 上的一个定时任务定期5分钟去清理.  </p>
-<p><img src="/images/blog/2019-06-20-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-20-1.png" alt></p>
 <p>都18年6月份的数据了，怎么还没删掉。这不科学。这开启了我的探索之旅</p>
 <h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>某度搜索到对表做了 snapshot 的话，archive 不会被清理。</p>
 <p>然后 hbase shell 中输入 list_snapshots 的确看到该表存在快照。(忘记留图了)</p>
 <p>确认该快照已经不需要的情况下，我对其进行了删除。</p>
 <p>10 分钟后观察发现还未删除。。。。这就有点尴尬了。</p>
 <p>之前也遇到过一次 archive 目录下表的 HFile 文件是用 bulkload 方式加载的，HFile 文件权限不够，HBase 无法删除，<br>所以这次我也猜测是不是这个原因。</p>
-<p><img src="/images/blog/2019-06-20-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-20-2.png" alt></p>
 <p>ls 查看后发现都是 hbase 的权限。这可咋办啊。这时我留意到有个 .links-ba0feda3ca8d499a9eb375503ad943c2 的目录</p>
 <p>这个目录干嘛的。我对此产生疑惑</p>
-<h4 id="LinkFile"><a href="#LinkFile" class="headerlink" title="LinkFile"></a>LinkFile</h4><p><img src="/images/blog/2019-06-20-3.png" alt>{:height=”80%” width=”80%”}</p>
+<h4 id="LinkFile"><a href="#LinkFile" class="headerlink" title="LinkFile"></a>LinkFile</h4><p><img src="/images/blog/2019-06-20-3.png" alt></p>
 <p>进去看了之后，发现是个 back-reference 文件，这时就明白了，估计是 Snapshot 的恢复表一个指引。</p>
-<p><img src="/images/blog/2019-06-20-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-20-4.png" alt></p>
 <p>正如猜想一样。就是恢复表的一个指引, 即 clone 生成的 LinkFile。</p>
 <p>HBase 就是利用在删除 archive 中原始表文件的时候知道这些文件还被一些恢复表的 LinkFile 引用着</p>
 <p>LinkFile 和 back-reference 文件格式如下所说。</p>
@@ -307,13 +307,13 @@
 <p>举个例子。假设</p>
 <p>LinkFile 文件名为 music=5e54d8620eae123761e5290e618d556b-f928e045bb1e41ecbef6fc28ec2d5712。</p>
 <p>根据定义可以知道 music 为原始文件的表名，5e54d8620eae123761e5290e618d556b 为引用文件所在的 region，f928e045bb1e41ecbef6fc28ec2d5712 为引用的 HFile 文件</p>
-<p><img src="/images/blog/2019-06-20-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-20-5.png" alt></p>
 <p>可以依据规则可以直接根据LinkFile的文件名定位到引用文件所在位置</p>
 <p>***/music/5e54d8620eae123761e5290e618d556b/cf/f928e045bb1e41ecbef6fc28ec2d5712</p>
 <p>如果在 music 表的 HFile 被放置到 archive 目录下，则会生成一个 back-reference 文件</p>
 <p>根据这个 back-reference 文件 HBase 才知道该 HFile 该不该清理。</p>
 <p>HFileLinkCleaner 负责清理这类 HFile。</p>
-<p><img src="/images/blog/2019-06-20-6.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-20-6.png" alt></p>
 <p>通过注释可以了解到，如果对 archive 中的文件的引用不存在了，则可以删除。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;**</span><br><span class="line"> * HFileLink cleaner that determines if a hfile should be deleted.</span><br><span class="line"> * HFiles can be deleted only if there&#39;re no links to them.</span><br><span class="line"> *</span><br><span class="line"> * When a HFileLink is created a back reference file is created in:</span><br><span class="line"> *      &#x2F;hbase&#x2F;archive&#x2F;table&#x2F;region&#x2F;cf&#x2F;.links-hfile&#x2F;ref-region.ref-table</span><br><span class="line"> * To check if the hfile can be deleted the back references folder must be empty.</span><br><span class="line"> *&#x2F;</span><br></pre></td></tr></table></figure>
 
@@ -346,12 +346,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/06/19/HBase-File-ZK-Structure/" rel="prev" title="HBase 目录结构">
-      <i class="fa fa-chevron-left"></i> HBase 目录结构
+    <a href="/2019/06/19/HBase-Data-Block-Encoding-Types/" rel="prev" title="HBase Data Block Encoding Types">
+      <i class="fa fa-chevron-left"></i> HBase Data Block Encoding Types
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/06/24/GC-Log-Detailed/" rel="next" title="GC 日志详解">
-      GC 日志详解 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/06/24/SSH-ssh_rsa/" rel="next" title="SSH 使用私钥登陆">
+      SSH 使用私钥登陆 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -481,12 +481,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

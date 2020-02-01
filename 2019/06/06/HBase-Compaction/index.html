@@ -63,7 +63,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-09-18-3.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-09-18-4.png">
 <meta property="article:published_time" content="2019-06-05T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-09-18T11:47:21.345Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:45.876Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Compaction">
 <meta property="article:tag" content=" HBase">
@@ -247,7 +247,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-09-18 19:47:21" itemprop="dateModified" datetime="2019-09-18T19:47:21+08:00">2019-09-18</time>
+                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -267,7 +267,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8.7k</span>
+              <span>8.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -289,7 +289,7 @@
       
         <p>Compaction 是 buffer-&gt;flush-&gt;merge 的 LSM 树的关键操作</p>
 <hr>
-<h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p><img src="/images/blog/2019-06-06-1.png" alt>{:height=”80%” width=”80%”}</p>
+<h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p><img src="/images/blog/2019-06-06-1.png" alt></p>
 <p>一个表中的数据存储到 RS 上，RS 会管理实际存储表的数据的 region，每个 region上 每一个 ColumnFamily<br>会有一个 MemStore。</p>
 <p>写入的数据写入 MemStore 内存区，当内存缓冲区满了之后，会将数据刷新到磁盘，随时间推移，一个 Store 中的 StoreFile 数量将会增长</p>
 <p>Compaction 是一个操作，通过merge，将会减少一个 Store 中的StoreFile的数量，从而提高读操作的性能。</p>
@@ -299,7 +299,7 @@
 <p>Minor &amp; Major Compaction的区别</p>
 <p>1）Minor 操作只用来做部分文件的合并操作以及包括 minVersion = 0 并且设置 ttl 的过期版本清理，不做任何删除数据、多版本数据的清理工作。</p>
 <p>2）Major 操作是对 Region 下的 HStore 下的所有 StoreFile 执行合并操作，最终的结果是整理合并出一个文件。</p>
-<p><img src="/images/blog/2019-06-06-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-06-2.png" alt></p>
 <h4 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h4><p>主要起到如下几个作用:</p>
 <p>1）合并文件, 提高读写数据的效率</p>
 <p>2）清除删除、过期、多余版本的数据</p>
@@ -348,10 +348,10 @@
 <p>说明: 在以前版本的HBase中，hbase.hstore.compaction.min 调用了该参数 hbase.hstore.compactionThreshold。</p>
 <p>compactionChecker 实现类是 CompactionChecker, 其继承了ScheduledChore，在之前已经分析过，这个类通过实现 chore 方法而实现周期性的调用，其初始化是在initializeThreads中</p>
 <p>直接看其Chore方法</p>
-<p><img src="/images/blog/2019-09-02-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-09-02-1.png" alt></p>
 <p>方法比较简单，取出所有在线的region，遍历region上的所有store（HStore）判断是否需要compact</p>
 <p>判断是 needsCompaction() 方法去判断是否足够多的文件触发了 Compaction 的条件。</p>
-<p><img src="/images/blog/2019-06-09-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-09-1.png" alt></p>
 <p>条件为: HStore 中 StoreFiles 的个数 – 正在执行 Compacting 的文件个数 &gt; minFilesToCompact</p>
 <p>chore 方法中 needsCompaction判断的是minor compact 是否需要执行</p>
 <p>chore 方法中可以直观的看到 majorCompact 是通过 isMajorCompaction() 方法判断的这是很多判断条件的合成</p>
@@ -360,12 +360,12 @@
 <p>最理想的情况是，这些文件承载了大量IO请求但是大小很小，这样compaction本身不会消耗太多IO，而且合并完成之后对读的性能会有显著提升。<br>然而现实情况可能大部分都不会是这样，在0.96版本和0.98版本，分别提出了两种选择策略，在充分考虑整体情况的基础上选择最佳方案。</p>
 <p>无论哪种选择策略都会首先对该 Store 中所有 HFile 进行一一排查，排除不满足条件的部分文件:</p>
 <p>执行 RatioBasedCompactionPolicy 的 selectCompaction 算法</p>
-<p><img src="/images/blog/2019-09-02-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-09-02-2.png" alt></p>
 <p>第一个红框: 排除当前正在执行compact的文件及其比这些文件更老的所有文件（SequenceId更大）</p>
-<p><img src="/images/blog/2019-09-02-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-09-02-3.png" alt></p>
 <p>第二个红框: 排除某些过大的单个文件，如果文件大小大于hbase.hzstore.compaction.max.size（默认Long最大值），则被排除，否则会产生大量IO消耗</p>
 <p>经过排除的文件称为候选文件，HBase接下来会再判断是否满足major compaction条件，如果满足，就会选择全部文件进行合并。</p>
-<p><img src="/images/blog/2019-09-02-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-09-02-4.png" alt></p>
 <p>第三个红框: 判断是否需要进行 major Compaction，这是很多判断条件的合成。</p>
 <blockquote>
 <ul>
@@ -409,7 +409,7 @@
 </tr>
 </tbody></table>
 <p>如果默认没有设置offpeak时间的话，那么完全按照hbase.hstore.compaction.ration来进行控制。如下图所示，如果filesSize[i]过大，超过后面8个文件总和*1.2，那么该文件被认为过大，而不纳入minor Compaction的范围。</p>
-<p><img src="/images/blog/2019-06-09-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-09-2.png" alt></p>
 <p>这样做使得 Compaction 尽可能工作在最近刷入 HDFS 的小文件的合并，从而使得提高 Compaction 的执行效率。</p>
 <p><strong>ExploringCompactionPolicy 继承 RatioBasedCompactionPolicy，重写了 applyCompactionPolicy 方法，applyCompactionPolicy 是对 minor compaction 的选择文件的策略算法。</strong></p>
 <p>接着通过 selectCompaction 选出的文件，加入到 filesCompacting 队列中。创建compactionRequest，提交请求。</p>
@@ -441,11 +441,11 @@
 </li>
 </ol>
 <h4 id="Compaction-对读写请求的影响"><a href="#Compaction-对读写请求的影响" class="headerlink" title="Compaction 对读写请求的影响"></a>Compaction 对读写请求的影响</h4><h5 id="存储上的写入放大"><a href="#存储上的写入放大" class="headerlink" title="存储上的写入放大"></a>存储上的写入放大</h5><p>HBase Compaction会带来写入放大，特别是在写多读少的场景下，写入放大就会比较明显，下图简单示意了写入放大的效果。</p>
-<p><img src="/images/blog/2019-09-18-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-09-18-3.png" alt></p>
 <p>（图片来源：<a href="https://mmbiz.qpic.cn/mmbiz_png/licvxR9ib9M6D6sDjXPZxHR1ic4LDKyicf2qfx417fJ8QHmfn82uBhSS1fC4mDqSB67JHzGs6kyqHiccrQEu2ryPKJA/640）" target="_blank" rel="noopener">https://mmbiz.qpic.cn/mmbiz_png/licvxR9ib9M6D6sDjXPZxHR1ic4LDKyicf2qfx417fJ8QHmfn82uBhSS1fC4mDqSB67JHzGs6kyqHiccrQEu2ryPKJA/640）</a></p>
 <p>随着minor compaction以及major Compaction的发生，可以看到，这条数据被反复读取/写入了多次，这是导致写放大的一个关键原因，这里的写放大，涉及到网络IO与磁盘IO，因为数据在HDFS中默认有三个副本。</p>
 <h5 id="读路径上的延时毛刺"><a href="#读路径上的延时毛刺" class="headerlink" title="读路径上的延时毛刺"></a>读路径上的延时毛刺</h5><p>HBase执行compaction操作结果会使文件数基本稳定，进而IO Seek次数相对稳定，延迟就会稳定在一定范围。然而，compaction操作会带来很大的带宽压力以及短时间IO压力。因此compaction就是使用短时间的IO消耗以及带宽消耗换取后续查询的低延迟。这种短时间的压力就会造成读请求在延时上会有比较大的毛刺。下图是一张示意图，可见读请求延时有很大毛刺，但是总体趋势基本稳定。</p>
-<p><img src="/images/blog/2019-09-18-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-09-18-4.png" alt></p>
 <h5 id="写请求上的短暂阻塞"><a href="#写请求上的短暂阻塞" class="headerlink" title="写请求上的短暂阻塞"></a>写请求上的短暂阻塞</h5><p>Compaction 对写请求也会有比较大的影响。主要体现在HFile比较多的场景下，HBase会限制写请求的速度。</p>
 <p>当写请求非常多，导致不断生成 HFile，compact的速度远远跟不上HFile生成的速度，这样就会使HFile的数量会越来越多，<br>导致读性能急剧下降。</p>
 <p>为了避免这种情况，在HFile的数量过多的时候会限制写请求的速度，每次 MemStore 执行 flush 的操作前，会查看 HFile 数量，<br>如果数量超过hbase.hstore.blockingStoreFiles 配置值，默认10，flush操作将会受到阻塞，阻塞时间为hbase.hstore.blockingWaitTime，默认90000，即1.5分钟，在这段时间内，如果compaction操作使得HFile下降到blockingStoreFiles配置值，则停止阻塞。另外阻塞超过时间后，也会恢复执行flush操作。这样做可以有效地控制大量写请求的速度，但同时这也是影响写请求速度的主要原因之一。</p>
@@ -625,12 +625,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

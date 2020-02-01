@@ -62,7 +62,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-07-25-3.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-07-25-10.png">
 <meta property="article:published_time" content="2019-07-23T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-11-12T07:31:30.295Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:45.960Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Flink">
 <meta name="twitter:card" content="summary">
@@ -245,7 +245,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-11-12 15:31:30" itemprop="dateModified" datetime="2019-11-12T15:31:30+08:00">2019-11-12</time>
+                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -265,7 +265,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.8k</span>
+              <span>5.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -290,7 +290,7 @@
 <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>大数据发展到今天，整个生态已经比较成熟比较丰富了。</p>
 <p>在 Apache Flink China Meetup 上，把大数据的计算引擎分三代  </p>
 <p>第一代无疑是 Hadoop 的 MapReduce，第二代是Spark，而对流处理和批处理统一性上做得很好的 Flink 被归作最新一代的计算引擎，也就是第三代大数据计算引擎。</p>
-<p><img src="/images/blog/2019-07-24-1.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-07-24-1.png" alt> </p>
 <h4 id="Local-本地部署"><a href="#Local-本地部署" class="headerlink" title="Local 本地部署"></a>Local 本地部署</h4><p>Flink 可以运行在 Linux、Mac OS X 和 Windows 上。</p>
 <p>本地模式的安装唯一需要的只是 Java 1.8.x 及以上。<br>本地运行会启动Single JVM，主要用于测试调试代码。</p>
 <h4 id="Standalone-Cluster-集群部署"><a href="#Standalone-Cluster-集群部署" class="headerlink" title="Standalone Cluster 集群部署"></a>Standalone Cluster 集群部署</h4><p>Flink 自带了集群模式 Standalone，对软件有些要求</p>
@@ -304,14 +304,14 @@
 
 <p>通过命令 yarn-session.sh 来实现，本质上是在 Yarn 集群上启动一个 Flink 集群。</p>
 <p>由 Yarn 预先给 Flink 集群分配若干个 container 给 flink 使用，在yarn的界面上只能看到一个 Flink session cluster 的任务。</p>
-<p><img src="/images/blog/2019-07-25-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-07-25-5.png" alt></p>
 <p>只有一个 Flink 界面，可以从 Yarn 的  ApplicationMaster链接进入。</p>
-<p><img src="/images/blog/2019-07-25-6.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-07-25-6.png" alt></p>
 <p>这里需要注意一下如果没有提交 job, 只启动 yarn-session 的话, 打开 Flink 的 ui 界面是看不到上面箭头所指的资源数的。</p>
-<p><img src="/images/blog/2019-07-25-7.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-07-25-7.png" alt></p>
 <p>只有提交一个job后, 才会显示。上图是提交了一个job, 当然还可以提交多个job到这个容器中运行。</p>
 <p><strong>Flink 页面中能看到目前只启动了一个 TaskMananger（一个JVM进程），并且有 FreeSlot，新启动的 Flink Job 会在这些 slots 中启动，直到没有更多 FreeSlots 了才会分配新的 TaskMananger。</strong></p>
-<h5 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h5><p><img src="/images/blog/2019-07-25-1.png" alt>{:height=”80%” width=”80%”}</p>
+<h5 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h5><p><img src="/images/blog/2019-07-25-1.png" alt></p>
 <p>Flink ON YARN工作流程如下所示</p>
 <p>首先提交 job 给 YARN，就需要有一个 Flink YARN Client </p>
 <ol>
@@ -342,14 +342,14 @@
 <p>-tm: 每个TaskManager的内存大小，executor-memory</p>
 <p>-jm: JobManager的内存大小，driver-memory</p>
 <p>对于客户端模式而言，可以启动多个 yarn session。<br>一个 yarn session 模式对应一个 JobManager,并按照需求提交作业。同一个 Session 中可以提交多个Flink作业。</p>
-<p><img src="/images/blog/2019-07-25-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-07-25-4.png" alt></p>
 <p>根据图中 Flink JobManager is now running 关键字可以知道 JobManager 位置</p>
 <p>可以通过停止 unix 进程（使用CTRL + C）或在客户端输入“stop”来停止YARN会话。还可以通过yarn application -kill 命令来停止。</p>
 <p>对于客户端模式进程如下:</p>
 <p>在启动的 yarn-session 服务器上查看 Java 进程</p>
-<p><img src="/images/blog/2019-07-25-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-07-25-2.png" alt></p>
 <p>在 JobManager 所在服务器查看 Java 进程</p>
-<p><img src="/images/blog/2019-07-25-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-07-25-3.png" alt></p>
 <h5 id="分离模式"><a href="#分离模式" class="headerlink" title="分离模式"></a>分离模式</h5><p>如果不希望Flink YARN客户端始终保持运行，则还可以启动分离的 YARN 会话。</p>
 <p>对于分离式模式，并不像客户端那样可以启动多个 yarn session，如果启动多个，会出现后新建的 session一直处在等待状态。</p>
 <p>JobManager的个数只能是一个，同一个 Session 中可以提交多个 Flink 作业。</p>
@@ -359,7 +359,7 @@
 
 <p>在这种情况下，Flink YARN 客户端将仅向群集提交 Flink，然后自行关闭。</p>
 <p>请注意，在这种情况下，无法使用 Flink 停止YARN会话。使用YARN实用程序（yarn application -kill <appId>）来停止YARN会话。</appId></p>
-<p><img src="/images/blog/2019-07-25-10.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-07-25-10.png" alt></p>
 <p>分离模式 Java 进程只会有 YarnSessionClusterEntrypoint，而没有 FlinkYarnSessionCli，可以看到客户端模式和分离式模式的区别，除了进程外，其他都一样。</p>
 <h5 id="附加到现有会话"><a href="#附加到现有会话" class="headerlink" title="附加到现有会话"></a>附加到现有会话</h5><p>假设现在在其他机器上启动了一个会话，但是这边又有需要附加到那个会话，这时就有作用了</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Usage:</span><br><span class="line">   Required</span><br><span class="line">     -id,--applicationId &lt;yarnAppId&gt; YARN application Id</span><br></pre></td></tr></table></figure>
@@ -539,12 +539,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

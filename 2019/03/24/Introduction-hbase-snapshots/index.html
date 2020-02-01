@@ -59,7 +59,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-21-4.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-21-5.png">
 <meta property="article:published_time" content="2019-03-23T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-06-21T07:00:14.198Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:45.742Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="keyword1">
 <meta property="article:tag" content=" keyword2">
@@ -243,7 +243,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-06-21 15:00:14" itemprop="dateModified" datetime="2019-06-21T15:00:14+08:00">2019-06-21</time>
+                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -263,7 +263,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.7k</span>
+              <span>5.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -344,18 +344,18 @@
 </ul>
 <h5 id="region-如何实现-snapshot"><a href="#region-如何实现-snapshot" class="headerlink" title="region 如何实现 snapshot ?"></a>region 如何实现 snapshot ?</h5><p>在基本原理一节提到过 snapshot 不会真正拷贝数据，而是使用指针引用的方式创建一系列元数据。</p>
 <p>那元数据具体是什么样的元数据呢？实际上snapshot的整个流程基本如下:</p>
-<p><img src="/images/blog/2019-06-21-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-21-1.png" alt></p>
 <p>分别对应 Debug 日志中如下片段:</p>
-<p><img src="/images/blog/2019-06-21-2.png" alt>{:height=”80%” width=”80%”}</p>
-<p><img src="/images/blog/2019-06-21-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-21-2.png" alt></p>
+<p><img src="/images/blog/2019-06-21-3.png" alt></p>
 <p>注意：region 生成的 snapshot manifest 文件是临时文件，生成目录在 /hbase/.hbase-snapshot/.tmp 下，一般因为 snapshot 过程特别快，<br>所以很难看到单个 region 生成的 snapshot 文件。</p>
 <h5 id="HMaster-如何汇总所有-region-snapshot-的结果？"><a href="#HMaster-如何汇总所有-region-snapshot-的结果？" class="headerlink" title="HMaster 如何汇总所有 region snapshot 的结果？"></a>HMaster 如何汇总所有 region snapshot 的结果？</h5><p>HMaster 会在所有 region 完成 snapshot 之后执行一个汇总操作（consolidate），将所有 region snapshot manifest 汇总成一个单独 manifest。</p>
 <p>汇总后的 snapshot 文件是可以在 HDFS 目录下看到的，路径为: /hbase/.hbase-snapshot/{snapshotname}/data.manifest。(snapshotname 为快照名字)</p>
 <p>注意，snapshot 目录下有3个文件，如图所示:</p>
-<p><img src="/images/blog/2019-06-21-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-21-4.png" alt></p>
 <p>其中 .snapshotinfo 为 snapshot 基本信息，包含待 snapshot 的表名称以及 snapshot 名；</p>
 <p>data.manifest 为 snapshot 执行后生成的元数据信息，<br>即 snapshot 结果信息。可以使用 hadoop dfs -cat /hbase/.hbase-snapshot/{snapshotname}/data.manifest 查看</p>
-<p><img src="/images/blog/2019-06-21-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-21-5.png" alt></p>
 <h4 id="快照的使用示例"><a href="#快照的使用示例" class="headerlink" title="快照的使用示例"></a>快照的使用示例</h4><h5 id="1-更改表名"><a href="#1-更改表名" class="headerlink" title="1. 更改表名"></a>1. 更改表名</h5><p>因为 HBase 中没有 Rename 命令, 所以更改表名比较复杂。重命名主要通过 HBase 的快照功能。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># 停止表继续插入</span><br><span class="line">hbase shell&gt; disable &#39;tableName&#39;</span><br><span class="line"></span><br><span class="line"># 制作快照</span><br><span class="line">hbase shell&gt; snapshot &#39;tableName&#39;, &#39;tableSnapshot&#39;</span><br><span class="line"></span><br><span class="line"># 克隆快照为新的名字</span><br><span class="line">hbase shell&gt; clone_snapshot &#39;tableSnapshot&#39;, &#39;newTableName&#39;</span><br><span class="line"></span><br><span class="line"># 删除快照</span><br><span class="line">hbase shell&gt; delete_snapshot &#39;tableSnapshot&#39;</span><br><span class="line"></span><br><span class="line"># 删除原来表</span><br><span class="line">hbase shell&gt; drop &#39;tableName&#39;</span><br></pre></td></tr></table></figure>
 
@@ -391,8 +391,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/03/21/hbase-patch-maven/" rel="prev" title="HBase 编译">
-      <i class="fa fa-chevron-left"></i> HBase 编译
+    <a href="/2019/03/21/linux-remove-duplication/" rel="prev" title="Linux 实现文件的去重">
+      <i class="fa fa-chevron-left"></i> Linux 实现文件的去重
     </a></div>
       <div class="post-nav-item">
     <a href="/2019/04/03/hbase-snappy/" rel="next" title="HBase 表增加 Snappy 压缩">
@@ -526,12 +526,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

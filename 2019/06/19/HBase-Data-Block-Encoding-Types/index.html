@@ -56,7 +56,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-19-2.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-19-3.png">
 <meta property="article:published_time" content="2019-06-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-01-23T08:32:43.182Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:45.906Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HBase Data Block Encoding Types">
 <meta name="twitter:card" content="summary">
@@ -239,7 +239,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-01-23 16:32:43" itemprop="dateModified" datetime="2020-01-23T16:32:43+08:00">2020-01-23</time>
+                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,7 +259,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.3k</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -297,9 +297,9 @@
 <p>在 PREFIX 编码中，会额外添加一字段表示当前行的 key 和前一行的 key<br>前缀相同长度</p>
 <p>很明显，如果相邻 Key 之间，完全没有共同点，那 PREFIX 显然毫无用处，还增加了额外的开销．</p>
 <p>当使用 NONE 这种 Block Encoding 时，如下图所示:</p>
-<p><img src="/images/blog/2019-06-19-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-19-1.png" alt></p>
 <p>而如果采用 PREFIX 这种数据块编码，如下图所示:</p>
-<p><img src="/images/blog/2019-06-19-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-19-2.png" alt></p>
 <p>此处的第一个 key 与之前的 key 完全不同，则其前缀长度为 0，<br>第二个 key 前缀长度为 23，因为它们前 23 个字符相同。</p>
 <h5 id="DIFF"><a href="#DIFF" class="headerlink" title="DIFF"></a>DIFF</h5><p>DIFF 是在 PREFIX 基础上扩展，不在把 Key 看成一个整体，而是将 Key 每个键字段拆分，以便可以更有效地压缩键的每个部分。</p>
 <p>它添加了两个新的字段 <code>timestamp</code> 和 <code>type</code></p>
@@ -307,7 +307,7 @@
 <p>此外，timestamp 存储的是相对于前一行 Row 的 timestamp 偏移量（即差值），而不是完整存储。</p>
 <p>默认情况下，DIFF 是不建议启动的．因为它会导致写数据、Scan 数据更慢．但是相对于 PREFIX/NONE，它会在 BlockCache 中缓存更多数据．</p>
 <p>用 DIFF 编码方式压缩之前的 block 如下图所示:</p>
-<p><img src="/images/blog/2019-06-19-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-19-3.png" alt></p>
 <p>示例中的第一行、第二行，并给出 timestamp 和 type 精确匹配，key 长度也是相等的，所以第二行的 key length 和 type 都不需要存储，timestamp 存储与上一行的差值。</p>
 <h5 id="FAST-DIFF"><a href="#FAST-DIFF" class="headerlink" title="FAST_DIFF"></a>FAST_DIFF</h5><p>FAST_DIFF 跟 DIFF 非常相似，所不同的是，它额外增加了一个字段，表示 RowB 是否跟 RowA 完全一样，如果是的话，那数据就不需要重复保存了．</p>
 <p>如果在你的场景下，Key很长，或者有很多Column，那么推荐使用FAST_DIFF。</p>
@@ -334,12 +334,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/06/18/Hive-HBase-mapping/" rel="prev" title="Hive 映射 HBase 表方式">
-      <i class="fa fa-chevron-left"></i> Hive 映射 HBase 表方式
+    <a href="/2019/06/19/HBase-File-ZK-Structure/" rel="prev" title="HBase 目录结构">
+      <i class="fa fa-chevron-left"></i> HBase 目录结构
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/06/19/HBase-File-ZK-Structure/" rel="next" title="HBase 目录结构">
-      HBase 目录结构 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/06/20/HBase-LinkFile/" rel="next" title="HBase LinkFile">
+      HBase LinkFile <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -469,12 +469,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

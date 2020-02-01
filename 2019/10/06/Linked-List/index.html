@@ -56,7 +56,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-10-06-2.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-10-06-3.png">
 <meta property="article:published_time" content="2019-10-05T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-10-06T14:56:17.897Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:46.073Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="LinkedList">
 <meta name="twitter:card" content="summary">
@@ -231,10 +231,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2019-10-06 00:00:00 / 修改时间：22:56:17" itemprop="dateCreated datePublished" datetime="2019-10-06T00:00:00+08:00">2019-10-06</time>
+              <time title="创建时间：2019-10-06 00:00:00" itemprop="dateCreated datePublished" datetime="2019-10-06T00:00:00+08:00">2019-10-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-01 12:42:46" itemprop="dateModified" datetime="2020-02-01T12:42:46+08:00">2020-02-01</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -253,7 +259,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>634</span>
+              <span>556</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -276,10 +282,10 @@
         <p>双向链表插入、删除操作</p>
 <hr>
 <h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>单向链表中每个结点增加一个指向其前驱的指针域prior。这样形成的链表中就有两条方向不同的链，可称之为双（向）链表（DoubleLinked List）。</p>
-<p><img src="/images/blog/2019-10-06-1.png" alt>{:height=”80%” width=”80%”}</p>
-<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><p><img src="/images/blog/2019-10-06-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-10-06-1.png" alt></p>
+<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><p><img src="/images/blog/2019-10-06-2.png" alt></p>
 <p>第一步：首先找到插入位置，节点 s 将插入到节点 p 之前<br>第二步：将节点 s 的前驱指向节点 p 的前驱，即 s-&gt;prior = p-&gt;prior;<br>第三步：将节点 p 的前驱的后继指向节点 s 即 p-&gt;prior-&gt;next = s;<br>第四步：将节点 s 的后继指向节点 p 即 s-&gt;next = p;<br>第五步：将节点 p 的前驱指向节点 s 即 p-&gt;prior = s;  </p>
-<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><p><img src="/images/blog/2019-10-06-3.png" alt>{:height=”80%” width=”80%”}</p>
+<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><p><img src="/images/blog/2019-10-06-3.png" alt></p>
 <p>第一步：找到即将被删除的节点 p<br>第二步：将 p 的前驱的后继指向 p 的后继，即 p-&gt;prior-&gt;next = p-&gt;next;<br>第三步：将 p 的后继的前驱指向 p 的前驱，即 p-&gt;next-&gt;prior = p-&gt;prior;<br>第四步：删除节点 p 即 delete p;  </p>
 <p><strong>删除如果碰到尾删除怎么办？</strong></p>
 <p>在第三步时加个 p-&gt;next 是否为空的判断。</p>
@@ -309,8 +315,8 @@
       <i class="fa fa-chevron-left"></i> Java GC 原理
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/10/24/jmap/" rel="next" title="Java内存分析工具 jmap">
-      Java内存分析工具 jmap <i class="fa fa-chevron-right"></i>
+    <a href="/2019/10/24/HDFS-RW/" rel="next" title="HDFS 文件读写流程">
+      HDFS 文件读写流程 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -440,12 +446,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

@@ -66,7 +66,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-12-23-12.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-12-23-13.png">
 <meta property="article:published_time" content="2019-12-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-01-09T12:02:46.182Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:46.215Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HDFS">
 <meta name="twitter:card" content="summary">
@@ -249,7 +249,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-01-09 20:02:46" itemprop="dateModified" datetime="2020-01-09T20:02:46+08:00">2020-01-09</time>
+                <time title="修改时间：2020-02-01 12:42:46" itemprop="dateModified" datetime="2020-02-01T12:42:46+08:00">2020-02-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -269,7 +269,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>7.9k</span>
+              <span>7.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -293,48 +293,48 @@
 <hr>
 <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>测试环境断电，同事把 HBase 启动起来之后遇到 RS 不可用，反馈后让我去排查下原因</p>
 <h4 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h4><p>先把停止的 RS 启动，CM未报明显错误，但是观察发现 Region 数为空</p>
-<p><img src="/images/blog/2019-12-23-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-1.png" alt></p>
 <p>既然这样就看日志定位下，先看 RS 日志未有收获，那再看下 HMaster 日志</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">2019-12-23 10:00:25,981 INFO org.apache.hadoop.hbase.master.SplitLogManager: total&#x3D;1, unassigned&#x3D;0, tasks&#x3D;&#123;&#x2F;hbase&#x2F;splitWAL&#x2F;WALs%2Fregion-227%2C16020%2C1576486413270-splitting%2Fregion-227%252C16020%252C1576486413270.region-227%252C16020%252C1576486413270.regiongroup-0.1</span><br><span class="line">576833983591&#x3D;last_update &#x3D; 1577066410474 last_version &#x3D; 2 cur_worker_name &#x3D; region-228,16020,1576840559418 status &#x3D; in_progress incarnation &#x3D; 0 resubmits &#x3D; 0 batch &#x3D; installed &#x3D; 1 done &#x3D; 0 error &#x3D; 0&#125;</span><br><span class="line">2019-12-23 10:00:26,759 INFO org.apache.hadoop.hbase.coordination.SplitLogManagerCoordination: Task &#x2F;hbase&#x2F;splitWAL&#x2F;WALs%2Fregion-227%2C16020%2C1576486413270-splitting%2Fregion-227%252C16020%252C1576486413270.region-227%252C16020%252C1576486413270.regiongroup-0.15768339</span><br><span class="line">83591 entered state&#x3D;ERR region-228,16020,1576840559418</span><br><span class="line">2019-12-23 10:00:26,759 WARN org.apache.hadoop.hbase.coordination.SplitLogManagerCoordination: Error splitting &#x2F;hbase&#x2F;splitWAL&#x2F;WALs%2Fregion-227%2C16020%2C1576486413270-splitting%2Fregion-227%252C16020%252C1576486413270.region-227%252C16020%252C1576486413270.regiongroup</span><br><span class="line">-0.1576833983591</span><br><span class="line">2019-12-23 10:00:26,759 WARN org.apache.hadoop.hbase.master.SplitLogManager: error while splitting logs in [hdfs:&#x2F;&#x2F;reh&#x2F;hbase&#x2F;WALs&#x2F;region-227,16020,1576486413270-splitting] installed &#x3D; 1 but only 0 done</span><br><span class="line">2019-12-23 10:00:26,759 WARN org.apache.hadoop.hbase.master.procedure.ServerCrashProcedure: Failed state&#x3D;SERVER_CRASH_SPLIT_LOGS, retry pid&#x3D;3, state&#x3D;RUNNABLE:SERVER_CRASH_SPLIT_LOGS, locked&#x3D;true; ServerCrashProcedure server&#x3D;region-227,16020,1576486413270, splitWal&#x3D;true, meta&#x3D;false; cycles&#x3D;11833</span><br><span class="line">java.io.IOException: error or interrupted while splitting logs in [hdfs:&#x2F;&#x2F;reh&#x2F;hbase&#x2F;WALs&#x2F;region-227,16020,1576486413270-splitting] Task &#x3D; installed &#x3D; 1 done &#x3D; 0 error &#x3D; 1</span><br><span class="line">        at org.apache.hadoop.hbase.master.SplitLogManager.splitLogDistributed(SplitLogManager.java:271)</span><br><span class="line">        at org.apache.hadoop.hbase.master.MasterWalManager.splitLog(MasterWalManager.java:402)</span><br><span class="line">        at org.apache.hadoop.hbase.master.MasterWalManager.splitLog(MasterWalManager.java:387)</span><br><span class="line">        at org.apache.hadoop.hbase.master.MasterWalManager.splitLog(MasterWalManager.java:284)</span><br><span class="line">        at org.apache.hadoop.hbase.master.procedure.ServerCrashProcedure.splitLogs(ServerCrashProcedure.java:253)</span><br><span class="line">        at org.apache.hadoop.hbase.master.procedure.ServerCrashProcedure.executeFromState(ServerCrashProcedure.java:159)</span><br><span class="line">        at org.apache.hadoop.hbase.master.procedure.ServerCrashProcedure.executeFromState(ServerCrashProcedure.java:59)</span><br><span class="line">        at org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:189)</span><br><span class="line">        at org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:965)</span><br><span class="line">        at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1742)</span><br><span class="line">        at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1481)</span><br><span class="line">        at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.access$1200(ProcedureExecutor.java:78)</span><br><span class="line">        at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2058)</span><br></pre></td></tr></table></figure>
 
-<p><img src="/images/blog/2019-12-23-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-2.png" alt></p>
 <p>可以推断是拆分日志时出错或中断导致的问题，该问题影响到了 RS 的 region 恢复</p>
 <p>既然这个 log 文件有问题，优先恢复服务，将其 move 到临时文件</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -u hdfs hadoop fs -mv hdfs:&#x2F;&#x2F;reh&#x2F;hbase&#x2F;WALs&#x2F;region-227,16020,1576486413270-splitting&#x2F;region-227%2C16020%2C1576486413270.region-227%2C16020%2C1576486413270.regiongroup-0.1576833983591 &#x2F;user&#x2F;root</span><br></pre></td></tr></table></figure>
 
 <p>可以看到 Region 有所恢复</p>
-<p><img src="/images/blog/2019-12-23-3.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-3.png" alt></p>
 <p>RS 分管的 Region 也恢复在线</p>
-<p><img src="/images/blog/2019-12-23-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-4.png" alt></p>
 <p>接着来看看为啥 block 会出问题</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">[root@region-227 ~]# sudo -u hdfs hdfs fsck &#x2F;</span><br><span class="line">Connecting to namenode via http:&#x2F;&#x2F;region-227:9870&#x2F;fsck?ugi&#x3D;hdfs&amp;path&#x3D;%2F</span><br><span class="line">FSCK started by hdfs (auth:SIMPLE) from &#x2F;192.168.1.227 for path &#x2F; at Mon Dec 23 10:58:33 CST 2019</span><br><span class="line"></span><br><span class="line">&#x2F;user&#x2F;root&#x2F;region-227%2C16020%2C1576486413270.region-227%2C16020%2C1576486413270.regiongroup-0.1576833983591: CORRUPT blockpool BP-911051597-192.168.1.240-1572922263924 block blk_1073813352</span><br><span class="line"></span><br><span class="line">&#x2F;user&#x2F;root&#x2F;region-227%2C16020%2C1576486413270.region-227%2C16020%2C1576486413270.regiongroup-0.1576833983591: CORRUPT 1 blocks of total size 57732 B.</span><br><span class="line">Status: CORRUPT</span><br><span class="line"> Number of data-nodes:	3</span><br><span class="line"> Number of racks:		1</span><br><span class="line"> Total dirs:			1851</span><br><span class="line"> Total symlinks:		0</span><br><span class="line"></span><br><span class="line">Replicated Blocks:</span><br><span class="line"> Total size:	1299310671 B</span><br><span class="line"> Total files:	1428 (Files currently being written: 6)</span><br><span class="line"> Total blocks (validated):	1074 (avg. block size 1209786 B) (Total open file blocks (not validated): 4)</span><br><span class="line">  ********************************</span><br><span class="line">  UNDER MIN REPL&#39;D BLOCKS:	1 (0.09310987 %)</span><br><span class="line">  dfs.namenode.replication.min:	1</span><br><span class="line">  CORRUPT FILES:	1</span><br><span class="line">  CORRUPT BLOCKS: 	1</span><br><span class="line">  CORRUPT SIZE:		57732 B</span><br><span class="line">  ********************************</span><br><span class="line"> Minimally replicated blocks:	1073 (99.90689 %)</span><br><span class="line"> Over-replicated blocks:	0 (0.0 %)</span><br><span class="line"> Under-replicated blocks:	0 (0.0 %)</span><br><span class="line"> Mis-replicated blocks:		0 (0.0 %)</span><br><span class="line"> Default replication factor:	3</span><br><span class="line"> Average block replication:	2.9972067</span><br><span class="line"> Missing blocks:		0</span><br><span class="line"> Corrupt blocks:		1</span><br><span class="line"> Missing replicas:		0 (0.0 %)</span><br><span class="line"> Blocks queued for replication:	0</span><br><span class="line"></span><br><span class="line">Erasure Coded Block Groups:</span><br><span class="line"> Total size:	0 B</span><br><span class="line"> Total files:	0</span><br><span class="line"> Total block groups (validated):	0</span><br><span class="line"> Minimally erasure-coded block groups:	0</span><br><span class="line"> Over-erasure-coded block groups:	0</span><br><span class="line"> Under-erasure-coded block groups:	0</span><br><span class="line"> Unsatisfactory placement block groups:	0</span><br><span class="line"> Average block group size:	0.0</span><br><span class="line"> Missing block groups:		0</span><br><span class="line"> Corrupt block groups:		0</span><br><span class="line"> Missing internal blocks:	0</span><br><span class="line"> Blocks queued for replication:	0</span><br><span class="line">FSCK ended at Mon Dec 23 10:58:33 CST 2019 in 37 milliseconds</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">The filesystem under path &#39;&#x2F;&#39; is CORRUPT</span><br></pre></td></tr></table></figure>
 
 <p>HDFS 有三副本策略，3份全丢状态就为 corrupt，看来该 block blk_1073813352 无法恢复了</p>
 <p>到 DN 磁盘目录下搜索看是否块文件缺失</p>
-<p><img src="/images/blog/2019-12-23-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-5.png" alt></p>
 <p>看来块没有缺失，但是什么问题造成无法恢复呢？</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">2019-12-23 10:00:01,739 ERROR org.apache.hadoop.hdfs.server.datanode.DataNode: region-227:9866:DataXceiver error processing READ_BLOCK operation  src: &#x2F;192.168.1.228:59434 dst: &#x2F;192.168.1.227:9866</span><br><span class="line">java.io.IOException: Replica is not readable, block&#x3D;BP-911051597-192.168.1.240-1572922263924:blk_1073813352_72571, replica&#x3D;ReplicaWaitingToBeRecovered, blk_1073813352_72571, RWR</span><br><span class="line">  getNumBytes()     &#x3D; 57724</span><br><span class="line">  getBytesOnDisk()  &#x3D; 57724</span><br><span class="line">  getVisibleLength()&#x3D; -1</span><br><span class="line">  getVolume()       &#x3D; &#x2F;dfs&#x2F;dn</span><br><span class="line">  getBlockURI()     &#x3D; file:&#x2F;dfs&#x2F;dn&#x2F;current&#x2F;BP-911051597-192.168.1.240-1572922263924&#x2F;current&#x2F;rbw&#x2F;blk_1073813352</span><br><span class="line">        at org.apache.hadoop.hdfs.server.datanode.BlockSender.&lt;init&gt;(BlockSender.java:283)</span><br><span class="line">        at org.apache.hadoop.hdfs.server.datanode.DataXceiver.readBlock(DataXceiver.java:598)</span><br><span class="line">        at org.apache.hadoop.hdfs.protocol.datatransfer.Receiver.opReadBlock(Receiver.java:152)</span><br><span class="line">        at org.apache.hadoop.hdfs.protocol.datatransfer.Receiver.processOp(Receiver.java:104)</span><br><span class="line">        at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:291)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br></pre></td></tr></table></figure>
 
-<p><img src="/images/blog/2019-12-23-6.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-6.png" alt></p>
 <p><code>DataXceiver error processing READ_BLOCK operation</code> 说明读出现了问题</p>
 <p>根据<a href="https://github.com/apache/hadoop/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockSender.java#L283" target="_blank" rel="noopener">BlockSender.java:283</a>源码判断是跟 <code>replicaVisibleLength</code> 有关</p>
-<p><img src="/images/blog/2019-12-23-7.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-7.png" alt></p>
 <p><code>replicaVisibleLength</code> 又由 <code>getReplica(block, datanode)</code> 得到的 <code>replica</code> 实例调用<code>getVisibleLength()</code>得到</p>
-<p><img src="/images/blog/2019-12-23-8.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-8.png" alt></p>
 <p>查阅<a href="https://www.maiyewang.com/2018/11/26/%E3%80%8Ahadoop-2-x-hdfs%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E3%80%8B2-hdfs-%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" target="_blank" rel="noopener">资料</a>指导 <code>visible length</code> 表示从数据节点获取数据块副本真实的数据长度</p>
-<p><img src="/images/blog/2019-12-23-9.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-9.png" alt></p>
 <p>再对比之前报错信息的 <code>getVisibleLength()= -1</code> 可知块数据长度变为-1导致无法读取</p>
 <p>接着看 -1 是怎么导致的，到这里就有点全靠猜测了</p>
 <p>分析源码找到 <a href="https://github.com/apache/hadoop/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FinalizedReplica.java#L99" target="_blank" rel="noopener">FinalizedReplica 99行</a>，猜测其跟 NumBytes 有关，但是根据报错信息上显示<br><code>getNumBytes() = 57724</code>，就有点猜不透了</p>
-<p><img src="/images/blog/2019-12-23-10.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-10.png" alt></p>
 <p>在项目中搜索 -1 看到有个方法可能是关键， <a href="https://github.com/apache/hadoop/blob/trunk/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java#L835" target="_blank" rel="noopener">DFSStripedOutputStream 835行</a></p>
-<p><img src="/images/blog/2019-12-23-11.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-11.png" alt></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Return the length of each block in the block group. Unhealthy blocks have a length of -1.</span><br></pre></td></tr></table></figure>
 
 <p>该方法注释说返回 block 的长度，但是对于不健康的块返回 -1</p>
 <p>看看判断 block 健康的方法，跳到了<a href="https://github.com/apache/hadoop/blob/trunk/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java#L1940" target="_blank" rel="noopener">DataStreamer 1940行</a></p>
-<p><img src="/images/blog/2019-12-23-12.png" alt>{:height=”80%” width=”80%”}</p>
-<p><img src="/images/blog/2019-12-23-13.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-12-23-12.png" alt></p>
+<p><img src="/images/blog/2019-12-23-13.png" alt></p>
 <p>DataStreamer 是 HDFS 写流程中将 packet 数据包流式传输到管线的类</p>
 <p>到了这里我猜估计就是写过程遇到些故障(断电)，块损坏，然后 DataStreamer 将其置换为故障，然后 DFSStripedOutputStream 就将其长度变为 -1</p>
 <p>这就是我猜想的大概，水平有限，谅解谅解</p>
@@ -496,12 +496,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

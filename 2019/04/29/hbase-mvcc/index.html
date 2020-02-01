@@ -66,7 +66,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-05-06-3.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-05-06-4.png">
 <meta property="article:published_time" content="2019-04-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-11-27T11:52:13.054Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:45.804Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HBase">
 <meta property="article:tag" content=" MVCC">
@@ -250,7 +250,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-11-27 19:52:13" itemprop="dateModified" datetime="2019-11-27T19:52:13+08:00">2019-11-27</time>
+                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -270,14 +270,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6.2k</span>
+              <span>5.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>5 分钟</span>
             </span>
             <div class="post-description">HBase 行锁与多版本并发控制</div>
 
@@ -335,7 +335,7 @@
 
 <p>通过这种结构，每个事务只会产生一个WAL单元。这样就可以保证WAL写入时候的原子性。</p>
 <h4 id="HBase-事务一致性保证"><a href="#HBase-事务一致性保证" class="headerlink" title="HBase 事务一致性保证"></a>HBase 事务一致性保证</h4><p>HBase 是一个强一致性数据库，不是“最终一致性”数据库，官网给出的介绍</p>
-<p><img src="/images/blog/2019-05-06-1.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-05-06-1.png" alt> </p>
 <blockquote>
 <ul>
 <li>每个值只出现在一个 Region</li>
@@ -355,11 +355,11 @@
 <p>每一次更新都会调用写日志的 sync() 方法，这个调用强迫写入日志的更新都会被文件系统确认。</p>
 <h4 id="HBase-事务隔离性保证"><a href="#HBase-事务隔离性保证" class="headerlink" title="HBase 事务隔离性保证"></a>HBase 事务隔离性保证</h4><h5 id="写写并发控制"><a href="#写写并发控制" class="headerlink" title="写写并发控制"></a>写写并发控制</h5><h6 id="1-为什么需要写写并发控制？"><a href="#1-为什么需要写写并发控制？" class="headerlink" title="1. 为什么需要写写并发控制？"></a>1. 为什么需要写写并发控制？</h6><p>现在假设有两个并发写入请求同时进来，分别对同一行数据进行写入。</p>
 <p>下图所示 RowKey 为 Greg，现在分别更新列族 info 下的 Company 列和 Role 列:</p>
-<p><img src="/images/blog/2019-04-30-1.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-04-30-1.png" alt> </p>
 <p>如果没有任何并发控制策略的话，写入数据（先写WAL，再写memstore）可能会出现不同KV写入”交叉”现象，如下图所示</p>
-<p><img src="/images/blog/2019-04-30-2.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-04-30-2.png" alt> </p>
 <p>这样的话，用户最终读取到的数据就会产生不一致，如下:</p>
-<p><img src="/images/blog/2019-04-30-3.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-04-30-3.png" alt> </p>
 <h6 id="2-如何实现写写并发控制？"><a href="#2-如何实现写写并发控制？" class="headerlink" title="2. 如何实现写写并发控制？"></a>2. 如何实现写写并发控制？</h6><p>实现写写并发其实很简单，只需要在写入（或更新）之前先获取行锁，<br>如果获取不到，说明已经有其他线程拿了该锁，就需要不断重试等待或者自旋等待，<br>直至其他线程释放该锁。</p>
 <p>拿到锁之后开始写入数据，写入完成之后释放行锁即可。</p>
 <p>这种行锁机制是实现写写并发控制最常用的手段。</p>
@@ -382,12 +382,12 @@
 <p>不能更新一行锁定（释放）一行，多个事务之间容易形成死锁。</p>
 <p>题外话: 关于两阶段锁协议可以看下 <a href="https://www.cnblogs.com/zszmhd/p/3365220.html" target="_blank" rel="noopener">两阶段锁协议</a> 和 范神的 <a href="http://hbasefly.com/2017/07/26/transaction-2/" target="_blank" rel="noopener">数据库事务系列－HBase行级事务模型</a> FARMERJOHN 的评论</p>
 <p>支持一个 Region 的多行。跨 Region 多行事务不支持</p>
-<h6 id="4-范神疑惑"><a href="#4-范神疑惑" class="headerlink" title="4. 范神疑惑"></a>4. 范神疑惑</h6><p><img src="/images/blog/2019-04-30-4.png" alt>{:height=”80%” width=”80%”} </p>
+<h6 id="4-范神疑惑"><a href="#4-范神疑惑" class="headerlink" title="4. 范神疑惑"></a>4. 范神疑惑</h6><p><img src="/images/blog/2019-04-30-4.png" alt> </p>
 <p>针对这里。当初也没想明白，事后不知道在哪看到一个回答提到因为版本信息客户端可以修改为自己的时间。<br>因此 HBase 需要自己的机制来保障。 个人觉得这个回答是合理的。记录下来。</p>
 <h5 id="读写并发控制"><a href="#读写并发控制" class="headerlink" title="读写并发控制"></a>读写并发控制</h5><h6 id="1-为什么需要读写并发控制？"><a href="#1-为什么需要读写并发控制？" class="headerlink" title="1. 为什么需要读写并发控制？"></a>1. 为什么需要读写并发控制？</h6><p>现在我们通过在写入更新之前加锁、写入更新之后释放锁实现写写并发控制，<br>那读写之间是不是也需要一定的并发控制呢？如果不加并发控制，会出现什么现象呢？接着看下图:</p>
-<p><img src="/images/blog/2019-04-30-5.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-04-30-5.png" alt> </p>
 <p>上图分别是两个事务更新同一行数据，现在假设第一个事务已经更新完成，<br>在第二个事务更新到一半的时候进来一个读请求，如果没有任何并发控制的话，<br>读请求就会读到不一致的数据，Company 列为 Restaurant，Role 列为 Engineer，如下图所示:</p>
-<p><img src="/images/blog/2019-04-30-6.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-04-30-6.png" alt> </p>
 <p>可见，读写之间也需要一种并发控制来保证读取的数据总能够保持一致性，不会出现各种诡异的不一致现象。</p>
 <h6 id="2-如何实现读写并发控制？"><a href="#2-如何实现读写并发控制？" class="headerlink" title="2. 如何实现读写并发控制？"></a>2. 如何实现读写并发控制？</h6><p>实现读写并发最简单的方法就是仿照写写并发控制 – 加锁。<br>但几乎所有数据库都不会这么做，性能太差，对于读多写少的应用来说必然不可接受。</p>
 <p>MVCC机制 – Mutil Version Concurrent Control 就闪亮登场了。</p>
@@ -398,11 +398,11 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">对于写</span><br><span class="line"></span><br><span class="line">w1 获取到行锁后，每个写操作立刻被分配一个 write number</span><br><span class="line"></span><br><span class="line">w2 写中的每个 cell 存储其 write number</span><br><span class="line"></span><br><span class="line">w3 写操作完成以后要申明其已经完成了</span><br><span class="line"></span><br><span class="line">对于读</span><br><span class="line"></span><br><span class="line">r1 每个写操作首先被分配一个读时间戳，叫做 read point</span><br><span class="line"></span><br><span class="line">r2 每个 read point 被分配一个最大整数。这个最大整数是大于等于已完成 write number 的整数</span><br><span class="line"></span><br><span class="line">r3 某个（行，列）组合的读取 read 返回数据单元格，其匹配（行，列）的写入编号是小于或等于读取点的最大值 read</span><br></pre></td></tr></table></figure>
 
 <p>示意图如下所示:</p>
-<p><img src="/images/blog/2019-04-30-7.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-04-30-7.png" alt> </p>
 <p>上图中两个写事务分别分配了序列号1和序列号2，读请求进来的时候事务1已经完成，事务2还未完成，<br>因此分配事务1对应的序列号1给读请求。此时序列号1对本次读可见，序列号2对本次读不可见，读到的数据是:</p>
-<p><img src="/images/blog/2019-04-30-8.png" alt>{:height=”80%” width=”80%”} </p>
+<p><img src="/images/blog/2019-04-30-8.png" alt> </p>
 <p>具体实现中，所有的事务都会生成一个Region级别的自增序列，并添加到队列中，<br>如下图最左侧队列，其中最底端为已经提交的事务，<br>队列中的事务为未提交事务。<br>现假设当前事务编号为15，并且写入完成（中间队列红色框框），<br>但之前的写入事务还未完成（序列号为12、13、14的事务还未完成），<br>此时当前事务必须等待，而且对读并不可见，<br>直至之前所有事务完成之后才会对读可见（即读请求才能读取到该事务写入的数据）。<br>如最右侧图，15号事务之前的所有事务都成功完成，<br>此时Read Point就会移动到15号事务处，表示15号事务之前的所有改动都可见。</p>
-<p><img src="/images/blog/2019-04-30-9.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-04-30-9.png" alt></p>
 <pre><code>为什么提交WriteNumber时，会出现调整后的ReadNumber小于本次写操作所分配的WriteNumber呢？
 
 这是因为并发写入时，多个线程的写入速度是随机的，可能存在WriteNumber比较大（假设值为x）
@@ -428,9 +428,9 @@ ReadNumber为x即表示MemStore中所有WriteNumber小于或等于x的数据都�
 </ol>
 <p>用户可以通过客户端设置WAL持久化等级。默认如果用户没有指定持久化等级，HBase 使用 SYNC_WAL 等级持久化数据。</p>
 <h4 id="外话"><a href="#外话" class="headerlink" title="外话"></a>外话</h4><p>HBase 也同样支持 read uncommitted 级别，也就是我们在查询的时候将 scan 的 MVCC 值设置为一个超大的值，大于目前所有申请的 MVCC 值，<br>那么查询时同样会返回正在写入的数据。</p>
-<p><img src="/images/blog/2019-05-06-2.png" alt>{:height=”80%” width=”80%”}</p>
-<p><img src="/images/blog/2019-05-06-3.png" alt>{:height=”80%” width=”80%”}</p>
-<p><img src="/images/blog/2019-05-06-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-06-2.png" alt></p>
+<p><img src="/images/blog/2019-05-06-3.png" alt></p>
+<p><img src="/images/blog/2019-05-06-4.png" alt></p>
 <p>获取了 readPoint，注意只有在 READ_COMMITTED 下，<br>readpoint 才是生效的，然后会对 memstore 和 storeFile 进行查询，<br>过滤掉大于这次 readPoint 的数据，防止读取到还没提交成功的数据，也就是 READ_COMMITTED 读已提交。</p>
 <p>如果是 READ_UNCOMMITTED 则 readPoint 会返回 Long.MAX_VALUE，就有会读到最新的的数据包括没提交的</p>
 <p>总结下MVCC算法下写操作的执行流程: </p>
@@ -613,12 +613,12 @@ ReadNumber为x即表示MemStore中所有WriteNumber小于或等于x的数据都�
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

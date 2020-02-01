@@ -56,7 +56,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-05-15-2.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-05-15-3.png">
 <meta property="article:published_time" content="2019-05-14T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-05-15T07:44:32.445Z">
+<meta property="article:modified_time" content="2020-02-01T04:42:45.838Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="keyword1">
 <meta property="article:tag" content=" keyword2">
@@ -232,10 +232,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2019-05-15 00:00:00 / 修改时间：15:44:32" itemprop="dateCreated datePublished" datetime="2019-05-15T00:00:00+08:00">2019-05-15</time>
+              <time title="创建时间：2019-05-15 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-15T00:00:00+08:00">2019-05-15</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -254,7 +260,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.8k</span>
+              <span>3.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -304,15 +310,15 @@
 <h5 id="2-MemTable"><a href="#2-MemTable" class="headerlink" title="2. MemTable"></a>2. MemTable</h5><p>MemTable 对应的就是 WAL 文件，是该文件内容在内存中的存储结构，<br>通常用 SkipList 来实现。MemTable 提供了 k-v 数据的写入、删除以及读取的操作接口。<br>其内部将 k-v 对按照 key 值有序存储，这样方便之后快速序列化到 SSTable 文件中，仍然保持数据的有序性。</p>
 <h5 id="3-Immutable-Memtable"><a href="#3-Immutable-Memtable" class="headerlink" title="3. Immutable Memtable"></a>3. Immutable Memtable</h5><p>顾名思义，Immutable Memtable 就是在内存中只读的 MemTable，由于内存是有限的，通常我们会设置一个阀值，当 MemTable 占用的内存达到阀值后就自动转换为 Immutable Memtable，Immutable Memtable 和 MemTable 的区别就是它是只读的，系统此时会生成新的 MemTable 供写操作继续写入。</p>
 <p>之所以要使用 Immutable Memtable，就是为了避免将 MemTable 中的内容序列化到磁盘中时会阻塞写操作。</p>
-<h5 id="4-SSTable"><a href="#4-SSTable" class="headerlink" title="4. SSTable"></a>4. SSTable</h5><p><img src="/images/blog/2019-05-15-1.png" alt>{:height=”80%” width=”80%”} </p>
+<h5 id="4-SSTable"><a href="#4-SSTable" class="headerlink" title="4. SSTable"></a>4. SSTable</h5><p><img src="/images/blog/2019-05-15-1.png" alt> </p>
 <p>SSTable 就是 MemTable 中的数据在磁盘上的有序存储，其内部数据是根据 key 从小到大排列的。通常为了加快查找的速度，需要在 SSTable 中加入数据索引，可以快读定位到指定的 k-v 数据。</p>
-<h4 id="常用操作的实现"><a href="#常用操作的实现" class="headerlink" title="常用操作的实现"></a>常用操作的实现</h4><h5 id="1-写入"><a href="#1-写入" class="headerlink" title="1. 写入"></a>1. 写入</h5><p><img src="/images/blog/2019-05-15-2.png" alt>{:height=”80%” width=”80%”} </p>
+<h4 id="常用操作的实现"><a href="#常用操作的实现" class="headerlink" title="常用操作的实现"></a>常用操作的实现</h4><h5 id="1-写入"><a href="#1-写入" class="headerlink" title="1. 写入"></a>1. 写入</h5><p><img src="/images/blog/2019-05-15-2.png" alt> </p>
 <p>在 LSM Tree 中，写入操作是相当快速的，只需要在 WAL 文件中顺序写入当次操作的内容，成功之后将该 k-v 数据写入 MemTable 中即可。尽管做了一次磁盘 IO，但是由于是顺序追加写入操作，效率相对来说很高，并不会导致写入速度的降低。数据写入 MemTable 中其实就是往 SkipList 中插入一条数据，过程也相当简单快速。</p>
 <h5 id="2-更新"><a href="#2-更新" class="headerlink" title="2. 更新"></a>2. 更新</h5><p>更新操作其实并不真正存在，和写入一个 k-v 数据没有什么不同，只是在读取的时候，会从 Level0 层的 SSTable 文件开始查找数据，数据在低层的 SSTable 文件中必然比高层的文件中要新，所以总能读取到最新的那条数据。也就是说此时在整个 LSM Tree 中可能会同时存在多个 key 值相同的数据，只有在之后合并 SSTable 文件的时候，才会将旧的值删除。</p>
 <h5 id="3-删除"><a href="#3-删除" class="headerlink" title="3. 删除"></a>3. 删除</h5><p>删除一条记录的操作比较特殊，并不立即将数据从文件中删除，而是记录下对这个 key 的删除操作标记，同插入操作相同，插入操作插入的是 k-v 值，而删除操作插入的是 k-del 标记，只有当合并 SSTable 文件时才会真正的删除。</p>
 <h5 id="4-合并"><a href="#4-合并" class="headerlink" title="4. 合并"></a>4. 合并</h5><p>Compaction。当数据不断从 Immutable Memtable 序列化到磁盘上的 SSTable 文件中时，SSTable 文件的数量就不断增加，而且其中可能有很多更新和删除操作并不立即对文件进行操作，而只是存储一个操作记录，这就造成了整个 LSM Tree 中可能有大量相同 key 值的数据，占据了磁盘空间。</p>
 <p>为了节省磁盘空间占用，控制 SSTable 文件数量，需要将多个 SSTable 文件进行合并，生成一个新的 SSTable 文件。比如说有 5 个 10 行的 SSTable 文件要合并成 1 个 50 行的 SSTable 文件，但是其中可能有 key 值重复的数据，我们只需要保留其中最新的一条即可，这个时候新生成的 SSTable 可能只有 40 行记录。</p>
-<h5 id="5-读取"><a href="#5-读取" class="headerlink" title="5. 读取"></a>5. 读取</h5><p><img src="/images/blog/2019-05-15-3.png" alt>{:height=”80%” width=”80%”} </p>
+<h5 id="5-读取"><a href="#5-读取" class="headerlink" title="5. 读取"></a>5. 读取</h5><p><img src="/images/blog/2019-05-15-3.png" alt> </p>
 <p>LSM Tree 的读取效率并不高，当需要读取指定 key 的数据时，先在内存中的 MemTable 和 Immutable MemTable 中查找，如果没有找到，则继续从 Level 0 层开始，找不到就从更高层的 SSTable 文件中查找，如果查找失败，说明整个 LSM Tree 中都不存在这个 key 的数据。如果中间在任何一个地方找到这个 key 的数据，那么按照这个路径找到的数据都是最新的。</p>
 <h5 id="6-优化读取"><a href="#6-优化读取" class="headerlink" title="6. 优化读取"></a>6. 优化读取</h5><p>因为这样的读取效率非常差，通常会进行一些优化，例如 LevelDB 中的 Mainfest 文件，这个文件记录了 SSTable 文件的一些关键信息，例如 Level 层数，文件名，最小 key 值，最大 key 值等，这个文件通常不会太大，可以放入内存中，可以帮助快速定位到要查询的 SSTable 文件，避免频繁读取。</p>
 <p>另外一个经常使用的方法是布隆解析器(Bloom filter)，布隆解析器是一个使用内存判断文件是否包含一个关键字的有效方法。</p>
@@ -486,12 +492,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">422k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:23</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
