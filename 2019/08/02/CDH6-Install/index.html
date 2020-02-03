@@ -63,7 +63,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-08-02-10.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-08-02-11.png">
 <meta property="article:published_time" content="2019-08-01T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-01T04:42:45.973Z">
+<meta property="article:modified_time" content="2020-02-03T04:35:39.922Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="CDH6">
 <meta name="twitter:card" content="summary">
@@ -246,7 +246,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
+                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -266,7 +266,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.5k</span>
+              <span>3.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -293,15 +293,15 @@
 <p>选择最新 6.1 版本</p>
 <p>官方文档链接  <a href="https://www.cloudera.com/documentation/enterprise/latest.html" target="_blank" rel="noopener">https://www.cloudera.com/documentation/enterprise/latest.html</a> </p>
 <p>选择自己要安装的版本。找到版本的官方的安装文档</p>
-<p><img src="/images/blog/2019-08-02-2.png" alt></p>
+<p><img src="/images/blog/2019-08-02-2.png" alt>{:height=”80%” width=”80%”}</p>
 <p>安装之前建议先阅读要求</p>
-<p><img src="/images/blog/2019-08-02-3.png" alt></p>
+<p><img src="/images/blog/2019-08-02-3.png" alt>{:height=”80%” width=”80%”}</p>
 <p>本人在安装过程中只关注了操作系统要求。</p>
 <p>硬件是用公司物理机安装的。</p>
 <p>数据库的话是用CM自带的 Psql</p>
-<p><img src="/images/blog/2019-08-02-4.png" alt></p>
+<p><img src="/images/blog/2019-08-02-4.png" alt>{:height=”80%” width=”80%”}</p>
 <h4 id="系统环境"><a href="#系统环境" class="headerlink" title="系统环境"></a>系统环境</h4><p>操作系统  CentOS 7.2 x64 </p>
-<h4 id="安装之前"><a href="#安装之前" class="headerlink" title="安装之前"></a>安装之前</h4><h5 id="Host"><a href="#Host" class="headerlink" title="Host"></a>Host</h5><p><img src="/images/blog/2019-08-02-5.png" alt></p>
+<h4 id="安装之前"><a href="#安装之前" class="headerlink" title="安装之前"></a>安装之前</h4><h5 id="Host"><a href="#Host" class="headerlink" title="Host"></a>Host</h5><p><img src="/images/blog/2019-08-02-5.png" alt>{:height=”80%” width=”80%”}</p>
 <p>主机YZ-JDB-106-38-13的名称中有大写字符。在这种情况下，通过Kerberos进行的身份验证将无法正常工作。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># 一定要注意 hostname 不能包含下划线</span><br><span class="line">  </span><br><span class="line"># 修改hostname</span><br><span class="line">hostname yz-100-73-18-59  # 直接修改命令</span><br><span class="line">hostname                  # 查看修改后的hostname</span><br><span class="line">  </span><br><span class="line"># 修改网络配置文件</span><br><span class="line">vim &#x2F;etc&#x2F;sysconfig&#x2F;network</span><br><span class="line">HOSTNAME&#x3D;yz-JDB-106-35-3</span><br><span class="line">  </span><br><span class="line"># 修改hosts文件</span><br><span class="line"># 把集群所有的ip与对应的hostname</span><br><span class="line">vim &#x2F;etc&#x2F;hosts     </span><br><span class="line">100.73.41.20 yz-100-73-41-20</span><br><span class="line">100.73.41.21 yz-100-73-41-21</span><br><span class="line">100.73.41.22 yz-100-73-41-22</span><br></pre></td></tr></table></figure>
 
@@ -325,16 +325,16 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
 <p>根据报错提示知道依赖冲突。卸载冲突依赖, 然后安装agent 的是会安装它所依赖的 supervisor</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -e --nodeps supervisor-3.1.3-3.el7.noarch</span><br></pre></td></tr></table></figure>
 
-<h5 id="升级软件依赖版本"><a href="#升级软件依赖版本" class="headerlink" title="升级软件依赖版本"></a>升级软件依赖版本</h5><p><img src="/images/blog/2019-08-02-6.png" alt></p>
+<h5 id="升级软件依赖版本"><a href="#升级软件依赖版本" class="headerlink" title="升级软件依赖版本"></a>升级软件依赖版本</h5><p><img src="/images/blog/2019-08-02-6.png" alt>{:height=”80%” width=”80%”}</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum -y install python-pip</span><br><span class="line">pip install --upgrade psycopg2</span><br></pre></td></tr></table></figure>
 
-<h5 id="JDBC-驱动"><a href="#JDBC-驱动" class="headerlink" title="JDBC 驱动"></a>JDBC 驱动</h5><p><img src="/images/blog/2019-08-02-7.png" alt></p>
+<h5 id="JDBC-驱动"><a href="#JDBC-驱动" class="headerlink" title="JDBC 驱动"></a>JDBC 驱动</h5><p><img src="/images/blog/2019-08-02-7.png" alt>{:height=”80%” width=”80%”}</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp mysql-connector-java-5.1.47-bin.jar &#x2F;usr&#x2F;share&#x2F;java</span><br><span class="line">mv mysql-connector-java-5.1.47-bin.jar mysql-connector-java.jar</span><br></pre></td></tr></table></figure>
 
 <h5 id="数据库没有创建"><a href="#数据库没有创建" class="headerlink" title="数据库没有创建"></a>数据库没有创建</h5><p>Able to find the Database server, but not the specified database. Please check if the database name is correct and make sure that the user can access the database.</p>
-<p><img src="/images/blog/2019-08-02-8.png" alt></p>
+<p><img src="/images/blog/2019-08-02-8.png" alt>{:height=”80%” width=”80%”}</p>
 <p>解决方法：创建需要的数据库</p>
-<p><img src="/images/blog/2019-08-02-9.png" alt></p>
+<p><img src="/images/blog/2019-08-02-9.png" alt>{:height=”80%” width=”80%”}</p>
 <h5 id="开启-gtid-问题"><a href="#开启-gtid-问题" class="headerlink" title="开启 gtid 问题"></a>开启 gtid 问题</h5><p>User cannot run DDL statements on the specified database. Attempt to create and drop a table failed.</p>
 <p>因为 mysql 开启了gtid ，所以导致这个问题。</p>
 <p>关闭 mysql 的gtid 即可。</p>
@@ -342,9 +342,9 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># GTID #</span><br><span class="line">gtid-mode &#x3D; OFF</span><br><span class="line">enforce-gtid-consistency &#x3D; 0</span><br></pre></td></tr></table></figure>
 
 <h4 id="Kudu-路径配置"><a href="#Kudu-路径配置" class="headerlink" title="Kudu 路径配置"></a>Kudu 路径配置</h4><p>Cloudera 默认没有给 Kudu 配置路径</p>
-<p><img src="/images/blog/2019-08-02-10.png" alt></p>
+<p><img src="/images/blog/2019-08-02-10.png" alt>{:height=”80%” width=”80%”}</p>
 <h4 id="Hive-Metastore-Canary"><a href="#Hive-Metastore-Canary" class="headerlink" title="Hive Metastore Canary"></a>Hive Metastore Canary</h4><p>Hive 需要 jdbc 的包</p>
-<p><img src="/images/blog/2019-08-02-11.png" alt></p>
+<p><img src="/images/blog/2019-08-02-11.png" alt>{:height=”80%” width=”80%”}</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp mysql-connector-java.jar &#x2F;usr&#x2F;share&#x2F;java</span><br><span class="line">cp mysql-connector-java.jar &#x2F;opt&#x2F;cloudera&#x2F;parcels&#x2F;CDH-6.1.0-1.cdh6.1.0.p0.770702&#x2F;lib&#x2F;hive&#x2F;lib&#x2F;</span><br></pre></td></tr></table></figure>
 
 <hr>
@@ -368,12 +368,12 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/08/02/Flink-Time/" rel="prev" title="Flink Time">
-      <i class="fa fa-chevron-left"></i> Flink Time
+    <a href="/2019/07/29/Binary-Tree/" rel="prev" title="二叉树前序中序后序遍历的迭代实现">
+      <i class="fa fa-chevron-left"></i> 二叉树前序中序后序遍历的迭代实现
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/08/05/Kafka-Introduction/" rel="next" title="Kafka 认识">
-      Kafka 认识 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/08/02/Flink-Time/" rel="next" title="Flink Time">
+      Flink Time <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -451,14 +451,14 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-count">176</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">26</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -503,12 +503,12 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">427k</span>
+    <span title="站点总字数">434k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:28</span>
+    <span title="站点阅读时长">6:34</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

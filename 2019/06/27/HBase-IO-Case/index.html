@@ -63,7 +63,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-27-9.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-27-10.png">
 <meta property="article:published_time" content="2019-06-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-01T04:42:45.935Z">
+<meta property="article:modified_time" content="2020-02-03T04:35:39.917Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HBase">
 <meta name="twitter:card" content="summary">
@@ -246,7 +246,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-01 12:42:45" itemprop="dateModified" datetime="2020-02-01T12:42:45+08:00">2020-02-01</time>
+                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -266,7 +266,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.2k</span>
+              <span>2.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -289,36 +289,36 @@
         <p>HBase Region 过多导致的集群性能不佳</p>
 <hr>
 <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有 10 个节点的HBase集群。每天早上 10 点所有 RS warn 告警。</p>
-<p><img src="/images/blog/2019-06-27-1.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-1.png" alt>{:height=”80%” width=”80%”} </p>
 <p>持续过程 30 分钟。</p>
-<p><img src="/images/blog/2019-06-27-2.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-2.png" alt>{:height=”80%” width=”80%”} </p>
 <p>GC 时间过长，还触发了 RS 宕机。</p>
 <h4 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h4><p>优先看 GC 告警的机器。查看 CM 监控发现该机器的 CPU，磁盘吞吐量在 10:00 - 10:30 这一段时间都是飙高的。</p>
-<p><img src="/images/blog/2019-06-27-3.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-3.png" alt>{:height=”80%” width=”80%”} </p>
 <p>我接着查看发现所有的 RS 都是 10:00 - 10:30 这一段时间都是飙高的。</p>
-<p><img src="/images/blog/2019-06-27-4.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-4.png" alt>{:height=”80%” width=”80%”} </p>
 <p>肯定是什么触发的。先看读写读写量。</p>
-<p><img src="/images/blog/2019-06-27-5.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-5.png" alt>{:height=”80%” width=”80%”} </p>
 <p>读写量也不大，说明不是由大批量请求造成的。</p>
 <p>监控看不出问题，那就转战看日志。</p>
 <p>发现有很多类似如下的输出:</p>
 <p><code>... because info has and old edit so flush to free WALs after random delay ...</code></p>
-<p><img src="/images/blog/2019-06-27-6.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-6.png" alt>{:height=”80%” width=”80%”} </p>
 <p>这是很明显的写入量很小，因为周期性 flush 线程触发的行为，比如某 store 很久没更新了而最新的 edit 距今超过阈值（默认 1小时），<br>那么就会 delay 一个 random 时间去执行刷新。参阅<a href="https://lihuimintu.github.io/2019/06/25/HBase-Flush/" target="_blank" rel="noopener">HBase Flush 时机</a><br>第5点定期刷新</p>
 <p>通过如下关键字去看历次触发的 flush 产生的文件大小</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep &#39;org.apache.hadoop.hbase.regionserver.HStore: Added hdfs&#39; &#x2F;var&#x2F;log&#x2F;hbase&#x2F;hbase-cmf-hbase-REGIONSERVER-$&#123;FQDN_HOSTNAME&#125;.log.out | awk &#39;&#123;print $1&quot; &quot;$2&quot; &quot;$(NF-1)$NF&#125;&#39;</span><br></pre></td></tr></table></figure>
 
-<p><img src="/images/blog/2019-06-27-7.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-7.png" alt>{:height=”80%” width=”80%”} </p>
 <p>发现几乎每次刷出来的都是小文件，不到 100KB。</p>
 <p>为什么这么多小文件呢？小文件过多会触发 compaction 机制。</p>
 <p>刚好同事已经排查出小文件过多原因。</p>
-<p><img src="/images/blog/2019-06-27-8.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-8.png" alt>{:height=”80%” width=”80%”} </p>
 <p>HBase 集群的 Region 个数达到了 2w 个。因为该 HBase 集群上有 Kylin 服务。Kylin 生成了大量的临时表。<br>而清理临时表的定时脚本因配置不当没有启动起来。导致该 HBase 集群 Region 个数越来越多。Region 越多，MemStore 刷新越小，<br>所以产生了小 HFile 文件。</p>
 <p>compaction 机制检查到 Store 中 HFile 个数达到 3 个时就会执行 Compaction</p>
 <p>同事手动运行脚本之后已经将 Region 个数降到 2k 左右了，平摊到 10 个RS就是 200+ 个。符合合理范围。<a href="https://mp.weixin.qq.com/s/0tGNpmBRHbI673TwxIC2NA" target="_blank" rel="noopener">HBase最佳实践之Region数量&amp;大小</a></p>
 <p>原因找到了，那我就找找 compaction 发生的痕迹。验证是由 compaction 触发导致服务器压力大。</p>
 <p>根据监控上的时间点。看到 CPU 在 10:06 分达到峰值。在日志里查询 10:06 左右发生了什么事。</p>
-<p><img src="/images/blog/2019-06-27-9.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-9.png" alt>{:height=”80%” width=”80%”} </p>
 <p>功夫不负有心人，看到关键<code>CompactionChecker missed its start time</code>(图中绿色框)。</p>
 <p>翻译过来就是 CompactionChecker 线程丢失了开始时间。为什么丢失开始时间是因为发生了 GC 造成了 STW(图中蓝色框)，线程被挂起了。这不是重点，接着往下看。</p>
 <p>CompactionChecker 线程是干什么的？</p>
@@ -327,7 +327,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2019-06-27 07:12:02,093 INFO org.apache.hadoop.hbase.ScheduledChore: Chore: CompactionChecker missed its start time</span><br><span class="line">...skipping...</span><br><span class="line">2019-06-27 10:06:20,649 INFO org.apache.hadoop.hbase.ScheduledChore: Chore: CompactionChecker missed its start time</span><br></pre></td></tr></table></figure>
 
 <p>可以计算可以知道两个时间相差 2时 54分 18秒。符合 CompactionChecker 间隔时间。查看 RS 6点到 8点 CPU 监控。</p>
-<p><img src="/images/blog/2019-06-27-10.png" alt> </p>
+<p><img src="/images/blog/2019-06-27-10.png" alt>{:height=”80%” width=”80%”} </p>
 <p>可以看出 7:12 之后 CPU 峰值降下来了。</p>
 <p>正如猜想一样。CompactionChecker 是关键。</p>
 <h4 id="思路归纳"><a href="#思路归纳" class="headerlink" title="思路归纳"></a>思路归纳</h4><p>Region 过多会影响 HBase 状态。Region 之间共享 RS 的 MemStore 内存区域，因此 Region 过多，MemStore 刷新越小。</p>
@@ -441,14 +441,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-count">176</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">26</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -493,12 +493,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">427k</span>
+    <span title="站点总字数">434k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:28</span>
+    <span title="站点阅读时长">6:34</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

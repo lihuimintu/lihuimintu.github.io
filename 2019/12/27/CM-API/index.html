@@ -54,7 +54,7 @@
 <meta property="og:description" content="Cloudera Manager API 使用">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-12-27-1.png">
 <meta property="article:published_time" content="2019-12-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-01T04:42:46.222Z">
+<meta property="article:modified_time" content="2020-02-03T04:35:39.953Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="CDH">
 <meta name="twitter:card" content="summary">
@@ -237,7 +237,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-01 12:42:46" itemprop="dateModified" datetime="2020-02-01T12:42:46+08:00">2020-02-01</time>
+                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -285,7 +285,7 @@
 <p>因为之前使用的是 CDH 5.7.1 版本的，API 直接可用，但是现在新集群使用的是 CDH 6.3.1 ，API 改版使用 Swagger 方式来<br>操作了，按以前的方法各种踩坑。</p>
 <h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p><a href="http://cloudera.github.io/cm_api/" target="_blank" rel="noopener">Cloudera Manager API 官网地址</a></p>
 <p>参考官网实例基本够用，同时注意选择 <a href="http://cloudera.github.io/cm_api/docs/releases/" target="_blank" rel="noopener">API 版本</a></p>
-<p><img src="/images/blog/2019-12-27-1.png" alt></p>
+<p><img src="/images/blog/2019-12-27-1.png" alt>{:height=”80%” width=”80%”}</p>
 <p>访问的cm地址可以直接查看 api 版本 <code>http://host:port/api/version</code>，参考自第一个链接</p>
 <p>swagger 的方式与之前真不大相同，这里把写的 Python demo 保存下，方便以后查阅，注意注册一个可读账号来访问，避免密码泄露</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">import cm_client</span><br><span class="line">from cm_client.rest import ApiException</span><br><span class="line">from pprint import pprint</span><br><span class="line"></span><br><span class="line"># Configure HTTP basic authorization: basic</span><br><span class="line">cm_client.configuration.username &#x3D; &#39;hadoop&#39;</span><br><span class="line">cm_client.configuration.password &#x3D; &#39;xxxx&#39;</span><br><span class="line"></span><br><span class="line"># Create an instance of the API class</span><br><span class="line">api_host &#x3D; &#39;http:&#x2F;&#x2F;192.168.1.240&#39;</span><br><span class="line">port &#x3D; &#39;7180&#39;</span><br><span class="line">api_version &#x3D; &#39;v30&#39;</span><br><span class="line"># Construct base URL for API</span><br><span class="line"># http:&#x2F;&#x2F;cmhost:7180&#x2F;api&#x2F;v30</span><br><span class="line">api_url &#x3D; api_host + &#39;:&#39; + port + &#39;&#x2F;api&#x2F;&#39; + api_version</span><br><span class="line">api_client &#x3D; cm_client.ApiClient(api_url)</span><br><span class="line">cluster_api_instance &#x3D; cm_client.ClustersResourceApi(api_client)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Lists all known clusters.</span><br><span class="line">api_response &#x3D; cluster_api_instance.read_clusters(view&#x3D;&#39;SUMMARY&#39;)</span><br><span class="line">for cluster in api_response.items:</span><br><span class="line">    print (cluster.name , &quot;-&quot;, cluster.full_version)</span><br><span class="line">    if cluster.full_version.startswith(&quot;6.&quot;):</span><br><span class="line">        services_api_instance &#x3D; cm_client.ServicesResourceApi(api_client)</span><br><span class="line">        services &#x3D; services_api_instance.read_services(cluster.name, view&#x3D;&#39;FULL&#39;)</span><br><span class="line">        for service in services.items:</span><br><span class="line">            print (service.name, &quot;-&quot;, service.type)</span><br><span class="line">            if service.type &#x3D;&#x3D; &#39;HIVE&#39;:</span><br><span class="line">                hive &#x3D; service</span><br><span class="line">                print (&quot;lihm&quot;)</span><br><span class="line">                print (hive.name, hive.service_state, hive.health_summary)</span><br><span class="line">                for health_check in hive.health_checks:</span><br><span class="line">                    print (health_check.name, &quot;---&quot;, health_check.summary)</span><br><span class="line">                role_api_instance &#x3D; cm_client.RolesResourceApi(api_client)</span><br><span class="line">                roles &#x3D; role_api_instance.read_roles(cluster.name, hive.name)</span><br><span class="line">                for role in roles.items:</span><br><span class="line">                    if role.type &#x3D;&#x3D; &#39;NAMENODE&#39;:</span><br><span class="line">                        nn &#x3D; role</span><br><span class="line">                        print (nn.name, nn.role_state, nn.health_summary, nn.host_ref.host_id)</span><br><span class="line">                        for hc in nn.health_checks:</span><br><span class="line">                            print (hc.name, &quot;---&quot;, hc.summary)</span><br><span class="line">                cmd &#x3D; services_api_instance.restart_command(cluster.name, hive.name)</span><br><span class="line">                print (&quot;cmd.active&quot;)</span><br></pre></td></tr></table></figure>
@@ -399,14 +399,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-count">176</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">26</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -451,12 +451,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">427k</span>
+    <span title="站点总字数">434k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:28</span>
+    <span title="站点阅读时长">6:34</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

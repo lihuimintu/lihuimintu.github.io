@@ -55,7 +55,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-20-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-20-2.png">
 <meta property="article:published_time" content="2019-11-19T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-01T04:42:46.137Z">
+<meta property="article:modified_time" content="2020-02-03T04:35:39.940Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HDFS">
 <meta property="article:tag" content=" Balance">
@@ -239,7 +239,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-01 12:42:46" itemprop="dateModified" datetime="2020-02-01T12:42:46+08:00">2020-02-01</time>
+                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,7 +259,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.2k</span>
+              <span>3.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -294,11 +294,11 @@
 <li>另外，还有一个出现在DataNode参数但又与平衡相关的：dfs.datanode.balance.bandwidthPerSec，即每个节点可以用来做平衡的最大带宽，默认1MB/s。这个值在多数情况下是偏小的，可以适当增大，如10甚至20。千万注意不能挤占太多带宽，以保证正常业务的运行。</li>
 </ul>
 <p>CDH Balancer的用法很简单，只需要设定好上述参数，再点击Actions→Rebalance菜单项，就会自动开始平衡了。</p>
-<p><img src="/images/blog/2019-11-20-1.png" alt></p>
+<p><img src="/images/blog/2019-11-20-1.png" alt>{:height=”80%” width=”80%”}</p>
 <p>那么Balancer内部是如何执行的呢？Balancer类的源码位于org.apache.hadoop.hdfs.server.balancer包中，限于篇幅，就不贴出来了，只简单叙述一下。<br>Balancer是迭代执行的，也就是说每次平衡都只移动一定量的数据，然后检查集群是否符合平衡的标准。迭代的大致步骤是：</p>
 <p>根据平衡度策略，计算出集群使用量均值，并与平衡阈值作比较，将节点按使用量从高到低划分为4类。<br>根据划分的4类节点，确认出需要平衡的源节点与目标节点对，并计算每对节点之间的数据交换量。<br>构造Dispatcher（这是与Balancer在同一个包中的类），初始化mover和dispatcher线程池。mover用来移动块，dispatcher用来调度节点对。<br>对每个节点上的块，确认它是否可以成为一个好的候选块。如果可以，那么它就会被移动到目标节点上去。</p>
 <p>从宏观上看，就是这张图。</p>
-<p><img src="/images/blog/2019-11-20-2.png" alt></p>
+<p><img src="/images/blog/2019-11-20-2.png" alt>{:height=”80%” width=”80%”}</p>
 <h4 id="节点内平衡-DiskBalancer"><a href="#节点内平衡-DiskBalancer" class="headerlink" title="节点内平衡 DiskBalancer"></a>节点内平衡 DiskBalancer</h4><p><a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HDFSDiskbalancer.html" target="_blank" rel="noopener">官网文档</a></p>
 <p>如果想要解决节点内多块磁盘数据不均衡的现象，就要借助DiskBalancer。在CDH 5.8.2+版本中，可以通过在CM中配置进行开启。</p>
 <p>在 HDFS 配置项中找到“DataNode Advanced Configuration Snippet (Safety Valve) for hdfs-site.xml”，中文为“hdfs-site.xml的HDFS服务⾼级配置代码段（安全阀）”，加入</p>
@@ -349,8 +349,8 @@
       <i class="fa fa-chevron-left"></i> Shell 整数比较符号
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/11/26/HBase-scene/" rel="next" title="HBase 场景">
-      HBase 场景 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/11/26/CDH-Assign-Roles/" rel="next" title="CDH 如何给 Hadoop 集群划分角色">
+      CDH 如何给 Hadoop 集群划分角色 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -428,14 +428,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-count">176</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">26</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -480,12 +480,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">427k</span>
+    <span title="站点总字数">434k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:28</span>
+    <span title="站点阅读时长">6:34</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
