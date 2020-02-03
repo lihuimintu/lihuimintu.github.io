@@ -46,16 +46,16 @@
   };
 </script>
 
-  <meta name="description" content="Hadoop 中处理小文件">
+  <meta name="description" content="缺页错误（Page Fault）">
 <meta property="og:type" content="article">
-<meta property="og:title" content="HDFS 处理小文件方法">
+<meta property="og:title" content="内存缺页错误">
 <meta property="og:url" content="http://yoursite.com/2020/02/01/Page-Fault/index.html">
 <meta property="og:site_name" content="lihuimintu">
-<meta property="og:description" content="Hadoop 中处理小文件">
+<meta property="og:description" content="缺页错误（Page Fault）">
 <meta property="article:published_time" content="2020-01-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T04:35:39.971Z">
+<meta property="article:modified_time" content="2020-02-03T09:22:08.135Z">
 <meta property="article:author" content="图">
-<meta property="article:tag" content="HDFS">
+<meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://yoursite.com/2020/02/01/Page-Fault/">
@@ -70,7 +70,7 @@
   };
 </script>
 
-  <title>HDFS 处理小文件方法 | lihuimintu</title>
+  <title>内存缺页错误 | lihuimintu</title>
   
 
 
@@ -218,7 +218,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          HDFS 处理小文件方法
+          内存缺页错误
         </h1>
 
         <div class="post-meta">
@@ -235,7 +235,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-03 17:22:08" itemprop="dateModified" datetime="2020-02-03T17:22:08+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -243,8 +243,8 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HDFS/" itemprop="url" rel="index">
-                    <span itemprop="name">HDFS</span>
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
                   </a>
                 </span>
             </span>
@@ -255,16 +255,16 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>465</span>
+              <span>4.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
-            <div class="post-description">Hadoop 中处理小文件</div>
+            <div class="post-description">缺页错误（Page Fault）</div>
 
         </div>
       </header>
@@ -275,21 +275,66 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>Hadoop 中处理小文件</p>
+        <p>缺页中断就是要访问的页不在主存，需要操作系统将其调入主存后再进行访问。</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HDFS 随着使用时间会存在小文件现象，这里将网上调研的处理方法收集一下</p>
-<h4 id><a href="#" class="headerlink" title></a></h4><p>什么是小文件？小文件是怎么来的？可以参阅<a href="https://mp.weixin.qq.com/s/QdaNFfq37bBlAQtNDGLmVw" target="_blank" rel="noopener">如何在Hadoop中处理小文件</a></p>
-<p>利用 HAR 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/rlM3ZPmWz-ZT72w59lvrRw" target="_blank" rel="noopener">0508-如何使用Hadoop的Archive处理小文件</a></p>
-<p>利用 Hive 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/xw6MjNvpI97m0aygyW1HaA" target="_blank" rel="noopener">如何在Hadoop中处理小文件-续</a>、<a href="https://mp.weixin.qq.com/s/ki2k9fBPco6PwMZEzff60A" target="_blank" rel="noopener">0704-5.16.2-如何使用Hive合并小文件</a></p>
-<p>利用 Impala 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/BTBqUqfbczq08LKRCuC_Ig" target="_blank" rel="noopener">如何使用Impala合并小文件</a></p>
-<p>在有赞使用 SparkSQL 中提到存在小文件现象，采用社区 <a href="https://issues.apache.org/jira/browse/SPARK-24940" target="_blank" rel="noopener">SPARK-24940</a>方式处理，借助 SQL hint 的方式合并小文件。参阅<a href="https://www.iteblog.com/archives/2501.html" target="_blank" rel="noopener">Spark SQL 查询中 Coalesce 和 Repartition 暗示（Hint）</a></p>
-<p>利用 Spark 处理小文件跟 Spark SQL 也是差不多的，通过 Spark 的 coalesce() 方法和 repartition() 方法，设置并行个数可以通过输入文件的总大小和期望输出文件的大小进行预计算而得。</p>
-<hr>
-<p>参考链接</p>
+<h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">作者：Liam Huang</span><br><span class="line">链接：https:&#x2F;&#x2F;liam.page&#x2F;2017&#x2F;09&#x2F;01&#x2F;page-fault&#x2F;</span><br></pre></td></tr></table></figure>
+
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>众所周知，CPU 不能直接和硬盘进行交互。CPU 所作的一切运算，都是通过 CPU 缓存间接与内存进行操作的。若是 CPU 请求的内存数据在物理内存中不存在，那么 CPU 就会报告「缺页错误（Page Fault）」，提示内核产生中断，将所缺的页面装入内存。</p>
+<p>在内核处理缺页错误时，就有可能进行磁盘的读写操作。这样的操作，相对 CPU 的处理是非常缓慢的。因此，发生大量的缺页错误，势必会对程序的性能造成很大影响。因此，在对性能要求很高的环境下，应当尽可能避免这种情况。</p>
+<p>此篇介绍缺页错误本身，并结合一个实际示例作出一些实践分析。这里主要在 Linux 的场景下做讨论；其他现代操作系统，基本也是类似的。</p>
+<h4 id="内存页和缺页错误"><a href="#内存页和缺页错误" class="headerlink" title="内存页和缺页错误"></a>内存页和缺页错误</h4><p>现代 CPU 都支持分段和分页的内存寻址模式。在 Linux 当中，实际起作用的只有分页模式。</p>
+<p>具体来说，分页模式在逻辑上将虚拟内存和物理内存同时等分成固定大小的块。这些块在虚拟内存上称之为「页」，而在物理内存上称之为「页帧」，并交由 CPU 中的 MMU 模块来负责页帧和页之间的映射管理。</p>
+<p>引入分页模式的好处，可以大致概括为两个方面: </p>
 <ul>
-<li><a href="http://bigdatadecode.club/HDFS-little-file-action.html" target="_blank" rel="noopener">HDFS小文件合并实战</a></li>
-<li><a href="https://juejin.im/post/5c3f2713f265da61285a5b75#heading-8" target="_blank" rel="noopener">SparkSQL 在有赞的实践</a></li>
-<li><a href="https://blog.csdn.net/weixin_37944880/article/details/86694829" target="_blank" rel="noopener">Spark小文件合并</a></li>
+<li>允许虚存空间远大于实际物理内存大小的情况。这是因为，分页之后，操作系统读入磁盘的文件时，无需以文件为单位全部读入，而可以以内存页为单位，分片读入。同时，考虑到 CPU 不可能一次性需要使用整个内存中的数据，因此可以交由特定的算法，进行内存调度: 将长时间不用的页帧内的数据暂存到磁盘上。</li>
+<li>减少了内存碎片的产生。这是因为，引入分页之后，内存的分配管理都是以页大小（通常是 4KiB，扩展分页模式下是 4MiB）为单位的；虚拟内存中的页总是对应物理内存中实际的页帧。这样一来，在虚拟内存空间中，页内连续的内存在物理内存上也一定是连续的，不会产生碎片。</li>
+</ul>
+<h4 id="缺页错误"><a href="#缺页错误" class="headerlink" title="缺页错误"></a>缺页错误</h4><p>当进程在进行一些计算时，CPU 会请求内存中存储的数据。在这个请求过程中，CPU 发出的地址是逻辑地址（虚拟地址），然后交由 CPU 当中的 MMU 单元进行内存寻址，找到实际物理内存上的内容。若是目标虚存空间中的内存页（因为某种原因），在物理内存中没有对应的页帧，那么 CPU 就无法获取数据。这种情况下，CPU 是无法进行计算的，于是它就会报告一个缺页错误（Page Fault）。</p>
+<p>因为 CPU 无法继续进行进程请求的计算，并报告了缺页错误，用户进程必然就中断了。这样的中断称之为缺页中断，因为由 CPU 以外的硬件产生的中断，也称之为硬中断。在报告 Page Fault 之后，进程会从用户态切换到系统态，交由操作系统内核的 Page Fault Handler 处理缺页错误。</p>
+<h4 id="分类和处理"><a href="#分类和处理" class="headerlink" title="分类和处理"></a>分类和处理</h4><p>基本来说，缺页错误可以分为两类: 硬缺页错误（Hard Page Fault）和软缺页错误（Soft Page Fault）。这里，前者又称为主要缺页错误（Major Page Fault）；后者又称为次要缺页错误（Minor Page Fault）。当缺页中断发生后，Page Fault Handler 会判断缺页的类型，进而处理缺页错误，最终将控制权交给用户态代码。</p>
+<p>若是此时物理内存里，已经有一个页帧正是此时 CPU 请求的内存页，那么这是一个软缺页错误；于是，Page Fault Hander 会指示 MMU 建立相应的页帧到页的映射关系。这一操作的实质是进程间共享内存——比如动态库（共享对象），比如 mmap 的文件。</p>
+<p>若是此时物理内存中，没有相应的页帧，那么这就是一个硬缺页错误；于是 Page Fault Hander 会指示 CPU，从已经打开的磁盘文件中读取相应的内容到物理内存，而后交由 MMU 建立这份页帧到页的映射关系。</p>
+<p>不难发现，软缺页错误只是在内核态里轻轻地走了一遭，而硬缺页错误则涉及到磁盘 I/O。因此，处理起来，硬缺页错误要比软缺页错误耗时长得多。这就是为什么我们要求高性能程序必须在对外提供服务时，尽可能少地发生硬缺页错误。</p>
+<blockquote>
+<p>除了硬缺页错误和软缺页错误之外，还有一类缺页错误是因为访问非法内存引起的。前两类缺页错误中，进程尝试访问的虚存地址尚为合法有效的地址，只是对应的物理内存页帧没有在物理内存当中。后者则不然，进程尝试访问的虚存地址是非法无效的地址。比如尝试对 nullptr 解引用，就会访问地址为 0x0 的虚存地址，这是非法地址。此时 CPU 报出无效缺页错误（Invalid Page Fault）。操作系统对无效缺页错误的处理各不相同：Windows 会使用异常机制向进程报告；*nix 则会通过向进程发送 SIGSEGV 信号（11），引发<a href="https://liam.page/2017/05/27/tutorial-to-GDB-taking-ncurses-as-an-example/" target="_blank" rel="noopener">内存转储</a>。</p>
+</blockquote>
+<h4 id="缺页错误的原因"><a href="#缺页错误的原因" class="headerlink" title="缺页错误的原因"></a>缺页错误的原因</h4><p>之前提到，物理内存中没有 CPU 所需的页帧，就会引发缺页错误。这一现象背后的原因可能有很多。</p>
+<p>例如说，进程通过 mmap 系统调用，直接建立了磁盘文件和虚拟内存的映射关系。然而，在 mmap 调用之后，并不会立即从磁盘上读取这一文件。而是在实际需要文件内容时，通过 CPU 触发缺页错误，要求 Page Fault Handler 去将文件内容读入内存。</p>
+<p>又例如说，一个进程启动了很久，但是长时间没有活动。若是计算机处在很高的内存压力下，则操作系统会将这一进程长期未使用的页帧内容，从物理内存转储到磁盘上。这个过程称为换出（swap out）。在 *nix 系统下，用于转储这部分内存内容的磁盘空间，称为交换空间；在 Windows 上，这部分磁盘空间，则被称为虚拟内存，对应磁盘上的文件则称为页面文件。在这个过程中，进程在内存中保存的任意内容，都可能被换出到交换空间：可以是数据内容，也可以是进程的代码段内容。</p>
+<p>Windows 用户看到这里，应该能明白这部分空间为什么叫做「虚拟内存」——因为它于真实的内存条相对，是在硬盘上虚拟出来的一份内存。通过这样的方式，「好像」将内存的容量扩大了。同样，为什么叫「页面文件」也一目了然。因为事实上，文件内保存的就是一个个内存页帧。在 Windows 上经常能观察到「假死」的现象，就和缺页错误有关。这种现象，实际就是长期不运行某个程序，导致程序对应的内存被换出到磁盘；在需要响应时，由于需要从磁盘上读取大量内容，导致响应很慢，产生假死现象。这种现象发生时，若是监控系统硬错误数量，就会发现在短时间内，目标进程产生了大量的硬错误。</p>
+<p>在 Windows XP 流行的年代，有很多来路不明的「系统优化建议」。其中一条就是「扩大页面文件的大小，有助于加快系统速度」。事实上，这种方式只能加大内存「看起来」的容量，却给内存整体（将物理内存和磁盘页面文件看做一个整体）的响应速度带来了巨大的负面影响。因为，尽管容量增大了，但是访问这部分增大的容量时，进程实际上需要先陷入内核态，从磁盘上读取内容做好映射，再继续执行。更有甚者，这些建议会要求「将页面文件分散在多个不同磁盘分区」，并美其名曰「分散压力」。事实上，从页面文件中读取内存页帧本就已经很慢；若是还要求磁盘不断在不同分区上寻址，那就更慢了。可见谣言害死人。</p>
+<h4 id="观察缺页错误"><a href="#观察缺页错误" class="headerlink" title="观察缺页错误"></a>观察缺页错误</h4><p>Linux 系统，ps 是一个强大的命令，我们可以用 -o 选项指定希望关注的项目。比如</p>
+<ul>
+<li>min_flt: 进程启动至今软缺页中断数量</li>
+<li>maj_flt: 进程启动至今硬缺页中断数量</li>
+<li>cmd: 执行的命令</li>
+<li>args: 执行的命令的参数（从 $0$ 开始）</li>
+<li>uid: 执行命令的用户的 ID</li>
+<li>gid: 执行命令的用户所在组的 ID</li>
+</ul>
+<p>因此，我们可以用 <code>ps -o min_flt,maj_flt,cmd,args,uid,gid 1</code> 来观察进程号为 1 的进程的缺页错误。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ps -o min_flt,maj_flt,cmd,args,uid,gid 1</span><br><span class="line"> MINFL  MAJFL CMD                         COMMAND                       UID   GID</span><br><span class="line">  3104     41 &#x2F;sbin&#x2F;init                  &#x2F;sbin&#x2F;init                      0     0</span><br></pre></td></tr></table></figure>
+
+<p>结合 <code>watch</code> 命令，则可关注进程当前出发缺页中断的状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 --difference &quot;ps -o min_flt,maj_flt,cmd,args,uid,gid 1&quot;</span><br></pre></td></tr></table></figure>
+
+<p>你还可以结合 <code>sort</code> 命令，动态观察产生缺页错误最多的几个进程。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ watch -n 1 &quot;ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8&quot;</span><br><span class="line"></span><br><span class="line">Every 1.0s: ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8</span><br><span class="line"></span><br><span class="line">3027665711  1 tmux -2 new -s yu-ws        tmux -2 new -s yu-ws        19879 19879</span><br><span class="line">1245846907 9082 tmux                      tmux                        20886 20886</span><br><span class="line">1082463126 57 &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux         &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux          5638  5638</span><br><span class="line">868590907   2 irqbalance                  irqbalance                      0     0</span><br><span class="line">662275941 289831 tmux                     tmux                         2612  2612</span><br><span class="line">424339087 247 perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl     0     0</span><br><span class="line">200045670   0 &#x2F;bin&#x2F;bash .&#x2F;t.sh            &#x2F;bin&#x2F;bash .&#x2F;t.sh            12498 12498</span><br><span class="line">151206845 10335 tmux new -s dev           tmux new -s dev             16629 16629</span><br></pre></td></tr></table></figure>
+
+<p>这是公司开发服务器上的一瞥，不难发现，我司有不少 tmux 用户。（笑）</p>
+<h4 id="一个硬缺页错误导致的问题"><a href="#一个硬缺页错误导致的问题" class="headerlink" title="一个硬缺页错误导致的问题"></a>一个硬缺页错误导致的问题</h4><p>我司的某一高性能服务采取了 mmap 的方式，从磁盘加载大量数据。由于调研测试需要，多名组内成员共享一台调研机器。现在的问题是，当共享的人数较多时，新启动的服务进程会在启动时耗费大量时间——以几十分钟计。那么，这是为什么呢？</p>
+<blockquote>
+<p>因为涉及到公司机密，这里不方便给截图。留待以后，做模拟实验后给出。</p>
+</blockquote>
+<p>以 top 命令观察，机器卡顿时，CPU 负载并不高：32 核只有 1.3 左右的 1min 平均负载。但是，iostat 观察到，磁盘正在以 10MiB/s 级别的速度，不断进行读取。由此判断，这种情况下，目标进程一定有大量的 Page Fault 产生。使用上述 watch -n 1 –difference “ps -o min_flt,maj_flt,cmd,args,uid,gid <pid>“ 观察，发现目标进程确实有大量硬缺页错误产生，肯定了这一推断。</pid></p>
+<p>然而，诚然进程需要载入大量数据，但是以 mmap 的方式映射，为何会已有大量同类服务存在的情况下，大量读取硬盘呢？这就需要更加深入的分析了。</p>
+<p>事实上，这里隐含了一个非常细小的矛盾。一方面，该服务需要从磁盘加载大量数据；另一方面，该服务对性能要求非常高。我们知道，mmap 只是对文件做了映射，不会在调用 mmap 时立即将文件内容加载进内存。这就导致了一个问题：当服务启动对外提供服务时，可能还有数据未能加载进内存；而这种加载是非常慢的，严重影响服务性能。因此，可以推断，为了解决这个问题，程序必然在 mmap 之后，尝试将所有数据加载进物理内存。</p>
+<p>这样一来，先前遇到的现象就很容易解释了。</p>
+<ul>
+<li>一方面，因为公用机器的人很多，必然造成内存压力大，从而存在大量换出的内存；</li>
+<li>另一方面，新启动的进程，会逐帧地扫描文件；</li>
+<li>这样一来，新启动的进程，就必须在极大的内存压力下，不断逼迫系统将其它进程的内存换出，而后换入自己需要的内存，不断进行磁盘 I/O；</li>
+<li>故此，新启动的进程会耗费大量时间进行不必要的磁盘 I/O。</li>
 </ul>
 
     </div>
@@ -309,7 +354,10 @@
     <a href="/2020/01/28/HDFS-small-file/" rel="prev" title="HDFS 处理小文件方法">
       <i class="fa fa-chevron-left"></i> HDFS 处理小文件方法
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2020/02/03/DN-Fault-Raid/" rel="next" title="CDH 集群中 DN 热换盘处理">
+      CDH 集群中 DN 热换盘处理 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -370,7 +418,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#null"><span class="nav-number">2.</span> <span class="nav-text"></span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#转载来源"><span class="nav-number">1.</span> <span class="nav-text">转载来源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">2.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存页和缺页错误"><span class="nav-number">3.</span> <span class="nav-text">内存页和缺页错误</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缺页错误"><span class="nav-number">4.</span> <span class="nav-text">缺页错误</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分类和处理"><span class="nav-number">5.</span> <span class="nav-text">分类和处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缺页错误的原因"><span class="nav-number">6.</span> <span class="nav-text">缺页错误的原因</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#观察缺页错误"><span class="nav-number">7.</span> <span class="nav-text">观察缺页错误</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#一个硬缺页错误导致的问题"><span class="nav-number">8.</span> <span class="nav-text">一个硬缺页错误导致的问题</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -393,7 +441,7 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-count">25</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -438,12 +486,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">434k</span>
+    <span title="站点总字数">436k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:35</span>
+    <span title="站点阅读时长">6:37</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

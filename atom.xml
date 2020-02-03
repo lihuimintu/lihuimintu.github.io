@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-02-03T04:35:39.971Z</updated>
+  <updated>2020-02-03T09:28:20.283Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -17,22 +17,43 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>HDFS 处理小文件方法</title>
-    <link href="http://yoursite.com/2020/02/01/Page-Fault/"/>
-    <id>http://yoursite.com/2020/02/01/Page-Fault/</id>
-    <published>2020-01-31T16:00:00.000Z</published>
-    <updated>2020-02-03T04:35:39.971Z</updated>
+    <title>CDH 集群中 DN 热换盘处理</title>
+    <link href="http://yoursite.com/2020/02/03/DN-Fault-Raid/"/>
+    <id>http://yoursite.com/2020/02/03/DN-Fault-Raid/</id>
+    <published>2020-02-02T16:00:00.000Z</published>
+    <updated>2020-02-03T09:28:20.283Z</updated>
     
-    <content type="html"><![CDATA[<p>Hadoop 中处理小文件</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HDFS 随着使用时间会存在小文件现象，这里将网上调研的处理方法收集一下</p><h4 id><a href="#" class="headerlink" title></a></h4><p>什么是小文件？小文件是怎么来的？可以参阅<a href="https://mp.weixin.qq.com/s/QdaNFfq37bBlAQtNDGLmVw" target="_blank" rel="noopener">如何在Hadoop中处理小文件</a></p><p>利用 HAR 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/rlM3ZPmWz-ZT72w59lvrRw" target="_blank" rel="noopener">0508-如何使用Hadoop的Archive处理小文件</a></p><p>利用 Hive 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/xw6MjNvpI97m0aygyW1HaA" target="_blank" rel="noopener">如何在Hadoop中处理小文件-续</a>、<a href="https://mp.weixin.qq.com/s/ki2k9fBPco6PwMZEzff60A" target="_blank" rel="noopener">0704-5.16.2-如何使用Hive合并小文件</a></p><p>利用 Impala 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/BTBqUqfbczq08LKRCuC_Ig" target="_blank" rel="noopener">如何使用Impala合并小文件</a></p><p>在有赞使用 SparkSQL 中提到存在小文件现象，采用社区 <a href="https://issues.apache.org/jira/browse/SPARK-24940" target="_blank" rel="noopener">SPARK-24940</a>方式处理，借助 SQL hint 的方式合并小文件。参阅<a href="https://www.iteblog.com/archives/2501.html" target="_blank" rel="noopener">Spark SQL 查询中 Coalesce 和 Repartition 暗示（Hint）</a></p><p>利用 Spark 处理小文件跟 Spark SQL 也是差不多的，通过 Spark 的 coalesce() 方法和 repartition() 方法，设置并行个数可以通过输入文件的总大小和期望输出文件的大小进行预计算而得。</p><hr><p>参考链接</p><ul><li><a href="http://bigdatadecode.club/HDFS-little-file-action.html" target="_blank" rel="noopener">HDFS小文件合并实战</a></li><li><a href="https://juejin.im/post/5c3f2713f265da61285a5b75#heading-8" target="_blank" rel="noopener">SparkSQL 在有赞的实践</a></li><li><a href="https://blog.csdn.net/weixin_37944880/article/details/86694829" target="_blank" rel="noopener">Spark小文件合并</a></li></ul>]]></content>
+    <content type="html"><![CDATA[<p>在集群使用的过程中会遇到数据节点的磁盘故障，在不停数据节点的情况下，如何为数据节点进行热插拔换盘操作</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HDFS 随着使用时间会出现数据借点磁盘故障现象，网上查阅到的大部分都是停止数据节点，换盘后重启。我司处理的方法是热插拔处理。</p><h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>具体参阅 Fayson 的<a href="https://cloud.tencent.com/developer/article/1158329" target="_blank" rel="noopener">如何在CDH集群中为数据节点热插拔硬盘</a></p><p>Fayson 自己也说操作步骤更类似于加盘操作，磁盘坏掉如果磁盘的盘符未变更则只需要将磁盘格式化挂载在原来的目录下。</p><p>变通方式是先将其取消坏盘挂载，更换新盘后格式化再挂载回来，DN 执行刷新数据目录操作即可。</p><hr><p>参考链接</p><ul><li><a href="https://cloud.tencent.com/developer/article/1158329" target="_blank" rel="noopener">如何在CDH集群中为数据节点热插拔硬盘</a></li><li><a href="https://ilinuxkernel.com/?p=958" target="_blank" rel="noopener">Linux硬盘盘符分配</a></li></ul>]]></content>
     
     <summary type="html">
     
-      Hadoop 中处理小文件
+      如何在CDH集群中为数据节点热插拔硬盘
     
     </summary>
     
     
-      <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
+      <category term="CDH" scheme="http://yoursite.com/categories/CDH/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>内存缺页错误</title>
+    <link href="http://yoursite.com/2020/02/01/Page-Fault/"/>
+    <id>http://yoursite.com/2020/02/01/Page-Fault/</id>
+    <published>2020-01-31T16:00:00.000Z</published>
+    <updated>2020-02-03T09:22:08.135Z</updated>
+    
+    <content type="html"><![CDATA[<p>缺页中断就是要访问的页不在主存，需要操作系统将其调入主存后再进行访问。</p><hr><h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">作者：Liam Huang</span><br><span class="line">链接：https:&#x2F;&#x2F;liam.page&#x2F;2017&#x2F;09&#x2F;01&#x2F;page-fault&#x2F;</span><br></pre></td></tr></table></figure><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>众所周知，CPU 不能直接和硬盘进行交互。CPU 所作的一切运算，都是通过 CPU 缓存间接与内存进行操作的。若是 CPU 请求的内存数据在物理内存中不存在，那么 CPU 就会报告「缺页错误（Page Fault）」，提示内核产生中断，将所缺的页面装入内存。</p><p>在内核处理缺页错误时，就有可能进行磁盘的读写操作。这样的操作，相对 CPU 的处理是非常缓慢的。因此，发生大量的缺页错误，势必会对程序的性能造成很大影响。因此，在对性能要求很高的环境下，应当尽可能避免这种情况。</p><p>此篇介绍缺页错误本身，并结合一个实际示例作出一些实践分析。这里主要在 Linux 的场景下做讨论；其他现代操作系统，基本也是类似的。</p><h4 id="内存页和缺页错误"><a href="#内存页和缺页错误" class="headerlink" title="内存页和缺页错误"></a>内存页和缺页错误</h4><p>现代 CPU 都支持分段和分页的内存寻址模式。在 Linux 当中，实际起作用的只有分页模式。</p><p>具体来说，分页模式在逻辑上将虚拟内存和物理内存同时等分成固定大小的块。这些块在虚拟内存上称之为「页」，而在物理内存上称之为「页帧」，并交由 CPU 中的 MMU 模块来负责页帧和页之间的映射管理。</p><p>引入分页模式的好处，可以大致概括为两个方面: </p><ul><li>允许虚存空间远大于实际物理内存大小的情况。这是因为，分页之后，操作系统读入磁盘的文件时，无需以文件为单位全部读入，而可以以内存页为单位，分片读入。同时，考虑到 CPU 不可能一次性需要使用整个内存中的数据，因此可以交由特定的算法，进行内存调度: 将长时间不用的页帧内的数据暂存到磁盘上。</li><li>减少了内存碎片的产生。这是因为，引入分页之后，内存的分配管理都是以页大小（通常是 4KiB，扩展分页模式下是 4MiB）为单位的；虚拟内存中的页总是对应物理内存中实际的页帧。这样一来，在虚拟内存空间中，页内连续的内存在物理内存上也一定是连续的，不会产生碎片。</li></ul><h4 id="缺页错误"><a href="#缺页错误" class="headerlink" title="缺页错误"></a>缺页错误</h4><p>当进程在进行一些计算时，CPU 会请求内存中存储的数据。在这个请求过程中，CPU 发出的地址是逻辑地址（虚拟地址），然后交由 CPU 当中的 MMU 单元进行内存寻址，找到实际物理内存上的内容。若是目标虚存空间中的内存页（因为某种原因），在物理内存中没有对应的页帧，那么 CPU 就无法获取数据。这种情况下，CPU 是无法进行计算的，于是它就会报告一个缺页错误（Page Fault）。</p><p>因为 CPU 无法继续进行进程请求的计算，并报告了缺页错误，用户进程必然就中断了。这样的中断称之为缺页中断，因为由 CPU 以外的硬件产生的中断，也称之为硬中断。在报告 Page Fault 之后，进程会从用户态切换到系统态，交由操作系统内核的 Page Fault Handler 处理缺页错误。</p><h4 id="分类和处理"><a href="#分类和处理" class="headerlink" title="分类和处理"></a>分类和处理</h4><p>基本来说，缺页错误可以分为两类: 硬缺页错误（Hard Page Fault）和软缺页错误（Soft Page Fault）。这里，前者又称为主要缺页错误（Major Page Fault）；后者又称为次要缺页错误（Minor Page Fault）。当缺页中断发生后，Page Fault Handler 会判断缺页的类型，进而处理缺页错误，最终将控制权交给用户态代码。</p><p>若是此时物理内存里，已经有一个页帧正是此时 CPU 请求的内存页，那么这是一个软缺页错误；于是，Page Fault Hander 会指示 MMU 建立相应的页帧到页的映射关系。这一操作的实质是进程间共享内存——比如动态库（共享对象），比如 mmap 的文件。</p><p>若是此时物理内存中，没有相应的页帧，那么这就是一个硬缺页错误；于是 Page Fault Hander 会指示 CPU，从已经打开的磁盘文件中读取相应的内容到物理内存，而后交由 MMU 建立这份页帧到页的映射关系。</p><p>不难发现，软缺页错误只是在内核态里轻轻地走了一遭，而硬缺页错误则涉及到磁盘 I/O。因此，处理起来，硬缺页错误要比软缺页错误耗时长得多。这就是为什么我们要求高性能程序必须在对外提供服务时，尽可能少地发生硬缺页错误。</p><blockquote><p>除了硬缺页错误和软缺页错误之外，还有一类缺页错误是因为访问非法内存引起的。前两类缺页错误中，进程尝试访问的虚存地址尚为合法有效的地址，只是对应的物理内存页帧没有在物理内存当中。后者则不然，进程尝试访问的虚存地址是非法无效的地址。比如尝试对 nullptr 解引用，就会访问地址为 0x0 的虚存地址，这是非法地址。此时 CPU 报出无效缺页错误（Invalid Page Fault）。操作系统对无效缺页错误的处理各不相同：Windows 会使用异常机制向进程报告；*nix 则会通过向进程发送 SIGSEGV 信号（11），引发<a href="https://liam.page/2017/05/27/tutorial-to-GDB-taking-ncurses-as-an-example/" target="_blank" rel="noopener">内存转储</a>。</p></blockquote><h4 id="缺页错误的原因"><a href="#缺页错误的原因" class="headerlink" title="缺页错误的原因"></a>缺页错误的原因</h4><p>之前提到，物理内存中没有 CPU 所需的页帧，就会引发缺页错误。这一现象背后的原因可能有很多。</p><p>例如说，进程通过 mmap 系统调用，直接建立了磁盘文件和虚拟内存的映射关系。然而，在 mmap 调用之后，并不会立即从磁盘上读取这一文件。而是在实际需要文件内容时，通过 CPU 触发缺页错误，要求 Page Fault Handler 去将文件内容读入内存。</p><p>又例如说，一个进程启动了很久，但是长时间没有活动。若是计算机处在很高的内存压力下，则操作系统会将这一进程长期未使用的页帧内容，从物理内存转储到磁盘上。这个过程称为换出（swap out）。在 *nix 系统下，用于转储这部分内存内容的磁盘空间，称为交换空间；在 Windows 上，这部分磁盘空间，则被称为虚拟内存，对应磁盘上的文件则称为页面文件。在这个过程中，进程在内存中保存的任意内容，都可能被换出到交换空间：可以是数据内容，也可以是进程的代码段内容。</p><p>Windows 用户看到这里，应该能明白这部分空间为什么叫做「虚拟内存」——因为它于真实的内存条相对，是在硬盘上虚拟出来的一份内存。通过这样的方式，「好像」将内存的容量扩大了。同样，为什么叫「页面文件」也一目了然。因为事实上，文件内保存的就是一个个内存页帧。在 Windows 上经常能观察到「假死」的现象，就和缺页错误有关。这种现象，实际就是长期不运行某个程序，导致程序对应的内存被换出到磁盘；在需要响应时，由于需要从磁盘上读取大量内容，导致响应很慢，产生假死现象。这种现象发生时，若是监控系统硬错误数量，就会发现在短时间内，目标进程产生了大量的硬错误。</p><p>在 Windows XP 流行的年代，有很多来路不明的「系统优化建议」。其中一条就是「扩大页面文件的大小，有助于加快系统速度」。事实上，这种方式只能加大内存「看起来」的容量，却给内存整体（将物理内存和磁盘页面文件看做一个整体）的响应速度带来了巨大的负面影响。因为，尽管容量增大了，但是访问这部分增大的容量时，进程实际上需要先陷入内核态，从磁盘上读取内容做好映射，再继续执行。更有甚者，这些建议会要求「将页面文件分散在多个不同磁盘分区」，并美其名曰「分散压力」。事实上，从页面文件中读取内存页帧本就已经很慢；若是还要求磁盘不断在不同分区上寻址，那就更慢了。可见谣言害死人。</p><h4 id="观察缺页错误"><a href="#观察缺页错误" class="headerlink" title="观察缺页错误"></a>观察缺页错误</h4><p>Linux 系统，ps 是一个强大的命令，我们可以用 -o 选项指定希望关注的项目。比如</p><ul><li>min_flt: 进程启动至今软缺页中断数量</li><li>maj_flt: 进程启动至今硬缺页中断数量</li><li>cmd: 执行的命令</li><li>args: 执行的命令的参数（从 $0$ 开始）</li><li>uid: 执行命令的用户的 ID</li><li>gid: 执行命令的用户所在组的 ID</li></ul><p>因此，我们可以用 <code>ps -o min_flt,maj_flt,cmd,args,uid,gid 1</code> 来观察进程号为 1 的进程的缺页错误。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ps -o min_flt,maj_flt,cmd,args,uid,gid 1</span><br><span class="line"> MINFL  MAJFL CMD                         COMMAND                       UID   GID</span><br><span class="line">  3104     41 &#x2F;sbin&#x2F;init                  &#x2F;sbin&#x2F;init                      0     0</span><br></pre></td></tr></table></figure><p>结合 <code>watch</code> 命令，则可关注进程当前出发缺页中断的状态</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 --difference &quot;ps -o min_flt,maj_flt,cmd,args,uid,gid 1&quot;</span><br></pre></td></tr></table></figure><p>你还可以结合 <code>sort</code> 命令，动态观察产生缺页错误最多的几个进程。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ watch -n 1 &quot;ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8&quot;</span><br><span class="line"></span><br><span class="line">Every 1.0s: ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8</span><br><span class="line"></span><br><span class="line">3027665711  1 tmux -2 new -s yu-ws        tmux -2 new -s yu-ws        19879 19879</span><br><span class="line">1245846907 9082 tmux                      tmux                        20886 20886</span><br><span class="line">1082463126 57 &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux         &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux          5638  5638</span><br><span class="line">868590907   2 irqbalance                  irqbalance                      0     0</span><br><span class="line">662275941 289831 tmux                     tmux                         2612  2612</span><br><span class="line">424339087 247 perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl     0     0</span><br><span class="line">200045670   0 &#x2F;bin&#x2F;bash .&#x2F;t.sh            &#x2F;bin&#x2F;bash .&#x2F;t.sh            12498 12498</span><br><span class="line">151206845 10335 tmux new -s dev           tmux new -s dev             16629 16629</span><br></pre></td></tr></table></figure><p>这是公司开发服务器上的一瞥，不难发现，我司有不少 tmux 用户。（笑）</p><h4 id="一个硬缺页错误导致的问题"><a href="#一个硬缺页错误导致的问题" class="headerlink" title="一个硬缺页错误导致的问题"></a>一个硬缺页错误导致的问题</h4><p>我司的某一高性能服务采取了 mmap 的方式，从磁盘加载大量数据。由于调研测试需要，多名组内成员共享一台调研机器。现在的问题是，当共享的人数较多时，新启动的服务进程会在启动时耗费大量时间——以几十分钟计。那么，这是为什么呢？</p><blockquote><p>因为涉及到公司机密，这里不方便给截图。留待以后，做模拟实验后给出。</p></blockquote><p>以 top 命令观察，机器卡顿时，CPU 负载并不高：32 核只有 1.3 左右的 1min 平均负载。但是，iostat 观察到，磁盘正在以 10MiB/s 级别的速度，不断进行读取。由此判断，这种情况下，目标进程一定有大量的 Page Fault 产生。使用上述 watch -n 1 –difference “ps -o min_flt,maj_flt,cmd,args,uid,gid <pid>“ 观察，发现目标进程确实有大量硬缺页错误产生，肯定了这一推断。</pid></p><p>然而，诚然进程需要载入大量数据，但是以 mmap 的方式映射，为何会已有大量同类服务存在的情况下，大量读取硬盘呢？这就需要更加深入的分析了。</p><p>事实上，这里隐含了一个非常细小的矛盾。一方面，该服务需要从磁盘加载大量数据；另一方面，该服务对性能要求非常高。我们知道，mmap 只是对文件做了映射，不会在调用 mmap 时立即将文件内容加载进内存。这就导致了一个问题：当服务启动对外提供服务时，可能还有数据未能加载进内存；而这种加载是非常慢的，严重影响服务性能。因此，可以推断，为了解决这个问题，程序必然在 mmap 之后，尝试将所有数据加载进物理内存。</p><p>这样一来，先前遇到的现象就很容易解释了。</p><ul><li>一方面，因为公用机器的人很多，必然造成内存压力大，从而存在大量换出的内存；</li><li>另一方面，新启动的进程，会逐帧地扫描文件；</li><li>这样一来，新启动的进程，就必须在极大的内存压力下，不断逼迫系统将其它进程的内存换出，而后换入自己需要的内存，不断进行磁盘 I/O；</li><li>故此，新启动的进程会耗费大量时间进行不必要的磁盘 I/O。</li></ul>]]></content>
+    
+    <summary type="html">
+    
+      缺页错误（Page Fault）
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
     
     
   </entry>
@@ -206,27 +227,6 @@
   </entry>
   
   <entry>
-    <title>记一次 HBase Master is initializing 问题处理</title>
-    <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
-    <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
-    <published>2020-01-17T16:00:00.000Z</published>
-    <updated>2020-02-03T04:35:39.965Z</updated>
-    
-    <content type="html"><![CDATA[<p>HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误处理</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>测试集群上做了jar包替换验证测试，测试完之后还原jar，重启出现进入 hbase shell 中执行命令遇到问题。</p><p><img src="/images/blog/2020-01-18-1.png" alt>{:height=”80%” width=”80%”}</p><p><code>org.apache.hadoop.hbase.PleaseHoldException: Master is initializing</code> 代表Master正在初始化中，出现这种错误的原因有很多</p><p>关键还是得看 Master 日志，盲目搜索效率不高</p><p>一开始只是搜索 ERROR 日志，并没有看到很关键的信息，后面看其他博客贴的日志片段是 WARN，进而<br>转换思路看 WARN，一看这个是 meta 表未分配到 RS 上啊，之前处理过，用 hbck2 解决即可</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARN org.apache.hadoop.hbase.master.HMaster: hbase:meta,,1.1588230740 is NOT online; state&#x3D;&#123;1588230740 state&#x3D;OPENING, </span><br><span class="line">ts&#x3D;1579334053311, server&#x3D;region-168-1-240,16020,1579334037426&#125;; ServerCrashProcedures&#x3D;true. Master startup cannot </span><br><span class="line">progress, in holding-pattern until region onlined.</span><br></pre></td></tr></table></figure><p>hbck2 配置参考<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a>即可</p><p>手动去 assign 一下 meta 表即可，hbase:meta 表的 encoded name 是一个时间戳，比如上面日志的 encoded name 就是 <code>1588230740</code> ，<br>具体命令参考下方</p><p><code>hbase org.apache.hbase.HBCK2 assigns -o 1588230740</code></p><p>查看 Master 日志，可以看到成功分配</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO org.apache.hadoop.hbase.master.procedure.MasterProcedureScheduler: Took xlock for pid&#x3D;7, state&#x3D;RUNNABLE:REGION_TRANSITION_QUEUE; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true</span><br><span class="line">INFO org.apache.hadoop.hbase.master.assignment.AssignProcedure: Assigned, not reassigning rit&#x3D;OPEN, location&#x3D;region-168-1-240,16020,1579334037426</span><br><span class="line">INFO org.apache.hadoop.hbase.procedure2.ProcedureExecutor: Finished pid&#x3D;6, state&#x3D;SUCCESS; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true in 160msec</span><br></pre></td></tr></table></figure><p>执行命令验证成功</p><p><img src="/images/blog/2020-01-18-2.png" alt>{:height=”80%” width=”80%”}</p><h4 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h4><p>之前听范老师说过: 运维三大法办- 监控、日志、源码。还是要细心</p><p>hbck2 的使用可以多看看官方文档说明，学习如何使用</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/zzf1510711060/article/details/80919660" target="_blank" rel="noopener">HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误解决方法</a></li><li><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      HBase Master is initializing 问题处理
-    
-    </summary>
-    
-    
-      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>HBase CMS GC 配置参考</title>
     <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
     <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
@@ -238,6 +238,27 @@
     <summary type="html">
     
       HBase CMS GC 配置参考
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>记一次 HBase Master is initializing 问题处理</title>
+    <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
+    <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
+    <published>2020-01-17T16:00:00.000Z</published>
+    <updated>2020-02-03T04:35:39.965Z</updated>
+    
+    <content type="html"><![CDATA[<p>HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误处理</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>测试集群上做了jar包替换验证测试，测试完之后还原jar，重启出现进入 hbase shell 中执行命令遇到问题。</p><p><img src="/images/blog/2020-01-18-1.png" alt>{:height=”80%” width=”80%”}</p><p><code>org.apache.hadoop.hbase.PleaseHoldException: Master is initializing</code> 代表Master正在初始化中，出现这种错误的原因有很多</p><p>关键还是得看 Master 日志，盲目搜索效率不高</p><p>一开始只是搜索 ERROR 日志，并没有看到很关键的信息，后面看其他博客贴的日志片段是 WARN，进而<br>转换思路看 WARN，一看这个是 meta 表未分配到 RS 上啊，之前处理过，用 hbck2 解决即可</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARN org.apache.hadoop.hbase.master.HMaster: hbase:meta,,1.1588230740 is NOT online; state&#x3D;&#123;1588230740 state&#x3D;OPENING, </span><br><span class="line">ts&#x3D;1579334053311, server&#x3D;region-168-1-240,16020,1579334037426&#125;; ServerCrashProcedures&#x3D;true. Master startup cannot </span><br><span class="line">progress, in holding-pattern until region onlined.</span><br></pre></td></tr></table></figure><p>hbck2 配置参考<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a>即可</p><p>手动去 assign 一下 meta 表即可，hbase:meta 表的 encoded name 是一个时间戳，比如上面日志的 encoded name 就是 <code>1588230740</code> ，<br>具体命令参考下方</p><p><code>hbase org.apache.hbase.HBCK2 assigns -o 1588230740</code></p><p>查看 Master 日志，可以看到成功分配</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO org.apache.hadoop.hbase.master.procedure.MasterProcedureScheduler: Took xlock for pid&#x3D;7, state&#x3D;RUNNABLE:REGION_TRANSITION_QUEUE; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true</span><br><span class="line">INFO org.apache.hadoop.hbase.master.assignment.AssignProcedure: Assigned, not reassigning rit&#x3D;OPEN, location&#x3D;region-168-1-240,16020,1579334037426</span><br><span class="line">INFO org.apache.hadoop.hbase.procedure2.ProcedureExecutor: Finished pid&#x3D;6, state&#x3D;SUCCESS; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true in 160msec</span><br></pre></td></tr></table></figure><p>执行命令验证成功</p><p><img src="/images/blog/2020-01-18-2.png" alt>{:height=”80%” width=”80%”}</p><h4 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h4><p>之前听范老师说过: 运维三大法办- 监控、日志、源码。还是要细心</p><p>hbck2 的使用可以多看看官方文档说明，学习如何使用</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/zzf1510711060/article/details/80919660" target="_blank" rel="noopener">HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误解决方法</a></li><li><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      HBase Master is initializing 问题处理
     
     </summary>
     
@@ -374,27 +395,6 @@
   </entry>
   
   <entry>
-    <title>Maven 项目打成 jar 包运行</title>
-    <link href="http://yoursite.com/2020/01/02/mavan-jar/"/>
-    <id>http://yoursite.com/2020/01/02/mavan-jar/</id>
-    <published>2020-01-01T16:00:00.000Z</published>
-    <updated>2020-02-03T04:35:39.955Z</updated>
-    
-    <content type="html"><![CDATA[<p>普通 Java Maven 项目打成 jar 包方式放服务器上运行</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>动手写了个普通 Java 的 Maven 项目，将其打包放到服务器上运行</p><h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>在 <code>pom.xml</code> 中添加如下配置</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;pluginManagement&gt;</span><br><span class="line">        &lt;plugins&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-assembly-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;2.5.5&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;archive&gt;</span><br><span class="line">                        &lt;manifest&gt;</span><br><span class="line">                            &lt;!-- 这里是启动类全路径名 --&gt;</span><br><span class="line">                            &lt;mainClass&gt;com.xxx.XXXX&lt;&#x2F;mainClass&gt;</span><br><span class="line">                        &lt;&#x2F;manifest&gt;</span><br><span class="line">                    &lt;&#x2F;archive&gt;</span><br><span class="line">                    &lt;descriptorRefs&gt;</span><br><span class="line">                        &lt;descriptorRef&gt;jar-with-dependencies&lt;&#x2F;descriptorRef&gt;</span><br><span class="line">                    &lt;&#x2F;descriptorRefs&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-compiler-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;3.1&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;!-- jdk 版本 --&gt;</span><br><span class="line">                    &lt;source&gt;1.8&lt;&#x2F;source&gt;</span><br><span class="line">                    &lt;target&gt;1.8&lt;&#x2F;target&gt;</span><br><span class="line">                    &lt;encoding&gt;utf-8&lt;&#x2F;encoding&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">        &lt;&#x2F;plugins&gt;</span><br><span class="line">    &lt;&#x2F;pluginManagement&gt;</span><br><span class="line">&lt;&#x2F;build&gt;</span><br></pre></td></tr></table></figure><p>请将 com.xxx.XXXX 改成你项目的主类</p><p>终端下执行<code>mvn clean package assembly:single</code></p><p><img src="/images/blog/2020-01-02-1.png" alt>{:height=”80%” width=”80%”}</p><p>出现如图标志说明打包成功</p><p>可以在target 目录下看到两个 jar 包，带 jar-with-dependencies 后缀的是带依赖的jar包</p><p><img src="/images/blog/2020-01-02-2.png" alt>{:height=”80%” width=”80%”}</p><p>这里选择将其上传到服务器上运行 <code>java -jar cdhAgent-1.0-SNAPSHOT-jar-with-dependencies.jar</code></p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/qq_27252133/article/details/82750599" target="_blank" rel="noopener">使用maven-assembly-plugin插件打包</a></li><li><a href="https://blog.csdn.net/qq_16038125/article/details/60168389" target="_blank" rel="noopener">构建工具-Maven-使用maven-assembly-plugin将依赖打包进jar并指定JDK版本</a></li><li><a href="https://www.cnblogs.com/binhua-liu/p/5604841.html" target="_blank" rel="noopener">如何配置pom.xml用maven打包java工程</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Maven 项目打成 jar 包运行
-    
-    </summary>
-    
-    
-      <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>YARN Fair scheduler</title>
     <link href="http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/"/>
     <id>http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/</id>
@@ -416,22 +416,22 @@
   </entry>
   
   <entry>
-    <title>二阶段提交（2PC）</title>
-    <link href="http://yoursite.com/2020/01/01/2PC/"/>
-    <id>http://yoursite.com/2020/01/01/2PC/</id>
-    <published>2019-12-31T16:00:00.000Z</published>
-    <updated>2020-02-03T04:35:39.954Z</updated>
+    <title>Maven 项目打成 jar 包运行</title>
+    <link href="http://yoursite.com/2020/01/02/mavan-jar/"/>
+    <id>http://yoursite.com/2020/01/02/mavan-jar/</id>
+    <published>2020-01-01T16:00:00.000Z</published>
+    <updated>2020-02-03T04:35:39.955Z</updated>
     
-    <content type="html"><![CDATA[<p>在分布式环境下，所有节点进行事务提交，保持一致性的算法</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>今天是2020年的元旦，在这先祝自己开心快乐</p><p>2PC 在之前学习 HBase Snapshot 时了解过，这次通过文档的记录的方式再过一遍</p><p>本人主要是阅读下方学习了解的</p><ul><li><a href="https://mp.weixin.qq.com/s/kXtliHCqtrTjlWFm1aHtVQ" target="_blank" rel="noopener">分布式基础，啥是两阶段提交？</a></li><li><a href="https://mp.weixin.qq.com/s/QS01KCQ4u2DhNHww_A2Xtw" target="_blank" rel="noopener">漫话：如何给女朋友解释什么是2PC（二阶段提交）？</a></li></ul><h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><p>2PC 是解决分布式系统中数据一致性问题，即分布式事务</p><p><strong>为什么分布式事务为什么难？</strong></p><p>在分布式环境下，每个节点都可以知晓自己操作的成功或者失败，却无法知道其他节点操作的成功或失败。当一个分布式事务跨多个节点时，保持事务的原子性与一致性，是非常困难的。</p><p>举个例子: 在电商网站下单的时候，需要有多个分布式服务同时服务，如支付系统进行支付、红包系统进行红包扣减、库存系统扣减库存、物流系统更新物流信息等。</p><p>但是，如果其中某一个系统在执行过程中失败了，或者由于网络原因没有收到请求，那么，整个系统可能就有不一致的现象了，<br>即：付了钱，扣了红包，但是库存没有扣减</p><h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>通过引入一个协调者（Coordinator）来统一掌控所有参与者（Participant）的操作结果，<br>并指示它们是否要把操作结果进行真正的提交（commit）或者回滚（rollback）</p><p>2PC分为两个阶段:</p><ul><li>投票阶段（voting phase）参与者通知协调者，协调者反馈结果</li><li>提交阶段（commit phase）收到参与者的反馈后，协调者再向参与者发出通知，根据反馈情况决定各参与者是否要提交还是回滚</li></ul><h5 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h5><p>准备阶段分为以下三个步骤</p><ol><li>协调者节点向所有参与者节点询问是否可以执行提交操作，并开始等待各参与者节点的响应</li><li>参与者节点执行询问发起为止的所有事务操作，并将Undo信息和Redo信息写入日志 (HBase SnapShot 是将执行操作写入到临时文件，回滚就直接删除，执行就移动到目标目录)</li><li>各参与者节点响应协调者节点发起的询问。如果参与者节点的事务操作实际执行成功，则它返回一个”OK”消息, 如果参与者节点的事务操作实际执行失败，则它返回一个”NO”消息</li></ol><p><img src="/images/blog/2020-01-01-1.png" alt>{:height=”80%” width=”80%”}</p><h5 id="提交阶段"><a href="#提交阶段" class="headerlink" title="提交阶段"></a>提交阶段</h5><p>如果协调者收到了参与者的失败消息或者超时，直接给每个参与者发送回滚消息；否则，发送提交消息；参与者根据协调者的指令执行提交或者回滚操作</p><p>当协调者节点从所有参与者节点获得的相应消息都为”OK”时</p><ol><li>协调者节点向所有参与者节点发出”正式提交”的请求</li><li>参与者节点正式完成操作，并释放在整个事务期间内占用的资源</li><li>参与者节点向协调者节点发送”完成”消息</li><li>协调者节点受到所有参与者节点反馈的”完成”消息后，完成事务</li></ol><p><img src="/images/blog/2020-01-01-2.png" alt>{:height=”80%” width=”80%”}</p><p>如果任一参与者节点在第一阶段返回的响应消息为”NO”时，或者 协调者节点在第一阶段的询问超时之前无法获取所有参与者节点的响应消息时</p><ol><li>协调者节点向所有参与者节点发出”回滚操作”的请求</li><li>参与者节点利用之前写入的Undo信息执行回滚，并释放在整个事务期间内占用的资源</li><li>参与者节点向协调者节点发送”回滚完成”消息</li><li>协调者节点受到所有参与者节点反馈的”回滚完成”消息后，取消事务</li></ol><p><img src="/images/blog/2020-01-01-3.png" alt>{:height=”80%” width=”80%”}</p><h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><p>1、同步阻塞问题。执行过程中，所有参与节点都是事务阻塞型的。当参与者占有公共资源时，其他第三方节点访问公共资源不得不处于阻塞状态。</p><p>2、单点故障。由于协调者的重要性，一旦协调者发生故障。参与者会一直阻塞下去。尤其在第二阶段，协调者发生故障，那么所有的参与者还都处于锁定事务资源的状态中，而无法继续完成事务操作。（如果是协调者挂掉，可以重新选举一个协调者，但是无法解决因为协调者宕机导致的参与者处于阻塞状态的问题）</p><p>3、数据不一致。在二阶段提交的阶段二中，当协调者向参与者发送commit请求之后，发生了局部网络异常或者在发送commit请求过程中协调者发生了故障，这回导致只有一部分参与者接受到了commit请求。而在这部分参与者接到commit请求之后就会执行commit操作。但是其他部分未接到commit请求的机器则无法执行事务提交。于是整个分布式系统便出现了数据部一致性的现象。</p><p>4、二阶段无法解决的问题：协调者再发出commit消息之后宕机，而唯一接收到这条消息的参与者同时也宕机了。那么即使协调者通过选举协议产生了新的协调者，这条事务的状态也是不确定的，没人知道事务是否被已经提交。</p><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><ul><li><a href="https://mp.weixin.qq.com/s/lxc-JvDRkoR9tXLpsTqGeA" target="_blank" rel="noopener">漫话：如何给女朋友解释什么是3PC？</a></li></ul><hr><p>参考链接</p><ul><li><a href="https://mp.weixin.qq.com/s/kXtliHCqtrTjlWFm1aHtVQ" target="_blank" rel="noopener">分布式基础，啥是两阶段提交？</a></li><li><a href="https://mp.weixin.qq.com/s/QS01KCQ4u2DhNHww_A2Xtw" target="_blank" rel="noopener">漫话：如何给女朋友解释什么是2PC（二阶段提交）？</a></li></ul>]]></content>
+    <content type="html"><![CDATA[<p>普通 Java Maven 项目打成 jar 包方式放服务器上运行</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>动手写了个普通 Java 的 Maven 项目，将其打包放到服务器上运行</p><h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>在 <code>pom.xml</code> 中添加如下配置</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;pluginManagement&gt;</span><br><span class="line">        &lt;plugins&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-assembly-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;2.5.5&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;archive&gt;</span><br><span class="line">                        &lt;manifest&gt;</span><br><span class="line">                            &lt;!-- 这里是启动类全路径名 --&gt;</span><br><span class="line">                            &lt;mainClass&gt;com.xxx.XXXX&lt;&#x2F;mainClass&gt;</span><br><span class="line">                        &lt;&#x2F;manifest&gt;</span><br><span class="line">                    &lt;&#x2F;archive&gt;</span><br><span class="line">                    &lt;descriptorRefs&gt;</span><br><span class="line">                        &lt;descriptorRef&gt;jar-with-dependencies&lt;&#x2F;descriptorRef&gt;</span><br><span class="line">                    &lt;&#x2F;descriptorRefs&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-compiler-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;3.1&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;!-- jdk 版本 --&gt;</span><br><span class="line">                    &lt;source&gt;1.8&lt;&#x2F;source&gt;</span><br><span class="line">                    &lt;target&gt;1.8&lt;&#x2F;target&gt;</span><br><span class="line">                    &lt;encoding&gt;utf-8&lt;&#x2F;encoding&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">        &lt;&#x2F;plugins&gt;</span><br><span class="line">    &lt;&#x2F;pluginManagement&gt;</span><br><span class="line">&lt;&#x2F;build&gt;</span><br></pre></td></tr></table></figure><p>请将 com.xxx.XXXX 改成你项目的主类</p><p>终端下执行<code>mvn clean package assembly:single</code></p><p><img src="/images/blog/2020-01-02-1.png" alt>{:height=”80%” width=”80%”}</p><p>出现如图标志说明打包成功</p><p>可以在target 目录下看到两个 jar 包，带 jar-with-dependencies 后缀的是带依赖的jar包</p><p><img src="/images/blog/2020-01-02-2.png" alt>{:height=”80%” width=”80%”}</p><p>这里选择将其上传到服务器上运行 <code>java -jar cdhAgent-1.0-SNAPSHOT-jar-with-dependencies.jar</code></p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/qq_27252133/article/details/82750599" target="_blank" rel="noopener">使用maven-assembly-plugin插件打包</a></li><li><a href="https://blog.csdn.net/qq_16038125/article/details/60168389" target="_blank" rel="noopener">构建工具-Maven-使用maven-assembly-plugin将依赖打包进jar并指定JDK版本</a></li><li><a href="https://www.cnblogs.com/binhua-liu/p/5604841.html" target="_blank" rel="noopener">如何配置pom.xml用maven打包java工程</a></li></ul>]]></content>
     
     <summary type="html">
     
-      在分布式环境下，所有节点进行事务提交，保持一致性的算法
+      Maven 项目打成 jar 包运行
     
     </summary>
     
     
-      <category term="Distributed" scheme="http://yoursite.com/categories/Distributed/"/>
+      <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
     
     
   </entry>
