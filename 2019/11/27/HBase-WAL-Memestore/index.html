@@ -55,7 +55,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-27-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-27-2.png">
 <meta property="article:published_time" content="2019-11-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T04:35:39.942Z">
+<meta property="article:modified_time" content="2020-02-03T10:02:20.319Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="keyword1">
 <meta property="article:tag" content=" keyword2">
@@ -239,7 +239,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -282,7 +282,7 @@
         <p>HBase 先写 WAL 先还是 Memestore ？</p>
 <hr>
 <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>第一次遇到这个问题时是刚学HBase时，阅读范欣欣老师的<a href="http://hbasefly.com/2016/03/23/hbase_writer/" target="_blank" rel="noopener">《HBase － 数据写入流程解析》</a>文章的评论看到的。</p>
-<p><img src="/images/blog/2019-11-27-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-11-27-1.png" alt></p>
 <p>后续又跟同事讨论过这个问题。在这里记录下理清楚的思路。</p>
 <h4 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h4><p>在<a href="https://mp.weixin.qq.com/s/AORh1vI3L5e7B3MAI8zizg" target="_blank" rel="noopener">《一条数据的HBase之旅，简明HBase入门教程-Write全流程》</a>找到了相应解释。</p>
 <ul>
@@ -294,7 +294,7 @@
 </li>
 </ul>
 <p>这里说2.x版本又改回去了的原因只是因为之前性能下降，但是没有说为什么性能下降，改回去怎么提升了性能。我还是一脸懵逼。带着打破砂锅问到底的心态，我去翻了翻<a href="https://issues.apache.org/jira/browse/HBASE-15158" target="_blank" rel="noopener">HBASE-15158</a>。</p>
-<p><img src="/images/blog/2019-11-27-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-11-27-2.png" alt></p>
 <p>issues 给的解释原文:  The old ordering was put in place because it got better performance in a time when WAL was different and before row locks were read/write (<a href="https://issues.apache.org/jira/browse/HBASE-12751" target="_blank" rel="noopener"><del>HBASE-12751</del></a>). </p>
 <p>渣英语，翻译过来旧方式(即先写WAL再写MemStore)之所以被采用，是因为它在WAL不同的时候以及在读/写行锁之前获得了更好的性能。</p>
 <p>官方有做相应的性能测试<a href="https://issues.apache.org/jira/browse/HBASE-15046" target="_blank" rel="noopener">HBASE-15046</a></p>
@@ -318,12 +318,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/11/26/HBase-scene/" rel="prev" title="HBase 场景">
-      <i class="fa fa-chevron-left"></i> HBase 场景
+    <a href="/2019/11/27/Hard-Link-Symbolic-Link/" rel="prev" title="Linux 系统硬链接和软链接">
+      <i class="fa fa-chevron-left"></i> Linux 系统硬链接和软链接
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/11/27/Hard-Link-Symbolic-Link/" rel="next" title="Linux 系统硬链接和软链接">
-      Linux 系统硬链接和软链接 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/11/28/Linux-RAID/" rel="next" title="磁盘阵列 Raid">
+      磁盘阵列 Raid <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -408,7 +408,7 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-count">23</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -453,12 +453,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">436k</span>
+    <span title="站点总字数">427k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:37</span>
+    <span title="站点阅读时长">6:28</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

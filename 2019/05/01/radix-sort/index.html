@@ -61,7 +61,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-05-01-9.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-05-01-11.png">
 <meta property="article:published_time" content="2019-04-30T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T04:35:39.902Z">
+<meta property="article:modified_time" content="2020-02-03T10:02:19.986Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="基数排序">
 <meta name="twitter:card" content="summary">
@@ -244,7 +244,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-03 18:02:19" itemprop="dateModified" datetime="2020-02-03T18:02:19+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -264,7 +264,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.6k</span>
+              <span>1.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -310,34 +310,34 @@
 <p>}</p>
 <p>举个例子</p>
 <p>假设待排序的数组arr={72, 11, 82, 32, 44, 13, 17, 95, 54, 28, 79, 56}</p>
-<p><img src="/images/blog/2019-05-01-4.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-4.png" alt></p>
 <p>例子中“基”的个数是2（个位和十位）, 所以  FOR循环会执行两次。</p>
 <p>【第一次：以“个位”为依据】</p>
-<p><img src="/images/blog/2019-05-01-5.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-5.png" alt></p>
 <p>上图中标红的部分，个位为“基”。</p>
 <p>第一步：遍历数据集arr，将元素放入对应的桶bucket；</p>
-<p><img src="/images/blog/2019-05-01-6.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-6.png" alt></p>
 <p>操作完成之后，各个桶会变成上面这个样子，即：个位数相同的元素，会在同一个桶里。</p>
 <p>第二步：遍历桶bucket，将元素放回数据集arr；需要注意，先入桶的元素要先出桶。</p>
-<p><img src="/images/blog/2019-05-01-10.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-10.png" alt></p>
 <p>操作完成之后，数据集会变成上面这个样子，即：整体按照个位数排序了, 个位数小的在前面，个位数大的在后面。</p>
 <p>【第二次：以“十位”为依据】</p>
-<p><img src="/images/blog/2019-05-01-7.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-7.png" alt></p>
 <p>上图中标红的部分，十位为“基”。</p>
 <p>第一步：依然遍历数据集arr，将元素放入对应的桶bucket；</p>
-<p><img src="/images/blog/2019-05-01-8.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-8.png" alt></p>
 <p>操作完成之后，各个桶会变成上面这个样子，即：十位数相同的元素，会在同一个桶里。</p>
 <p>第二步：依然遍历桶bucket，将元素放回数据集arr；</p>
 <p>操作完成之后，数据集会变成上面这个样子，即：整体按照十位数也排序了。</p>
 <p>十位数小的在前面，十位数大的在后面。</p>
-<p><img src="/images/blog/2019-05-01-9.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-9.png" alt></p>
 <p>首次按照个位从小到大，第二次按照十位从小到大，即：排序结束。</p>
 <p>MSD 与LSD相反，从高位向地位开始比较，是由高位数为基底开始进行分配，<br>但在分配之后并不马上合并回一个数组中，<br>而是在每个“桶子”中建立“子桶”，<br>将每个桶子中的数值按照下一数位的值分配到“子桶”中,在进行完最低位数的分配后再合并回单一的数组中。</p>
 <p>举个例子</p>
 <p>假设待排序的数组arr={15, 25, 105, 78, 34, 21, 32, 41}</p>
 <p>从最高位百位依次入桶，只有105有百位，其他百位按0算；</p>
 <p>检测每个桶中的数据。当桶中的元素个数多于1个的时候，要对这个桶递归进行下一位的分组。</p>
-<p><img src="/images/blog/2019-05-01-11.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-05-01-11.png" alt></p>
 <p>如果使用词典排序来对可变长度整数表示进行排序，则从1到10的数字的表示将被输出为1,10,2,3,4,5,6,7,8,9，<br>如同较短的按键左对齐，并在右侧用空白字符填充以使短按键与最长按键一样长，以确定排序顺序。</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>基的选取，可以先从个位开始，也可以先从十位开始，结果是一样的；</p>
 <p>基数排序，是一种稳定的排序；</p>
@@ -364,12 +364,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/05/01/counting-sort/" rel="prev" title="计数排序">
-      <i class="fa fa-chevron-left"></i> 计数排序
+    <a href="/2019/04/29/hbase-mvcc/" rel="prev" title="HBase 行锁与多版本并发控制 (MVCC)">
+      <i class="fa fa-chevron-left"></i> HBase 行锁与多版本并发控制 (MVCC)
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/05/01/bucket-sort/" rel="next" title="桶排序">
-      桶排序 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/05/01/counting-sort/" rel="next" title="计数排序">
+      计数排序 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -454,7 +454,7 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-count">23</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -499,12 +499,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">436k</span>
+    <span title="站点总字数">427k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:37</span>
+    <span title="站点阅读时长">6:28</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

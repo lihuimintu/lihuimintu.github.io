@@ -57,7 +57,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-12-3.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-12-4.png">
 <meta property="article:published_time" content="2019-06-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T04:35:39.911Z">
+<meta property="article:modified_time" content="2020-02-03T10:02:20.043Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="RPC">
 <meta name="twitter:card" content="summary">
@@ -240,7 +240,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 12:35:39" itemprop="dateModified" datetime="2020-02-03T12:35:39+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -260,7 +260,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
+              <span>1.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -283,23 +283,23 @@
         <p>RPC 是Remote Procedure Call的缩写，译为远程过程调用。是一个计算机通信协议。</p>
 <hr>
 <h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>现在互联网应用的量级越来越大，单台计算机的能力有限，需要借助可扩展的计算机集群来完成。 </p>
-<p><img src="/images/blog/2019-06-12-1.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-12-1.png" alt></p>
 <p>上面是一个简单的软件系统结构，拆分出来用户系统和订单系统做为服务存在，让不同的站点去调用。</p>
 <p>由于各服务部署在不同机器上，要想在服务间进行远程调用免不了网络通信过程，<br>服务消费方每调用一个服务都要写一坨网络通信相关的代码，不仅复杂而且极易出错。</p>
 <p>这时如果有一种方式能让我们像调用本地服务一样调用远程服务，而让调用者对网络通信这些细节透明，<br>那么将大大提高生产力，比如服务消费方在执行orderService.buy(“HHKB键盘”)时，<br>实质上调用的是远端的服务。这种方式其实就是 RPC。而提供了这种功能的工具我们称之为RPC框架。</p>
 <p>RPC(Remote Procedure Call) 即远程过程调用，允许一台计算机调用另一台计算机上的程序得到结果，<br>而代码中不需要做额外的编程，就像在本地调用一样。<br>通过网络通信调用不同的服务，共同支撑一个软件系统，微服务实现的基石技术。<br>使用RPC可以解耦系统，方便维护，同时增加系统处理请求的能力。</p>
 <h4 id="框架原理"><a href="#框架原理" class="headerlink" title="框架原理"></a>框架原理</h4><p>在 RPC 框架中主要有三个角色: Provider、Consumer和Registry。如下图所示</p>
-<p><img src="/images/blog/2019-06-12-2.png" alt>{:height=”80%” width=”80%”}</p>
+<p><img src="/images/blog/2019-06-12-2.png" alt></p>
 <ul>
 <li>Server: 暴露服务的服务提供方。</li>
 <li>Client: 调用远程服务的服务消费方。</li>
 <li>Registry: 服务注册与发现的注册中心。</li>
 </ul>
-<h4 id="基本流程"><a href="#基本流程" class="headerlink" title="基本流程"></a>基本流程</h4><p><img src="/images/blog/2019-06-12-3.png" alt>{:height=”80%” width=”80%”}</p>
+<h4 id="基本流程"><a href="#基本流程" class="headerlink" title="基本流程"></a>基本流程</h4><p><img src="/images/blog/2019-06-12-3.png" alt></p>
 <p>一次完整的RPC调用流程（同步调用，异步另说）如下:</p>
 <p>1）服务消费方（client）调用以本地调用方式调用服务；<br>2）client stub接收到调用后负责将方法、参数等组装成能够进行网络传输的消息体；<br>3）client stub找到服务地址，并将消息发送到服务端；<br>4）server stub收到消息后进行解码；<br>5）server stub根据解码结果调用本地的服务；<br>6）本地服务执行并将结果返回给server stub；<br>7）server stub将返回结果打包成消息并发送至消费方；<br>8）client stub接收到消息，并进行解码；<br>9）服务消费方得到最终结果。</p>
 <p>RPC框架的目标就是要2~8这些步骤都封装起来，让用户对这些细节透明。</p>
-<h4 id="服务注册中心"><a href="#服务注册中心" class="headerlink" title="服务注册中心"></a>服务注册中心</h4><p><img src="/images/blog/2019-06-12-4.png" alt>{:height=”80%” width=”80%”}</p>
+<h4 id="服务注册中心"><a href="#服务注册中心" class="headerlink" title="服务注册中心"></a>服务注册中心</h4><p><img src="/images/blog/2019-06-12-4.png" alt></p>
 <p>服务提供者启动后主动向注册中心注册机器ip、port以及提供的服务列表</p>
 <p>服务消费者启动时向注册中心获取服务提供方地址列表，可实现软负载均衡和 Failover</p>
 <h4 id="开源RPC框架"><a href="#开源RPC框架" class="headerlink" title="开源RPC框架"></a>开源RPC框架</h4><p><strong>Dubbo</strong></p>
@@ -426,7 +426,7 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-count">23</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -471,12 +471,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">436k</span>
+    <span title="站点总字数">427k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:37</span>
+    <span title="站点阅读时长">6:28</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
