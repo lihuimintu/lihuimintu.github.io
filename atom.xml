@@ -59,27 +59,6 @@
   </entry>
   
   <entry>
-    <title>Hive set 命令使用</title>
-    <link href="http://yoursite.com/2020/01/27/Hive-set/"/>
-    <id>http://yoursite.com/2020/01/27/Hive-set/</id>
-    <published>2020-01-26T16:00:00.000Z</published>
-    <updated>2020-02-03T04:35:39.971Z</updated>
-    
-    <content type="html"><![CDATA[<p>Hive set 命令使用</p><hr><h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">作者：lwf006164</span><br><span class="line">链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lwf006164&#x2F;article&#x2F;details&#x2F;96754526</span><br><span class="line">来源：Hive篇.set命令使用</span><br></pre></td></tr></table></figure><h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>Hive 命令行下执行 set 命令，仅当前会话有效</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line">#  设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure><p>Hive 脚本中配置 set 命令，当前机器用户有效   </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 进入编辑模式，在执行 hive 命令进入 shell 命令行的时候默认会加载这个脚本</span><br><span class="line">vi ~&#x2F;.hiverc</span><br><span class="line"></span><br><span class="line"># 将下面的两行命令添加到该文件中</span><br><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line"># 设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure><p>查看 Hive 历史操作命令集可以浏览 <code>~/.hivehistory</code></p>]]></content>
-    
-    <summary type="html">
-    
-      Hive set 命令使用
-    
-    </summary>
-    
-    
-      <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>HDFS 中 atime 与 mtime 解析</title>
     <link href="http://yoursite.com/2020/01/27/HDFS-atime-ctime/"/>
     <id>http://yoursite.com/2020/01/27/HDFS-atime-ctime/</id>
@@ -96,6 +75,27 @@
     
     
       <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Hive set 命令使用</title>
+    <link href="http://yoursite.com/2020/01/27/Hive-set/"/>
+    <id>http://yoursite.com/2020/01/27/Hive-set/</id>
+    <published>2020-01-26T16:00:00.000Z</published>
+    <updated>2020-02-03T04:35:39.971Z</updated>
+    
+    <content type="html"><![CDATA[<p>Hive set 命令使用</p><hr><h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">作者：lwf006164</span><br><span class="line">链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lwf006164&#x2F;article&#x2F;details&#x2F;96754526</span><br><span class="line">来源：Hive篇.set命令使用</span><br></pre></td></tr></table></figure><h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>Hive 命令行下执行 set 命令，仅当前会话有效</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line">#  设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure><p>Hive 脚本中配置 set 命令，当前机器用户有效   </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 进入编辑模式，在执行 hive 命令进入 shell 命令行的时候默认会加载这个脚本</span><br><span class="line">vi ~&#x2F;.hiverc</span><br><span class="line"></span><br><span class="line"># 将下面的两行命令添加到该文件中</span><br><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line"># 设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure><p>查看 Hive 历史操作命令集可以浏览 <code>~/.hivehistory</code></p>]]></content>
+    
+    <summary type="html">
+    
+      Hive set 命令使用
+    
+    </summary>
+    
+    
+      <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
     
     
   </entry>
@@ -374,27 +374,6 @@
   </entry>
   
   <entry>
-    <title>YARN Fair scheduler</title>
-    <link href="http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/"/>
-    <id>http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/</id>
-    <published>2020-01-01T16:00:00.000Z</published>
-    <updated>2020-02-03T04:35:39.954Z</updated>
-    
-    <content type="html"><![CDATA[<p>YARN 默认调度 Fair scheduler</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>工作中这个问题碰到好几次了。调度规则(scheduling rule)，啥是调度策略(scheduling policy)，还有 CDH 本身有个动态资源池的概念，<br>让我学了又忘，忘了又学，这次通过文档方式来给自己一个交代。</p><h4 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h4><p><strong>什么是资源？</strong></p><p>对于一个资源管理系统，首先要确定什么是资源，然后将每种资源量化，最后对量化的资源进行管理。</p><p>YARN对资源的抽象很简单，只有内存和vcore，这两种资源。每个NodeManager节点贡献一定的内存和vcore，由ResourceManager统一管理。</p><h4 id="调度规则"><a href="#调度规则" class="headerlink" title="调度规则"></a>调度规则</h4><p>YARN的三种调度规则(scheduling rule)</p><ul><li>FIFO Scheduler</li><li>Capacity Scheduler</li><li>Fair Scheduler</li></ul><p>调度规则具体可以看<a href="https://www.cnblogs.com/sodawoods-blogs/p/8877197.html" target="_blank" rel="noopener">YARN中FIFO、Capacity以及Fari调度器的详细介绍</a><br>，记得之前有次看到说随着发展，Capacity 与 Fari 区别越来越小了</p><h4 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h4><p><a href="http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/FairScheduler.html" target="_blank" rel="noopener">Fair Scheduler支持的调度策略</a></p><blockquote><p>Additionally, the fair scheduler allows setting a different custom policy for each queue to allow sharing the queue’s resources in any which way the user wants. A custom policy can be built by extending org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.SchedulingPolicy. FifoPolicy, FairSharePolicy (default), and DominantResourceFairnessPolicy are built-in and can be readily used.</p></blockquote><p>队列内部的默认调度策略是基于内存的共享策略，也可以配置成 FIFO 和 multi-resource with Dominant Resource Fairness (即DRF)</p><p>对于CDH版本来说有些不同，<a href="https://docs.cloudera.com/documentation/enterprise/latest/topics/cm_mc_resource_pools.html#concept_xkk_l1d_wr__section_utc_gbl_vl" target="_blank" rel="noopener">CDH版本的 Fair Scheduler</a> 默认是采用DRF 策略</p><blockquote><p>Dominant Resource Fairness (DRF) (default) - An extension of fair scheduling for more than one resource. DRF determines CPU and memory resource shares based on the availability of those resources and the job requirements.</p></blockquote><p><img src="/images/blog/2020-01-02-3.png" alt>{:height=”80%” width=”80%”}</p><p>也就是说 CDH 版本的 YARN 默认采用的调度策略是 Fair Scheduler 的 DRF 策略，即基于 vcore 和内存的策略，而不是只基于内存的调度策略。</p><h4 id="抢占"><a href="#抢占" class="headerlink" title="抢占"></a>抢占</h4><p>Capacity Scheduler 与 Fair Scheduler 都可以将集群分为队列且允许抢占机制</p><p>当一个job提交到一个繁忙集群中的空队列时，job并不会马上执行，而是阻塞直到正在运行的job释放系统资源。为了使提交job的执行时间更具预测性（可以设置等待的超时时间），调度器支持抢占。</p><p>抢占就是允许调度器杀掉占用超过其应占份额资源队列的containers，这些containers资源便可被分配到应该享有这些份额资源的队列中。需要注意抢占会降低集群的执行效率，因为被终止的containers需要被重新执行。</p><p>可以阅读下最后三个参考链接</p><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/ada7f7b58298" target="_blank" rel="noopener">CDH版本的YARN默认调度Fair scheduler 和DRF简述</a></li><li><a href="https://www.cnblogs.com/sodawoods-blogs/p/8877197.html" target="_blank" rel="noopener">YARN中FIFO、Capacity以及Fari调度器的详细介绍</a></li><li><a href="https://www.jianshu.com/p/990094565a9d" target="_blank" rel="noopener">Yarn 队列调度策略</a></li><li><a href="https://blog.csdn.net/suifeng3051/article/details/49508261" target="_blank" rel="noopener">Yarn 调度器Scheduler详解</a></li><li><a href="http://bigdatadecode.club/YARN%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8BFair%20Scheduler%20part1.html" target="_blank" rel="noopener">YARN源码分析之Fair Scheduler part1</a></li><li><a href="http://bigdatadecode.club/YARN%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8BFair%20Scheduler%20part2.html" target="_blank" rel="noopener">YARN源码分析之Fair Scheduler part2</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      YARN Fair scheduler
-    
-    </summary>
-    
-    
-      <category term="Yarn" scheme="http://yoursite.com/categories/Yarn/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>Maven 项目打成 jar 包运行</title>
     <link href="http://yoursite.com/2020/01/02/mavan-jar/"/>
     <id>http://yoursite.com/2020/01/02/mavan-jar/</id>
@@ -411,6 +390,27 @@
     
     
       <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>YARN Fair scheduler</title>
+    <link href="http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/"/>
+    <id>http://yoursite.com/2020/01/02/Yarn-Fair-Scheduler/</id>
+    <published>2020-01-01T16:00:00.000Z</published>
+    <updated>2020-02-03T04:35:39.954Z</updated>
+    
+    <content type="html"><![CDATA[<p>YARN 默认调度 Fair scheduler</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>工作中这个问题碰到好几次了。调度规则(scheduling rule)，啥是调度策略(scheduling policy)，还有 CDH 本身有个动态资源池的概念，<br>让我学了又忘，忘了又学，这次通过文档方式来给自己一个交代。</p><h4 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h4><p><strong>什么是资源？</strong></p><p>对于一个资源管理系统，首先要确定什么是资源，然后将每种资源量化，最后对量化的资源进行管理。</p><p>YARN对资源的抽象很简单，只有内存和vcore，这两种资源。每个NodeManager节点贡献一定的内存和vcore，由ResourceManager统一管理。</p><h4 id="调度规则"><a href="#调度规则" class="headerlink" title="调度规则"></a>调度规则</h4><p>YARN的三种调度规则(scheduling rule)</p><ul><li>FIFO Scheduler</li><li>Capacity Scheduler</li><li>Fair Scheduler</li></ul><p>调度规则具体可以看<a href="https://www.cnblogs.com/sodawoods-blogs/p/8877197.html" target="_blank" rel="noopener">YARN中FIFO、Capacity以及Fari调度器的详细介绍</a><br>，记得之前有次看到说随着发展，Capacity 与 Fari 区别越来越小了</p><h4 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h4><p><a href="http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/FairScheduler.html" target="_blank" rel="noopener">Fair Scheduler支持的调度策略</a></p><blockquote><p>Additionally, the fair scheduler allows setting a different custom policy for each queue to allow sharing the queue’s resources in any which way the user wants. A custom policy can be built by extending org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.SchedulingPolicy. FifoPolicy, FairSharePolicy (default), and DominantResourceFairnessPolicy are built-in and can be readily used.</p></blockquote><p>队列内部的默认调度策略是基于内存的共享策略，也可以配置成 FIFO 和 multi-resource with Dominant Resource Fairness (即DRF)</p><p>对于CDH版本来说有些不同，<a href="https://docs.cloudera.com/documentation/enterprise/latest/topics/cm_mc_resource_pools.html#concept_xkk_l1d_wr__section_utc_gbl_vl" target="_blank" rel="noopener">CDH版本的 Fair Scheduler</a> 默认是采用DRF 策略</p><blockquote><p>Dominant Resource Fairness (DRF) (default) - An extension of fair scheduling for more than one resource. DRF determines CPU and memory resource shares based on the availability of those resources and the job requirements.</p></blockquote><p><img src="/images/blog/2020-01-02-3.png" alt>{:height=”80%” width=”80%”}</p><p>也就是说 CDH 版本的 YARN 默认采用的调度策略是 Fair Scheduler 的 DRF 策略，即基于 vcore 和内存的策略，而不是只基于内存的调度策略。</p><h4 id="抢占"><a href="#抢占" class="headerlink" title="抢占"></a>抢占</h4><p>Capacity Scheduler 与 Fair Scheduler 都可以将集群分为队列且允许抢占机制</p><p>当一个job提交到一个繁忙集群中的空队列时，job并不会马上执行，而是阻塞直到正在运行的job释放系统资源。为了使提交job的执行时间更具预测性（可以设置等待的超时时间），调度器支持抢占。</p><p>抢占就是允许调度器杀掉占用超过其应占份额资源队列的containers，这些containers资源便可被分配到应该享有这些份额资源的队列中。需要注意抢占会降低集群的执行效率，因为被终止的containers需要被重新执行。</p><p>可以阅读下最后三个参考链接</p><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/ada7f7b58298" target="_blank" rel="noopener">CDH版本的YARN默认调度Fair scheduler 和DRF简述</a></li><li><a href="https://www.cnblogs.com/sodawoods-blogs/p/8877197.html" target="_blank" rel="noopener">YARN中FIFO、Capacity以及Fari调度器的详细介绍</a></li><li><a href="https://www.jianshu.com/p/990094565a9d" target="_blank" rel="noopener">Yarn 队列调度策略</a></li><li><a href="https://blog.csdn.net/suifeng3051/article/details/49508261" target="_blank" rel="noopener">Yarn 调度器Scheduler详解</a></li><li><a href="http://bigdatadecode.club/YARN%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8BFair%20Scheduler%20part1.html" target="_blank" rel="noopener">YARN源码分析之Fair Scheduler part1</a></li><li><a href="http://bigdatadecode.club/YARN%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8BFair%20Scheduler%20part2.html" target="_blank" rel="noopener">YARN源码分析之Fair Scheduler part2</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      YARN Fair scheduler
+    
+    </summary>
+    
+    
+      <category term="Yarn" scheme="http://yoursite.com/categories/Yarn/"/>
     
     
   </entry>
