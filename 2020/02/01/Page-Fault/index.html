@@ -53,7 +53,7 @@
 <meta property="og:site_name" content="lihuimintu">
 <meta property="og:description" content="缺页错误（Page Fault）">
 <meta property="article:published_time" content="2020-01-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:20.447Z">
+<meta property="article:modified_time" content="2020-02-05T04:36:30.618Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
@@ -235,7 +235,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-05 12:36:30" itemprop="dateModified" datetime="2020-02-05T12:36:30+08:00">2020-02-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -326,7 +326,7 @@
 <blockquote>
 <p>因为涉及到公司机密，这里不方便给截图。留待以后，做模拟实验后给出。</p>
 </blockquote>
-<p>以 top 命令观察，机器卡顿时，CPU 负载并不高：32 核只有 1.3 左右的 1min 平均负载。但是，iostat 观察到，磁盘正在以 10MiB/s 级别的速度，不断进行读取。由此判断，这种情况下，目标进程一定有大量的 Page Fault 产生。使用上述 watch -n 1 –difference “ps -o min_flt,maj_flt,cmd,args,uid,gid <pid>“ 观察，发现目标进程确实有大量硬缺页错误产生，肯定了这一推断。</pid></p>
+<p>以 top 命令观察，机器卡顿时，CPU 负载并不高：32 核只有 1.3 左右的 1min 平均负载。但是，iostat 观察到，磁盘正在以 10MiB/s 级别的速度，不断进行读取。由此判断，这种情况下，目标进程一定有大量的 Page Fault 产生。使用上述 <code>watch -n 1 --difference &quot;ps -o min_flt,maj_flt,cmd,args,uid,gid &lt;pid&gt;&quot;</code> 观察，发现目标进程确实有大量硬缺页错误产生，肯定了这一推断。</p>
 <p>然而，诚然进程需要载入大量数据，但是以 mmap 的方式映射，为何会已有大量同类服务存在的情况下，大量读取硬盘呢？这就需要更加深入的分析了。</p>
 <p>事实上，这里隐含了一个非常细小的矛盾。一方面，该服务需要从磁盘加载大量数据；另一方面，该服务对性能要求非常高。我们知道，mmap 只是对文件做了映射，不会在调用 mmap 时立即将文件内容加载进内存。这就导致了一个问题：当服务启动对外提供服务时，可能还有数据未能加载进内存；而这种加载是非常慢的，严重影响服务性能。因此，可以推断，为了解决这个问题，程序必然在 mmap 之后，尝试将所有数据加载进物理内存。</p>
 <p>这样一来，先前遇到的现象就很容易解释了。</p>
@@ -434,14 +434,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-count">177</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">24</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -486,12 +486,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">427k</span>
+    <span title="站点总字数">431k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:28</span>
+    <span title="站点阅读时长">6:32</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

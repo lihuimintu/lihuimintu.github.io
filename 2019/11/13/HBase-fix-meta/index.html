@@ -55,7 +55,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-12-20-2.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-13-3.png">
 <meta property="article:published_time" content="2019-11-12T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:20.292Z">
+<meta property="article:modified_time" content="2020-02-04T09:39:41.492Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HBase">
 <meta name="twitter:card" content="summary">
@@ -238,7 +238,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-04 17:39:41" itemprop="dateModified" datetime="2020-02-04T17:39:41+08:00">2020-02-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,7 +258,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>365</span>
+              <span>563</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -278,22 +278,27 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>HBase运维基础 元数据逆向修复原理</p>
+        <p>HBase运维基础之元数据逆向修复原理</p>
 <hr>
 <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>大好的晚上时光肯定是用来学习的。</p>
 <h4 id="心得"><a href="#心得" class="headerlink" title="心得"></a>心得</h4><p>回顾<a href="https://mp.weixin.qq.com/s/yt4X2tDQrLx35NsviRHbPg" target="_blank" rel="noopener">HBase运维基础——元数据逆向修复原理</a>读了一遍，第一次读看的云里雾里的，<br>一年后再读果然相对容易多了。</p>
 <p>hbck 工具历来都是 HBase 线上运维大杀器，修复的过程得谨慎避免异常</p>
 <p>不过在 hbase2.0+ 以后 hbck 的所有修复功能全都不支持, 执行 <code>hbase hbck -help</code> 可见下图</p>
 <p><img src="/images/blog/2019-12-20-2.png" alt></p>
-<p>OfflineMetaRepair 工具未使用过，现公司使用的是 HBase 2.1.0-cdh6.3.1 ，怀疑 2.x 估计不支持了，看源码验证了下，果然不支持了</p>
+<p>OfflineMetaRepair 工具未使用过，怀疑 2.x 估计不支持了，看源码验证了下</p>
 <p><img src="/images/blog/2019-11-13-3.png" alt></p>
-<p>科学上网后发现 hbase2.0+ 提供了一个叫 hbck2 工具</p>
+<p>科学上网后发现 hbase2.0+ 提供了一个叫 hbck2 工具，文章中的问题其实可以用 hbck2 解决的，亲测可以可用<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></p>
 <ul>
 <li><a href="https://yq.aliyun.com/articles/738176" target="_blank" rel="noopener">HBase 2.0.0 META 数据修复工具</a></li>
 <li><a href="https://www.jianshu.com/p/19bb8f7ff38c" target="_blank" rel="noopener">HBase 2.0 META 数据修复</a></li>
 </ul>
-<p>文章中的问题其实可以用 hbck2 解决的，本人亲测可以可用</p>
-<p><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></p>
+<p>在 HBCK2 中找到 <a href="https://github.com/apache/hbase-operator-tools/blob/master/hbase-hbck2/src/main/java/org/apache/hbase/hbck1/OfflineMetaRepair.java" target="_blank" rel="noopener">OfflineMetaRepair 工具</a>，原来是将其添加到 hbase-operator-tools 中</p>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>在 hbase-operator-tools 中有关于 hbase:meta 表重建的介绍</p>
+<ul>
+<li>Online hbase:meta rebuild recipe</li>
+<li>Detailed rebuild recipe</li>
+</ul>
+<p>更多参阅<a href="https://github.com/apache/hbase-operator-tools/tree/master/hbase-hbck2#missing-regions-in-hbasemeta-regiontable-restorerebuild" target="_blank" rel="noopener">Missing Regions in hbase:meta region/table restore/rebuild</a> 到 <a href="https://github.com/apache/hbase-operator-tools/tree/master/hbase-hbck2#detailed-rebuild-recipe" target="_blank" rel="noopener">Detailed rebuild recipe</a> 部分</p>
 
     </div>
 
@@ -309,12 +314,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/11/12/HBase-hbtop/" rel="prev" title="HBase 集成 hbtop">
-      <i class="fa fa-chevron-left"></i> HBase 集成 hbtop
+    <a href="/2019/11/13/hdfs-SafeMode/" rel="prev" title="HDFS 安全模式">
+      <i class="fa fa-chevron-left"></i> HDFS 安全模式
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/11/13/hdfs-SafeMode/" rel="next" title="HDFS 安全模式">
-      HDFS 安全模式 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/11/14/HDFS-Erasure-Encoding/" rel="next" title="HDFS 纠删码">
+      HDFS 纠删码 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -376,7 +381,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#心得"><span class="nav-number">2.</span> <span class="nav-text">心得</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#心得"><span class="nav-number">2.</span> <span class="nav-text">心得</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实操"><span class="nav-number">3.</span> <span class="nav-text">实操</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -392,14 +397,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-count">177</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-count">24</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -444,12 +449,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">427k</span>
+    <span title="站点总字数">431k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:28</span>
+    <span title="站点阅读时长">6:32</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
