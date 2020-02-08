@@ -53,7 +53,7 @@
 <meta property="og:site_name" content="lihuimintu">
 <meta property="og:description" content="缺页错误（Page Fault）">
 <meta property="article:published_time" content="2020-01-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-05T04:36:30.618Z">
+<meta property="article:modified_time" content="2020-02-07T09:19:49.523Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
@@ -235,7 +235,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-05 12:36:30" itemprop="dateModified" datetime="2020-02-05T12:36:30+08:00">2020-02-05</time>
+                <time title="修改时间：2020-02-07 17:19:49" itemprop="dateModified" datetime="2020-02-07T17:19:49+08:00">2020-02-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -255,14 +255,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.8k</span>
+              <span>6.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>6 分钟</span>
             </span>
             <div class="post-description">缺页错误（Page Fault）</div>
 
@@ -303,7 +303,17 @@
 <p>又例如说，一个进程启动了很久，但是长时间没有活动。若是计算机处在很高的内存压力下，则操作系统会将这一进程长期未使用的页帧内容，从物理内存转储到磁盘上。这个过程称为换出（swap out）。在 *nix 系统下，用于转储这部分内存内容的磁盘空间，称为交换空间；在 Windows 上，这部分磁盘空间，则被称为虚拟内存，对应磁盘上的文件则称为页面文件。在这个过程中，进程在内存中保存的任意内容，都可能被换出到交换空间：可以是数据内容，也可以是进程的代码段内容。</p>
 <p>Windows 用户看到这里，应该能明白这部分空间为什么叫做「虚拟内存」——因为它于真实的内存条相对，是在硬盘上虚拟出来的一份内存。通过这样的方式，「好像」将内存的容量扩大了。同样，为什么叫「页面文件」也一目了然。因为事实上，文件内保存的就是一个个内存页帧。在 Windows 上经常能观察到「假死」的现象，就和缺页错误有关。这种现象，实际就是长期不运行某个程序，导致程序对应的内存被换出到磁盘；在需要响应时，由于需要从磁盘上读取大量内容，导致响应很慢，产生假死现象。这种现象发生时，若是监控系统硬错误数量，就会发现在短时间内，目标进程产生了大量的硬错误。</p>
 <p>在 Windows XP 流行的年代，有很多来路不明的「系统优化建议」。其中一条就是「扩大页面文件的大小，有助于加快系统速度」。事实上，这种方式只能加大内存「看起来」的容量，却给内存整体（将物理内存和磁盘页面文件看做一个整体）的响应速度带来了巨大的负面影响。因为，尽管容量增大了，但是访问这部分增大的容量时，进程实际上需要先陷入内核态，从磁盘上读取内容做好映射，再继续执行。更有甚者，这些建议会要求「将页面文件分散在多个不同磁盘分区」，并美其名曰「分散压力」。事实上，从页面文件中读取内存页帧本就已经很慢；若是还要求磁盘不断在不同分区上寻址，那就更慢了。可见谣言害死人。</p>
-<h4 id="观察缺页错误"><a href="#观察缺页错误" class="headerlink" title="观察缺页错误"></a>观察缺页错误</h4><p>Linux 系统，ps 是一个强大的命令，我们可以用 -o 选项指定希望关注的项目。比如</p>
+<h4 id="观察缺页错误"><a href="#观察缺页错误" class="headerlink" title="观察缺页错误"></a>观察缺页错误</h4><p>通过<code>top</code> 命令查看观察软中断和硬中断的 CPU 使用率，hi(hard interrupt) 表示硬中断、si(soft interrupt) 表示软中断</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%Cpu(s): 53.3 us,  1.2 sy,  0.0 ni, 44.6 id,  0.9 wa,  0.0 hi,  0.1 si,  0.0 st</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>mpstat -P ALL 2</code> 每隔两秒查看下所有核状态信息，其中<code>%irq</code>为硬中断，<code>%soft</code>为软中断，如果硬中断比较高可以看看是不是大量读取磁盘引起的(<code>iostat -d 1</code>每隔1s 查看磁盘读写速度)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ mpstat -P ALL 2</span><br><span class="line">Linux 3.10.0-862.14.4.el7.x86_64 (region-0-0-122) 	2020年02月07日 	_x86_64_	(4 CPU)</span><br><span class="line"></span><br><span class="line">16时23分31秒  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle</span><br><span class="line">16时23分33秒  all   52.64    0.00    0.88    0.38    0.00    0.00    0.00    0.00    0.00   46.10</span><br><span class="line">16时23分33秒    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</span><br><span class="line">16时23分33秒    1    4.06    0.00    1.52    1.52    0.00    0.00    0.00    0.00    0.00   92.89</span><br><span class="line">16时23分33秒    2   99.50    0.00    0.50    0.00    0.00    0.00    0.00    0.00    0.00    0.00</span><br><span class="line">16时23分33秒    3    5.08    0.00    1.52    0.00    0.00    0.00    0.00    0.00    0.00   93.40</span><br><span class="line"></span><br><span class="line">16时23分33秒  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle</span><br><span class="line">16时23分35秒  all   52.41    0.00    1.01    0.13    0.00    0.13    0.00    0.00    0.00   46.33</span><br><span class="line">16时23分35秒    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</span><br><span class="line">16时23分35秒    1    4.57    0.00    2.54    0.51    0.00    0.00    0.00    0.00    0.00   92.39</span><br><span class="line">16时23分35秒    2  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</span><br><span class="line">16时23分35秒    3    3.55    0.00    2.03    0.51    0.00    0.51    0.00    0.00    0.00   93.40</span><br><span class="line"></span><br><span class="line">16时23分35秒  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle</span><br><span class="line">16时23分37秒  all   54.74    0.00    1.52    0.13    0.00    0.25    0.00    0.00    0.00   43.36</span><br><span class="line">16时23分37秒    0   99.50    0.00    0.50    0.00    0.00    0.00    0.00    0.00    0.00    0.00</span><br><span class="line">16时23分37秒    1    9.28    0.00    2.06    0.00    0.00    0.52    0.00    0.00    0.00   88.14</span><br><span class="line">16时23分37秒    2  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00</span><br><span class="line">16时23分37秒    3    8.16    0.00    3.57    0.00    0.00    0.51    0.00    0.00    0.00   87.76</span><br></pre></td></tr></table></figure>
+
+<p><code>dstat</code>可以查看 CPU 软硬中断次数，hiq、siq分别为硬中断和软中断次数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ dstat</span><br><span class="line">You did not select any stats, using -cdngy by default.</span><br><span class="line">----total-cpu-usage---- -dsk&#x2F;total- -net&#x2F;total- ---paging-- ---system--</span><br><span class="line">usr sys idl wai hiq siq| read  writ| recv  send|  in   out | int   csw</span><br><span class="line"> 62   1  36   0   0   0|  84k  355k|   0     0 |   0     0 |5766  4315</span><br><span class="line"> 52   1  47   0   0   0|   0   232k|  21k   54k|   0     0 |5279  4004</span><br><span class="line"> 52   1  47   0   0   0|   0    56k|  15k   22k|   0     0 |5327  4045</span><br></pre></td></tr></table></figure>
+
+
+<p>ps 是一个强大的命令，我们可以用 -o 选项指定希望关注的项目。比如</p>
 <ul>
 <li>min_flt: 进程启动至今软缺页中断数量</li>
 <li>maj_flt: 进程启动至今硬缺页中断数量</li>
@@ -312,16 +322,15 @@
 <li>uid: 执行命令的用户的 ID</li>
 <li>gid: 执行命令的用户所在组的 ID</li>
 </ul>
-<p>因此，我们可以用 <code>ps -o min_flt,maj_flt,cmd,args,uid,gid 1</code> 来观察进程号为 1 的进程的缺页错误。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ps -o min_flt,maj_flt,cmd,args,uid,gid 1</span><br><span class="line"> MINFL  MAJFL CMD                         COMMAND                       UID   GID</span><br><span class="line">  3104     41 &#x2F;sbin&#x2F;init                  &#x2F;sbin&#x2F;init                      0     0</span><br></pre></td></tr></table></figure>
+<p>因此，我们可以用 <code>ps -o min_flt,maj_flt,cmd,args,uid,gid 14434</code> 来观察进程号为 14434 的进程的缺页错误</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ps -o min_flt,maj_flt,cmd,args,uid,gid 14434</span><br><span class="line">   MINFL  MAJFL CMD                         COMMAND                       UID   GID</span><br><span class="line">  2413550   355 &#x2F;usr&#x2F;java&#x2F;jdk1.8.0_181-clou &#x2F;usr&#x2F;java&#x2F;jdk1.8.0_181-clou   981   978</span><br></pre></td></tr></table></figure>
 
 <p>结合 <code>watch</code> 命令，则可关注进程当前出发缺页中断的状态</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 --difference &quot;ps -o min_flt,maj_flt,cmd,args,uid,gid 1&quot;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 --difference &quot;ps -o min_flt,maj_flt,cmd,args,uid,gid 14434&quot;</span><br></pre></td></tr></table></figure>
 
 <p>你还可以结合 <code>sort</code> 命令，动态观察产生缺页错误最多的几个进程。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ watch -n 1 &quot;ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8&quot;</span><br><span class="line"></span><br><span class="line">Every 1.0s: ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8</span><br><span class="line"></span><br><span class="line">3027665711  1 tmux -2 new -s yu-ws        tmux -2 new -s yu-ws        19879 19879</span><br><span class="line">1245846907 9082 tmux                      tmux                        20886 20886</span><br><span class="line">1082463126 57 &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux         &#x2F;usr&#x2F;local&#x2F;bin&#x2F;tmux          5638  5638</span><br><span class="line">868590907   2 irqbalance                  irqbalance                      0     0</span><br><span class="line">662275941 289831 tmux                     tmux                         2612  2612</span><br><span class="line">424339087 247 perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl perl .&#x2F;bin_agent&#x2F;bin&#x2F;aos_cl     0     0</span><br><span class="line">200045670   0 &#x2F;bin&#x2F;bash .&#x2F;t.sh            &#x2F;bin&#x2F;bash .&#x2F;t.sh            12498 12498</span><br><span class="line">151206845 10335 tmux new -s dev           tmux new -s dev             16629 16629</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ watch -n 1 &quot;ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8&quot;</span><br><span class="line">Every 1.0s: ps -eo min_flt,maj_flt,cmd,args,uid,gid | sort -nrk1 | head -n 8                                                                   Fri Feb  7 17:18:43 2020</span><br><span class="line"></span><br><span class="line">437395316 262 &#x2F;usr&#x2F;bin&#x2F;python2 &#x2F;opt&#x2F;cloud &#x2F;usr&#x2F;bin&#x2F;python2 &#x2F;opt&#x2F;cloud     0     0</span><br><span class="line">69510242   75 &#x2F;bin&#x2F;bash &#x2F;opt&#x2F;cloudera&#x2F;cm- &#x2F;bin&#x2F;bash &#x2F;opt&#x2F;cloudera&#x2F;cm-   981   978</span><br><span class="line">23151349 1164 &#x2F;usr&#x2F;local&#x2F;aegis&#x2F;aegis_clie &#x2F;usr&#x2F;local&#x2F;aegis&#x2F;aegis_clie     0     0</span><br><span class="line">5772594  1197 &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;systemd-jo &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;systemd-jo     0     0</span><br><span class="line">2902146    46 &#x2F;usr&#x2F;sbin&#x2F;irqbalance --fore &#x2F;usr&#x2F;sbin&#x2F;irqbalance --fore     0     0</span><br><span class="line">2413598   355 &#x2F;usr&#x2F;java&#x2F;jdk1.8.0_181-clou &#x2F;usr&#x2F;java&#x2F;jdk1.8.0_181-clou   981   978</span><br><span class="line">1591327   619 &#x2F;usr&#x2F;java&#x2F;jdk1.8.0_181-clou &#x2F;usr&#x2F;java&#x2F;jdk1.8.0_181-clou   997   995</span><br><span class="line">1588418   197 &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;systemd -- &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;systemd --     0     0</span><br></pre></td></tr></table></figure>
 
-<p>这是公司开发服务器上的一瞥，不难发现，我司有不少 tmux 用户。（笑）</p>
 <h4 id="一个硬缺页错误导致的问题"><a href="#一个硬缺页错误导致的问题" class="headerlink" title="一个硬缺页错误导致的问题"></a>一个硬缺页错误导致的问题</h4><p>我司的某一高性能服务采取了 mmap 的方式，从磁盘加载大量数据。由于调研测试需要，多名组内成员共享一台调研机器。现在的问题是，当共享的人数较多时，新启动的服务进程会在启动时耗费大量时间——以几十分钟计。那么，这是为什么呢？</p>
 <blockquote>
 <p>因为涉及到公司机密，这里不方便给截图。留待以后，做模拟实验后给出。</p>
@@ -434,7 +443,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">177</span>
+          <span class="site-state-item-count">179</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -486,12 +495,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">431k</span>
+    <span title="站点总字数">443k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:32</span>
+    <span title="站点阅读时长">6:43</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

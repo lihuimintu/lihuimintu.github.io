@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Linux 性能监控">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux CPU、Memory、IO、Network 分析">
+<meta property="og:url" content="http://yoursite.com/2020/02/07/CPU-Memory-IO-Network/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="Linux 性能监控">
+<meta property="article:published_time" content="2020-02-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-02-07T13:52:51.547Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/02/07/CPU-Memory-IO-Network/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Linux CPU、Memory、IO、Network 分析 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/07/CPU-Memory-IO-Network/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux CPU、Memory、IO、Network 分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-02-07 00:00:00 / 修改时间：21:52:51" itemprop="dateCreated datePublished" datetime="2020-02-07T00:00:00+08:00">2020-02-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+            <div class="post-description">Linux 性能监控</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Linux性能监控 - CPU、Memory、IO、Network</p>
+<hr>
+<h4 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h4><p>CPU 查看这些重要参数: 中断、上下文切换、可运行队列、CPU 利用率来监测性能。</p>
+<p>每个参数的健康区间:</p>
+<ul>
+<li>CPU利用率: User Time &lt;= 70%，System Time &lt;= 35%，User Time + System Time &lt;= 70%。</li>
+<li>上下文切换: 与CPU利用率相关联，如果CPU利用率状态良好，大量的上下文切换也是可以接受的。</li>
+<li>可运行队列: 每个处理器的可运行队列 &lt;=3 个线程。如双处理器系统的可运行队列里不应该超过6个线程。</li>
+</ul>
+<p>运用到的工具有<a href="https://www.jellythink.com/archives/419" target="_blank" rel="noopener">Linux vmstat命令详解</a>、<a href="https://www.jellythink.com/archives/421" target="_blank" rel="noopener">Linux top命令详解</a>、<a href="https://www.cnblogs.com/mayou18/p/9546431.html" target="_blank" rel="noopener">Linux mpstat-显示各个可用CPU的状态</a></p>
+<p>top 查看 CPU 利用率，如果 User Time 比较高，使用 <a href="https://github.com/oldratlee/useful-scripts/blob/dev-2.x/docs/java.md#-show-busy-java-threads" target="_blank" rel="noopener">show-busy-java-threads</a> 工具排查，其会从所有运行的Java进程中找出最消耗CPU的线程（缺省5个），打印出其线程栈。<a href="https://lihuimintu.github.io/2019/06/03/Occupying-CPU-high/" target="_blank" rel="noopener">Linux 系统 CPU 过高异常排查</a></p>
+<p>如果 System Time 比 User Time 高，以及高频度的上下文切换（cs），说明应用程序进行了大量的系统调用。</p>
+<p>vmstat 输出例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----</span><br><span class="line"> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</span><br><span class="line"> 3  0 361396 196772  55820 359372    0    0    13    21    1    1  2  0 98  0  0</span><br><span class="line"> 1  0 361392 196524  55820 359616    8    0   236     0  411  527  1  0 90  9  0</span><br><span class="line"> 2  1 361392 196524  55828 359608    0    0     0    48  370  503  1  1 98  0  0</span><br><span class="line"> 4  0 361392 196524  55828 359616    0    0     0     0  442  559  1  0 99  0  0</span><br></pre></td></tr></table></figure>
+
+<p>需要关注的参数</p>
+<ul>
+<li>r: 当前运行队列中线程的数目，代表线程处于可运行状态，但CPU还未能执行</li>
+<li>b: 等待IO的进程数量；<strong>如果该值一直都很大，说明IO比较繁忙，处理较慢</strong></li>
+<li>in: 每秒中断数</li>
+<li>cs: 每秒上下文切换数</li>
+<li>us: 用户占用CPU的百分比</li>
+<li>sys: 内核占用CPU的百分比</li>
+<li>id: CPU 完全空闲的百分比</li>
+</ul>
+<h4 id="Memory"><a href="#Memory" class="headerlink" title="Memory"></a>Memory</h4><p>分析 vmstat 输出</p>
+<ul>
+<li>si: 每秒从交换区写到内存的大小</li>
+<li>so: 每秒写入交换区的内存大小</li>
+</ul>
+<p>内存够用的时候，这2个值都是0，如果这2个值长期大于0时，系统性能会受到影响，磁盘IO和CPU资源都会被消耗。有时我们看到空闲内存（free）很少的或接近于0时，就认为内存不够用了，不能光看这一点，还要结合si和so，如果free很少，但是si和so也很少（大多时候是0），那么不用担心，系统性能这时不会受到影响的</p>
+<p><a href="https://mp.weixin.qq.com/s/XAhASXPkIELTvwwY8QPXng" target="_blank" rel="noopener">查询进程占用内存情况方法</a></p>
+<h4 id="IO"><a href="#IO" class="headerlink" title="IO"></a>IO</h4><p>通过 <code>vmstat</code> 的输出，重点关注<code>b</code>、<code>bi</code>、<code>bo</code>和<code>wa</code>字段。这几个值变大，都意味着IO的消耗增加。</p>
+<p>对于读请求大的服务器，一般<code>b</code>、<code>bi</code>、<code>wa</code>都会比较大，而对于写入量大的服务器，一般<code>b</code>、<code>bo</code>、<code>wa</code>都会比较大。</p>
+<p>借助<a href="https://www.jellythink.com/archives/438" target="_blank" rel="noopener">Linux iostat命令详解</a>可以查看相关参数</p>
+<ul>
+<li>%iowait: 如果该值较高，表示磁盘存在I/O瓶颈</li>
+<li>await: 平均每次设备I/O操作的等待时间 (毫秒)，一般地，系统I/O响应时间应该低于5ms，如果大于 10ms就比较大了</li>
+<li>%util：一秒中有百分之多少的时间用于I/O操作，即被IO消耗的CPU百分比，一般地，如果该参数是100%表示设备已经接近满负荷运行了</li>
+</ul>
+<p>借助<code>pidstat -d 1</code>定位出导致瓶颈的进程，参阅<a href="https://www.jellythink.com/archives/444" target="_blank" rel="noopener">Linux pidstat命令详解</a></p>
+<p>现在定位到进程级别了，可能需要知道这个进程到底打开了哪些文件，借助<code>lsof -p 20711</code>命令列出指定20711进程打开的文件列表，参阅<a href="https://www.jellythink.com/archives/449" target="_blank" rel="noopener">Linux lsof命令详解</a></p>
+<h4 id="Network"><a href="#Network" class="headerlink" title="Network"></a>Network</h4><p>网络的监测是所有 Linux 子系统里面最复杂的，这里贴了解到的运维命令</p>
+<p>iftop 命令查看端到端流量</p>
+<p>NetHogs实时监控进程的网络带宽占用情况，参阅<a href="https://lihuimintu.github.io/2019/12/06/Linux-nethogs/" target="_blank" rel="noopener">Linux NetHogs 监控工具</a></p>
+<p>还有些<code>ip</code>，<code>netstat</code>，<code>tcpdump</code>，<code>sar</code> 来分析网络性能问题，参阅<a href="https://www.jellythink.com/archives/486" target="_blank" rel="noopener">Linux性能监测：网络篇</a></p>
+<p><strong>UDP监控</strong></p>
+<p>对于UDP服务，查看所有监听的UDP端口的网络情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$  watch netstat -unlp</span><br><span class="line">Every 2.0s: netstat -unlp                                                                                                                      Fri Feb  7 21:36:55 2020</span><br><span class="line"></span><br><span class="line">Active Internet connections (only servers)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State	PID&#x2F;Program name</span><br><span class="line">udp        0	  0 0.0.0.0:627             0.0.0.0:*                           6813&#x2F;rpcbind</span><br><span class="line">udp        0	  0 0.0.0.0:7191            0.0.0.0:*                           8137&#x2F;python2</span><br><span class="line">udp        0	  0 0.0.0.0:68              0.0.0.0:*                           780&#x2F;dhclient</span><br><span class="line">udp        0	  0 0.0.0.0:111             0.0.0.0:*                           1&#x2F;systemd</span><br><span class="line">udp        0	  0 10.0.0.122:123          0.0.0.0:*                           3924&#x2F;ntpd</span><br><span class="line">udp        0	  0 127.0.0.1:123           0.0.0.0:*                           3924&#x2F;ntpd</span><br><span class="line">udp        0	  0 0.0.0.0:123             0.0.0.0:*                           3924&#x2F;ntpd</span><br><span class="line">udp6	   0	  0 :::627                  :::*                                6813&#x2F;rpcbind</span><br><span class="line">udp6	   0	  0 :::7191                 :::*                                8137&#x2F;python2</span><br><span class="line">udp6	   0	  0 :::111                  :::*                                6813&#x2F;rpcbind</span><br><span class="line">udp6	   0	  0 :::123                  :::*                                3924&#x2F;ntpd</span><br></pre></td></tr></table></figure>
+
+<p>对于<code>Recv-Q</code>和<code>Send-Q</code>两个指标值为0，或者没有长时间大于0的数值是比较正常的。</p>
+<p>对于UDP服务，查看丢包情况（网卡收到了，但是应用层没有处理过来造成的丢包）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ netstat -su</span><br><span class="line">...</span><br><span class="line">Udp:</span><br><span class="line">    14706185 packets received</span><br><span class="line">    272545 packets to unknown port received.</span><br><span class="line">    11026 packet receive errors</span><br><span class="line">    46474392 packets sent</span><br><span class="line">    10964 receive buffer errors</span><br><span class="line">    0 send buffer errors</span><br><span class="line">    InCsumErrors: 62</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+
+<p><code>packet receive errors</code> 这一项数值增长了，则表明在丢包。</p>
+<p><strong>TCP监控</strong></p>
+<p>对于TCP服务而言，这个就比较复杂；因为TCP涉及到重传，所以我们就需要重点关注这个重传率。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ netstat -st | grep segments</span><br><span class="line">    689039681 segments received</span><br><span class="line">    864949096 segments send out</span><br><span class="line">    2233493 segments retransmited</span><br><span class="line">    5186 bad segments received.</span><br></pre></td></tr></table></figure>
+
+<p>查看<code>segments send out</code>和<code>segments retransmited</code>指标，对比一段时间内，这两个指标的增长率就是对应的重传率(<a href="https://www.jellythink.com/archives/486" target="_blank" rel="noopener">Linux性能监测：网络篇</a>文末尾有计算重传率的Shell脚本)，发生重传说明网络传输有丢包，基本上从3个点去定位：客户端网络情况、服务端网络情况、中间链路网络情况。</p>
+<p><strong>网卡吞吐率</strong></p>
+<p>可以通过<code>sar -n DEV 2 3</code>命令来查看</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ sar -n DEV 2 3</span><br><span class="line">Linux 3.10.0-862.14.4.el7.x86_64 (region-0-0-122) 	2020年02月07日 	_x86_64_	(4 CPU)</span><br><span class="line"></span><br><span class="line">21时43分32秒     IFACE   rxpck&#x2F;s   txpck&#x2F;s    rxkB&#x2F;s    txkB&#x2F;s   rxcmp&#x2F;s   txcmp&#x2F;s  rxmcst&#x2F;s</span><br><span class="line">21时43分34秒      eth0    116.50    119.50     11.77     19.72      0.00      0.00      0.00</span><br><span class="line">21时43分34秒        lo     66.00     66.00    144.26    144.26      0.00      0.00      0.00</span><br><span class="line"></span><br><span class="line">21时43分34秒     IFACE   rxpck&#x2F;s   txpck&#x2F;s    rxkB&#x2F;s    txkB&#x2F;s   rxcmp&#x2F;s   txcmp&#x2F;s  rxmcst&#x2F;s</span><br><span class="line">21时43分36秒      eth0    155.00    152.00     19.60     44.66      0.00      0.00      0.00</span><br><span class="line">21时43分36秒        lo     29.00     29.00     94.53     94.53      0.00      0.00      0.00</span><br><span class="line"></span><br><span class="line">21时43分36秒     IFACE   rxpck&#x2F;s   txpck&#x2F;s    rxkB&#x2F;s    txkB&#x2F;s   rxcmp&#x2F;s   txcmp&#x2F;s  rxmcst&#x2F;s</span><br><span class="line">21时43分38秒      eth0    116.00    118.00     11.86     19.80      0.00      0.00      0.00</span><br><span class="line">21时43分38秒        lo     33.00     33.00     68.67     68.67      0.00      0.00      0.00</span><br><span class="line"></span><br><span class="line">平均时间:     IFACE   rxpck&#x2F;s   txpck&#x2F;s    rxkB&#x2F;s    txkB&#x2F;s   rxcmp&#x2F;s   txcmp&#x2F;s  rxmcst&#x2F;s</span><br><span class="line">平均时间:      eth0    129.17    129.83     14.41     28.06      0.00      0.00      0.00</span><br><span class="line">平均时间:        lo     42.67     42.67    102.49    102.49      0.00      0.00      0.00</span><br></pre></td></tr></table></figure>
+
+
+<p>将<code>rxkB/s</code>和<code>txkB/s</code>进行相加，得到网卡设备的实际吞吐率，然后再和网卡的硬件指标进行比对即可。</p>
+<p>比如一个网卡的<code>rxkB/s</code>指标为21999.10，<code>txkB/s</code>指标为482.56，那这个网卡的吞吐率大概在<code>22Mbytes/s</code>，即<code>176 Mbits/sec</code>，没有达到<code>1Gbit/sec</code>的硬件上限。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/linuxbug/p/4909980.html" target="_blank" rel="noopener">Linux性能监控 - CPU、Memory、IO、Network</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/05/LRU/" rel="prev" title="缺页中断算法 - LRU">
+      <i class="fa fa-chevron-left"></i> 缺页中断算法 - LRU
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#CPU"><span class="nav-number">1.</span> <span class="nav-text">CPU</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Memory"><span class="nav-number">2.</span> <span class="nav-text">Memory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IO"><span class="nav-number">3.</span> <span class="nav-text">IO</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Network"><span class="nav-number">4.</span> <span class="nav-text">Network</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">179</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/lihuimintu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lihuimintu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lihuimintu@gmail.com" title="E-Mail → mailto:lihuimintu@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">443k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:43</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '0237a35051200878085f22b7f25d2dc5',
+        language: 'zh-CN',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <!-- 代码块复制功能 -->
+  <script type="text/javascript" src="/js/clipboard.min.js"></script>	
+<script type="text/javascript" src="/js/custom.js"></script>
+
+</body>
+</html>
