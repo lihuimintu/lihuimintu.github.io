@@ -55,7 +55,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-03-16-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-03-16-2.png">
 <meta property="article:published_time" content="2019-03-15T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:19.911Z">
+<meta property="article:modified_time" content="2020-02-08T13:22:32.382Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HDFS">
 <meta name="twitter:card" content="summary">
@@ -238,7 +238,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:19" itemprop="dateModified" datetime="2020-02-03T18:02:19+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-08 21:22:32" itemprop="dateModified" datetime="2020-02-08T21:22:32+08:00">2020-02-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,7 +258,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>474</span>
+              <span>480</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -288,7 +288,7 @@
 <p>这时我们从其他正常的 JournalNode 上把目录 copy 过来即可。</p>
 <p>如果有目录的话，那就移走。反正已经不完整了。但是别删了，防止需要回滚。</p>
 <p>使用scp直接拷贝就可以了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rm -rf jn </span><br><span class="line">scp -r root@100.xxx.1:&#x2F;data&#x2F;dfs&#x2F;jn .&#x2F;</span><br><span class="line">chown -R hdfs:hdfs jn</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mv jn &#x2F;tmp </span><br><span class="line">scp -r root@100.xxx.1:&#x2F;data&#x2F;dfs&#x2F;jn .&#x2F;</span><br><span class="line">chown -R hdfs:hdfs jn</span><br></pre></td></tr></table></figure>
 
 <p>查看博客有人提示到说 scp 时间不应该超过 journalnode_sync_status_startup_tolerance 参数设置的时间</p>
 <p>同时还提到在 scp 要考虑同步数据时的带宽限制。dfs.image.transfer.bandwidthPerSec参数。</p>
@@ -314,8 +314,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/03/14/mysql-install/" rel="prev" title="MySQL 5.7 安装">
-      <i class="fa fa-chevron-left"></i> MySQL 5.7 安装
+    <a href="/2019/03/14/hdfs-block-fault/" rel="prev" title="HDFS 块故障">
+      <i class="fa fa-chevron-left"></i> HDFS 块故障
     </a></div>
       <div class="post-nav-item">
     <a href="/2019/03/17/regex/" rel="next" title="Java 正则表达式的简单使用">
