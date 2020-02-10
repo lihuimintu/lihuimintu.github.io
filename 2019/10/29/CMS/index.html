@@ -60,7 +60,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-06-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-06-2.png">
 <meta property="article:published_time" content="2019-10-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:20.270Z">
+<meta property="article:modified_time" content="2020-02-10T11:07:57.674Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="CMS">
 <meta property="article:tag" content=" JVM">
@@ -244,7 +244,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-10 19:07:57" itemprop="dateModified" datetime="2020-02-10T19:07:57+08:00">2020-02-10</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -264,14 +264,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.9k</span>
+              <span>5.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>5 分钟</span>
             </span>
             <div class="post-description">CMS 原理及调优</div>
 
@@ -364,8 +364,14 @@
 <p><img src="/images/blog/2019-11-06-1.png" alt></p>
 <p><img src="/images/blog/2019-11-06-2.png" alt></p>
 <p>这两个图看得特别费力，最后还是弄懂了。应该是下面这个理解</p>
-<p><code>promotion failed</code>是在进行Minor GC时，Survivor Space放不下，对象只能放入老年代，而此时老年代也放不下造成的，少数的确是因为老年代内存空间不足够，不过因为分配担保的机制，每次Minor GC之后要保证新生代的空间survivor + eden &gt; 老年带的空闲空间，所以多数是由于老年代有足够的空闲空间，但是由于碎片较多，这时如果新生代要转移到老年代的对象比较大</p>
-<p><code>concurrent mode failure</code>在执行CMS GC的过程中同时业务线程将大对象放入老年代，而此时老年代空间不足。或者是 promotion failed 引发的 full gc，然后full gc 导致了concurrent mode failure</p>
+<p><code>promotion failed</code>直接意思就是晋升到老年代，然而有时候会出现一些意外，导致对象晋升失败，这就是promotion failed。</p>
+<p>什么情况下会发生晋升失败呢？从空间分配担保可以知道有两种情况:</p>
+<ul>
+<li>是基于历史统计数据，比如统计数据显示历史上平均每次晋升对象的大小是av_promo，而当前老年代的空间并不足以存放av_promo大小的对象，则GC线程认为实际晋升的过程中可能会发生失败，晚失败不如早点失败，于是GC线程告诉堆发生了一次GC失败事件便终止了这次回收动作。</li>
+<li>是历史统计数据显示这次老年代有足够的空间来支持对象晋升，但是 Minor GC 后，幸存空间容纳不了剩余对象（超过动态年龄的对象），将剩余对象要放入老年代，老年代有碎片或者不能容纳这些对象，所以对象晋升失败，于是GC线程同样会告诉堆发生了一次垃圾回收失败事件</li>
+</ul>
+<p>发生 promotion failed 会有什么后果？就是紧接着触发concurrent mode failure</p>
+<p><code>concurrent mode failure</code>在执行 CMS GC 的过程中预留的内存空间不足以保存对象，这会导致 Concurrent Mode Failure 失败，这时会启用 Serial Old 收集器来重新进行老年代的收集。为什么CMS GC会有对象进入老年代？<br>因为存在可能业务线程会将大对象放入老年代，而此时老年代空间不足；或者 promotion failed 导致的对象晋升，而此时老年代空间不足或老年代空间足够，但存在大量碎片。 </p>
 <p><code>concurrent mode interrupted</code> 是由于外部因素触发了 full gc，比如执行了System.gc()</p>
 <p>并发模式失败和晋升失败都会导致长时间的停顿，常见解决思路如下</p>
 <ul>
@@ -391,6 +397,7 @@
 <li><a href="https://www.cnblogs.com/hongdada/p/10277782.html" target="_blank" rel="noopener">CMS GC启动参数优化配置</a></li>
 <li><a href="https://toutiao.io/posts/3ogeka/preview" target="_blank" rel="noopener">聊一聊 GC 中的 promotion failed</a></li>
 <li><a href="https://my.oschina.net/hosee/blog/674181" target="_blank" rel="noopener">使用CMS垃圾收集器产生的问题和解决方案</a></li>
+<li><a href="https://mp.weixin.qq.com/s/PE1N_tb99gA3hoPe8vuZvw" target="_blank" rel="noopener">看完这篇垃圾回收，你也能做面试官</a></li>
 </ul>
 
     </div>
@@ -407,12 +414,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/10/24/jmap/" rel="prev" title="Java内存分析工具 jmap">
-      <i class="fa fa-chevron-left"></i> Java内存分析工具 jmap
+    <a href="/2019/10/24/HDFS-RW/" rel="prev" title="HDFS 文件读写流程">
+      <i class="fa fa-chevron-left"></i> HDFS 文件读写流程
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/11/04/yum-upgrade-update/" rel="next" title="yum update操作导致系统版本升级">
-      yum update操作导致系统版本升级 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/11/04/CDH-6.3.1/" rel="next" title="CDH 6.3.1 安装">
+      CDH 6.3.1 安装 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -542,7 +549,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">444k</span>
+    <span title="站点总字数">445k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>

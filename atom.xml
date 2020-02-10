@@ -290,27 +290,6 @@
   </entry>
   
   <entry>
-    <title>HBase CMS GC 配置参考</title>
-    <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
-    <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
-    <published>2020-01-17T16:00:00.000Z</published>
-    <updated>2020-02-03T10:02:20.416Z</updated>
-    
-    <content type="html"><![CDATA[<p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><p>参考自一下文章:</p><ul><li><a href="http://hbasefly.com/2016/05/21/hbase-gc-1/" target="_blank" rel="noopener">HBase GC的前生今世 – 身世篇</a></li><li><a href="http://hbasefly.com/2016/05/29/hbase-gc-2/" target="_blank" rel="noopener">HBase GC的前生今世 – 演进篇</a></li><li><a href="http://hbasefly.com/2016/08/09/hbase-cms-gc/" target="_blank" rel="noopener">HBase最佳实践－CMS GC调优</a></li><li><a href="https://mp.weixin.qq.com/s/GEwD1B-XqFIudWP_EbGgdQ" target="_blank" rel="noopener">HBase实战：记一次Safepoint导致长时间STW的踩坑之旅</a></li></ul><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">-Xms32g -Xmx32g -Xmn512m </span><br><span class="line">-XX:+UseParNewGC </span><br><span class="line">-XX:ParallelGCThreads&#x3D;8 </span><br><span class="line">-XX:+UseConcMarkSweepGC</span><br><span class="line"> -XX:+UseCMSCompactAtFullCollection </span><br><span class="line">-XX:CMSFullGCsBeforeCompaction&#x3D;1 </span><br><span class="line">-XX:CMSInitiatingOccupancyFraction&#x3D;65 </span><br><span class="line">-XX:+UseCMSInitiatingOccupancyOnly </span><br><span class="line">-XX:+PrintGC </span><br><span class="line">-XX:+PrintGCDetails </span><br><span class="line">-XX:+PrintGCDateStamps </span><br><span class="line">-XX:+PrintGCApplicationStoppedTime </span><br><span class="line">-XX:+PrintHeapAtGC  </span><br><span class="line">-XX:+PrintTenuringDistribution </span><br><span class="line">-Xloggc:&#x2F;var&#x2F;log&#x2F;hbase&#x2F;gc-regionserver-hbase.log </span><br><span class="line">-XX:+UseGCLogFileRotation  </span><br><span class="line">-XX:NumberOfGCLogFiles&#x3D;10  </span><br><span class="line">-XX:GCLogFileSize&#x3D;100M</span><br></pre></td></tr></table></figure>]]></content>
-    
-    <summary type="html">
-    
-      HBase CMS GC 配置参考
-    
-    </summary>
-    
-    
-      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>记一次 HBase Master is initializing 问题处理</title>
     <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
     <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
@@ -322,6 +301,27 @@
     <summary type="html">
     
       HBase Master is initializing 问题处理
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>HBase CMS GC 配置参考</title>
+    <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
+    <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
+    <published>2020-01-17T16:00:00.000Z</published>
+    <updated>2020-02-03T10:02:20.416Z</updated>
+    
+    <content type="html"><![CDATA[<p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p><p>参考自一下文章:</p><ul><li><a href="http://hbasefly.com/2016/05/21/hbase-gc-1/" target="_blank" rel="noopener">HBase GC的前生今世 – 身世篇</a></li><li><a href="http://hbasefly.com/2016/05/29/hbase-gc-2/" target="_blank" rel="noopener">HBase GC的前生今世 – 演进篇</a></li><li><a href="http://hbasefly.com/2016/08/09/hbase-cms-gc/" target="_blank" rel="noopener">HBase最佳实践－CMS GC调优</a></li><li><a href="https://mp.weixin.qq.com/s/GEwD1B-XqFIudWP_EbGgdQ" target="_blank" rel="noopener">HBase实战：记一次Safepoint导致长时间STW的踩坑之旅</a></li></ul><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">-Xms32g -Xmx32g -Xmn512m </span><br><span class="line">-XX:+UseParNewGC </span><br><span class="line">-XX:ParallelGCThreads&#x3D;8 </span><br><span class="line">-XX:+UseConcMarkSweepGC</span><br><span class="line"> -XX:+UseCMSCompactAtFullCollection </span><br><span class="line">-XX:CMSFullGCsBeforeCompaction&#x3D;1 </span><br><span class="line">-XX:CMSInitiatingOccupancyFraction&#x3D;65 </span><br><span class="line">-XX:+UseCMSInitiatingOccupancyOnly </span><br><span class="line">-XX:+PrintGC </span><br><span class="line">-XX:+PrintGCDetails </span><br><span class="line">-XX:+PrintGCDateStamps </span><br><span class="line">-XX:+PrintGCApplicationStoppedTime </span><br><span class="line">-XX:+PrintHeapAtGC  </span><br><span class="line">-XX:+PrintTenuringDistribution </span><br><span class="line">-Xloggc:&#x2F;var&#x2F;log&#x2F;hbase&#x2F;gc-regionserver-hbase.log </span><br><span class="line">-XX:+UseGCLogFileRotation  </span><br><span class="line">-XX:NumberOfGCLogFiles&#x3D;10  </span><br><span class="line">-XX:GCLogFileSize&#x3D;100M</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      HBase CMS GC 配置参考
     
     </summary>
     
