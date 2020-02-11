@@ -290,27 +290,6 @@
   </entry>
   
   <entry>
-    <title>记一次 HBase Master is initializing 问题处理</title>
-    <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
-    <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
-    <published>2020-01-17T16:00:00.000Z</published>
-    <updated>2020-02-03T10:02:20.419Z</updated>
-    
-    <content type="html"><![CDATA[<p>HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误处理</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>测试集群上做了jar包替换验证测试，测试完之后还原jar，重启出现进入 hbase shell 中执行命令遇到问题。</p><p><img src="/images/blog/2020-01-18-1.png" alt></p><p><code>org.apache.hadoop.hbase.PleaseHoldException: Master is initializing</code> 代表Master正在初始化中，出现这种错误的原因有很多</p><p>关键还是得看 Master 日志，盲目搜索效率不高</p><p>一开始只是搜索 ERROR 日志，并没有看到很关键的信息，后面看其他博客贴的日志片段是 WARN，进而<br>转换思路看 WARN，一看这个是 meta 表未分配到 RS 上啊，之前处理过，用 hbck2 解决即可</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARN org.apache.hadoop.hbase.master.HMaster: hbase:meta,,1.1588230740 is NOT online; state&#x3D;&#123;1588230740 state&#x3D;OPENING, </span><br><span class="line">ts&#x3D;1579334053311, server&#x3D;region-168-1-240,16020,1579334037426&#125;; ServerCrashProcedures&#x3D;true. Master startup cannot </span><br><span class="line">progress, in holding-pattern until region onlined.</span><br></pre></td></tr></table></figure><p>hbck2 配置参考<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a>即可</p><p>手动去 assign 一下 meta 表即可，hbase:meta 表的 encoded name 是一个时间戳，比如上面日志的 encoded name 就是 <code>1588230740</code> ，<br>具体命令参考下方</p><p><code>hbase org.apache.hbase.HBCK2 assigns -o 1588230740</code></p><p>查看 Master 日志，可以看到成功分配</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO org.apache.hadoop.hbase.master.procedure.MasterProcedureScheduler: Took xlock for pid&#x3D;7, state&#x3D;RUNNABLE:REGION_TRANSITION_QUEUE; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true</span><br><span class="line">INFO org.apache.hadoop.hbase.master.assignment.AssignProcedure: Assigned, not reassigning rit&#x3D;OPEN, location&#x3D;region-168-1-240,16020,1579334037426</span><br><span class="line">INFO org.apache.hadoop.hbase.procedure2.ProcedureExecutor: Finished pid&#x3D;6, state&#x3D;SUCCESS; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true in 160msec</span><br></pre></td></tr></table></figure><p>执行命令验证成功</p><p><img src="/images/blog/2020-01-18-2.png" alt></p><h4 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h4><p>之前听范老师说过: 运维三大法办- 监控、日志、源码。还是要细心</p><p>hbck2 的使用可以多看看官方文档说明，学习如何使用</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/zzf1510711060/article/details/80919660" target="_blank" rel="noopener">HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误解决方法</a></li><li><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      HBase Master is initializing 问题处理
-    
-    </summary>
-    
-    
-      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>HBase CMS GC 配置参考</title>
     <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
     <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
@@ -322,6 +301,27 @@
     <summary type="html">
     
       HBase CMS GC 配置参考
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>记一次 HBase Master is initializing 问题处理</title>
+    <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
+    <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
+    <published>2020-01-17T16:00:00.000Z</published>
+    <updated>2020-02-03T10:02:20.419Z</updated>
+    
+    <content type="html"><![CDATA[<p>HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误处理</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>测试集群上做了jar包替换验证测试，测试完之后还原jar，重启出现进入 hbase shell 中执行命令遇到问题。</p><p><img src="/images/blog/2020-01-18-1.png" alt></p><p><code>org.apache.hadoop.hbase.PleaseHoldException: Master is initializing</code> 代表Master正在初始化中，出现这种错误的原因有很多</p><p>关键还是得看 Master 日志，盲目搜索效率不高</p><p>一开始只是搜索 ERROR 日志，并没有看到很关键的信息，后面看其他博客贴的日志片段是 WARN，进而<br>转换思路看 WARN，一看这个是 meta 表未分配到 RS 上啊，之前处理过，用 hbck2 解决即可</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARN org.apache.hadoop.hbase.master.HMaster: hbase:meta,,1.1588230740 is NOT online; state&#x3D;&#123;1588230740 state&#x3D;OPENING, </span><br><span class="line">ts&#x3D;1579334053311, server&#x3D;region-168-1-240,16020,1579334037426&#125;; ServerCrashProcedures&#x3D;true. Master startup cannot </span><br><span class="line">progress, in holding-pattern until region onlined.</span><br></pre></td></tr></table></figure><p>hbck2 配置参考<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a>即可</p><p>手动去 assign 一下 meta 表即可，hbase:meta 表的 encoded name 是一个时间戳，比如上面日志的 encoded name 就是 <code>1588230740</code> ，<br>具体命令参考下方</p><p><code>hbase org.apache.hbase.HBCK2 assigns -o 1588230740</code></p><p>查看 Master 日志，可以看到成功分配</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO org.apache.hadoop.hbase.master.procedure.MasterProcedureScheduler: Took xlock for pid&#x3D;7, state&#x3D;RUNNABLE:REGION_TRANSITION_QUEUE; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true</span><br><span class="line">INFO org.apache.hadoop.hbase.master.assignment.AssignProcedure: Assigned, not reassigning rit&#x3D;OPEN, location&#x3D;region-168-1-240,16020,1579334037426</span><br><span class="line">INFO org.apache.hadoop.hbase.procedure2.ProcedureExecutor: Finished pid&#x3D;6, state&#x3D;SUCCESS; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true in 160msec</span><br></pre></td></tr></table></figure><p>执行命令验证成功</p><p><img src="/images/blog/2020-01-18-2.png" alt></p><h4 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h4><p>之前听范老师说过: 运维三大法办- 监控、日志、源码。还是要细心</p><p>hbck2 的使用可以多看看官方文档说明，学习如何使用</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/zzf1510711060/article/details/80919660" target="_blank" rel="noopener">HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误解决方法</a></li><li><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      HBase Master is initializing 问题处理
     
     </summary>
     

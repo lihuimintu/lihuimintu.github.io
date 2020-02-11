@@ -54,13 +54,12 @@
 <meta property="og:site_name" content="lihuimintu">
 <meta property="og:description" content="CMS 原理及调优">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-10-29-4.png">
-<meta property="og:image" content="http://yoursite.com/images/blog/2019-10-29-5.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-10-29-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-10-29-3.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-06-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-06-2.png">
 <meta property="article:published_time" content="2019-10-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-10T11:07:57.674Z">
+<meta property="article:modified_time" content="2020-02-11T03:00:39.160Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="CMS">
 <meta property="article:tag" content=" JVM">
@@ -244,7 +243,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-10 19:07:57" itemprop="dateModified" datetime="2020-02-10T19:07:57+08:00">2020-02-10</time>
+                <time title="修改时间：2020-02-11 11:00:39" itemprop="dateModified" datetime="2020-02-11T11:00:39+08:00">2020-02-11</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -307,13 +306,9 @@
 </li>
 <li><p>永久代的使用率达到阈值 CMSInitiatingPermOccupancyFraction，默认92%，前提是开启 CMSClassUnloadingEnabled</p>
 </li>
-<li><p>新生代的晋升担保失败</p>
+<li><p>新生代的晋升担保失败(晋升担保失败触发Full GC)</p>
 </li>
 </ol>
-<p><strong>晋升担保失败</strong></p>
-<p>分配担保规则为只要老年代的连续空间大于新生代对象总大小或者历次晋升的平均大小就会进行Minor GC，否则将进行Full GC (这里的Full GC可以理解成Old GC，而CMS就是Old GC，所以对应的就是进行CMS GC，即周期性old GC)</p>
-<p><img src="/images/blog/2019-10-29-5.png" alt></p>
-<p>即图中绿色框部分</p>
 <h6 id="新生代垃圾回收"><a href="#新生代垃圾回收" class="headerlink" title="新生代垃圾回收"></a>新生代垃圾回收</h6><p>能与CMS搭配使用的新生代垃圾收集器有Serial收集器和ParNew收集器。这2个收集器都采用标记复制算法，都会触发STW事件，停止所有的应用线程。</p>
 <p>不同之处在于，Serial是单线程执行，ParNew是多线程执行</p>
 <p><img src="/images/blog/2019-10-29-1.png" alt></p>
@@ -344,7 +339,7 @@
 </li>
 <li><p>执行了System.gc()，前提是没有参数ExplicitGCInvokesConcurrent，也会进行压缩</p>
 </li>
-<li><p>Young GC 过程中发生 promotion failure </p>
+<li><p>Young GC 过程中发生 promotion failure</p>
 </li>
 </ol>
 <p>带压缩动作的算法，称为MSC，标记-清理-压缩，采用单线程，全暂停的方式进行垃圾收集，暂停时间很长很长</p>
@@ -372,6 +367,7 @@
 </ul>
 <p>发生 promotion failed 会有什么后果？就是紧接着触发concurrent mode failure</p>
 <p><code>concurrent mode failure</code>在执行 CMS GC 的过程中预留的内存空间不足以保存对象，这会导致 Concurrent Mode Failure 失败，这时会启用 Serial Old 收集器来重新进行老年代的收集。为什么CMS GC会有对象进入老年代？<br>因为存在可能业务线程会将大对象放入老年代，而此时老年代空间不足；或者 promotion failed 导致的对象晋升，而此时老年代空间不足或老年代空间足够，但存在大量碎片。 </p>
+<p>当出现<code>concurrent mode failure</code>的现象时，就意味着此时JVM将继续采用 Stop-The-World 的方式来进行 Full GC，Full GC 会启用 Serial Old 收集器， Serial Old 收集器是单线程收集器，这样就会导致 STW 更长</p>
 <p><code>concurrent mode interrupted</code> 是由于外部因素触发了 full gc，比如执行了System.gc()</p>
 <p>并发模式失败和晋升失败都会导致长时间的停顿，常见解决思路如下</p>
 <ul>
@@ -385,6 +381,7 @@
 <h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><p>周期性的CMS（background）只会回收老年代，除了周期性的进行GC之外，还有一些紧急情况，需要主动触发GC（foreground），主动触发的GC会连带一次Minor GC，所以也称为Full GC。主动触发的GC是会暂停所有用户现场的，俗称stop the world（STW）。</p>
 <p>在那些没有实现CMS的老虚拟机或者没有开启CMS的虚拟机中，每一次Old GC都是Full GC，且会STW，当然因为除了CMS之外，其他的老年代回收算法都是采用标记-整理的方式，所以肯定也是压缩的，。</p>
 <p>如果正在进行CMS回收，又触发了一次Full GC，则Full GC会抢占回收执行机会，停止CMS，采用Serial Old或Parallel Old这些采用标记-整理算法的GC方式（CMS采用的是标记-清理算法）进行Full GC</p>
+<p>在 JDK 9 中 CMS GC 被废弃后，现有应用程序的最佳处理方法是什么？感兴趣可以参阅<a href="https://mp.weixin.qq.com/s/i-MDolxTNGDWRB9Z_pq8rg" target="_blank" rel="noopener">CMS 被废弃了，该怎么办呢？</a></p>
 <hr>
 <p>参考链接</p>
 <ul>
@@ -418,8 +415,8 @@
       <i class="fa fa-chevron-left"></i> HDFS 文件读写流程
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/11/04/CDH-6.3.1/" rel="next" title="CDH 6.3.1 安装">
-      CDH 6.3.1 安装 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/11/04/Java-heap/" rel="next" title="JVM 堆内存 heap 详解">
+      JVM 堆内存 heap 详解 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>

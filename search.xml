@@ -911,6 +911,25 @@
       </categories>
   </entry>
   <entry>
+    <title>HBase CMS GC 配置参考</title>
+    <url>/2020/01/18/HBase-CMS/</url>
+    <content><![CDATA[<p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p>
+<p>参考自一下文章:</p>
+<ul>
+<li><a href="http://hbasefly.com/2016/05/21/hbase-gc-1/" target="_blank" rel="noopener">HBase GC的前生今世 – 身世篇</a></li>
+<li><a href="http://hbasefly.com/2016/05/29/hbase-gc-2/" target="_blank" rel="noopener">HBase GC的前生今世 – 演进篇</a></li>
+<li><a href="http://hbasefly.com/2016/08/09/hbase-cms-gc/" target="_blank" rel="noopener">HBase最佳实践－CMS GC调优</a></li>
+<li><a href="https://mp.weixin.qq.com/s/GEwD1B-XqFIudWP_EbGgdQ" target="_blank" rel="noopener">HBase实战：记一次Safepoint导致长时间STW的踩坑之旅</a></li>
+</ul>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">-Xms32g -Xmx32g -Xmn512m </span><br><span class="line">-XX:+UseParNewGC </span><br><span class="line">-XX:ParallelGCThreads&#x3D;8 </span><br><span class="line">-XX:+UseConcMarkSweepGC</span><br><span class="line"> -XX:+UseCMSCompactAtFullCollection </span><br><span class="line">-XX:CMSFullGCsBeforeCompaction&#x3D;1 </span><br><span class="line">-XX:CMSInitiatingOccupancyFraction&#x3D;65 </span><br><span class="line">-XX:+UseCMSInitiatingOccupancyOnly </span><br><span class="line">-XX:+PrintGC </span><br><span class="line">-XX:+PrintGCDetails </span><br><span class="line">-XX:+PrintGCDateStamps </span><br><span class="line">-XX:+PrintGCApplicationStoppedTime </span><br><span class="line">-XX:+PrintHeapAtGC  </span><br><span class="line">-XX:+PrintTenuringDistribution </span><br><span class="line">-Xloggc:&#x2F;var&#x2F;log&#x2F;hbase&#x2F;gc-regionserver-hbase.log </span><br><span class="line">-XX:+UseGCLogFileRotation  </span><br><span class="line">-XX:NumberOfGCLogFiles&#x3D;10  </span><br><span class="line">-XX:GCLogFileSize&#x3D;100M</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
     <title>记一次 HBase Master is initializing 问题处理</title>
     <url>/2020/01/18/HBase-Master-is-initializing/</url>
     <content><![CDATA[<p>HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误处理</p>
@@ -938,25 +957,6 @@
 <li><a href="https://blog.csdn.net/zzf1510711060/article/details/80919660" target="_blank" rel="noopener">HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误解决方法</a></li>
 <li><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></li>
 </ul>
-]]></content>
-      <categories>
-        <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>HBase CMS GC 配置参考</title>
-    <url>/2020/01/18/HBase-CMS/</url>
-    <content><![CDATA[<p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase发展到当下，对其进行的各种优化从未停止，而 GC 优化更是其中的重中之重</p>
-<p>参考自一下文章:</p>
-<ul>
-<li><a href="http://hbasefly.com/2016/05/21/hbase-gc-1/" target="_blank" rel="noopener">HBase GC的前生今世 – 身世篇</a></li>
-<li><a href="http://hbasefly.com/2016/05/29/hbase-gc-2/" target="_blank" rel="noopener">HBase GC的前生今世 – 演进篇</a></li>
-<li><a href="http://hbasefly.com/2016/08/09/hbase-cms-gc/" target="_blank" rel="noopener">HBase最佳实践－CMS GC调优</a></li>
-<li><a href="https://mp.weixin.qq.com/s/GEwD1B-XqFIudWP_EbGgdQ" target="_blank" rel="noopener">HBase实战：记一次Safepoint导致长时间STW的踩坑之旅</a></li>
-</ul>
-<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">-Xms32g -Xmx32g -Xmn512m </span><br><span class="line">-XX:+UseParNewGC </span><br><span class="line">-XX:ParallelGCThreads&#x3D;8 </span><br><span class="line">-XX:+UseConcMarkSweepGC</span><br><span class="line"> -XX:+UseCMSCompactAtFullCollection </span><br><span class="line">-XX:CMSFullGCsBeforeCompaction&#x3D;1 </span><br><span class="line">-XX:CMSInitiatingOccupancyFraction&#x3D;65 </span><br><span class="line">-XX:+UseCMSInitiatingOccupancyOnly </span><br><span class="line">-XX:+PrintGC </span><br><span class="line">-XX:+PrintGCDetails </span><br><span class="line">-XX:+PrintGCDateStamps </span><br><span class="line">-XX:+PrintGCApplicationStoppedTime </span><br><span class="line">-XX:+PrintHeapAtGC  </span><br><span class="line">-XX:+PrintTenuringDistribution </span><br><span class="line">-Xloggc:&#x2F;var&#x2F;log&#x2F;hbase&#x2F;gc-regionserver-hbase.log </span><br><span class="line">-XX:+UseGCLogFileRotation  </span><br><span class="line">-XX:NumberOfGCLogFiles&#x3D;10  </span><br><span class="line">-XX:GCLogFileSize&#x3D;100M</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>HBase</category>
@@ -1197,34 +1197,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Maven 项目打成 jar 包运行</title>
-    <url>/2020/01/02/mavan-jar/</url>
-    <content><![CDATA[<p>普通 Java Maven 项目打成 jar 包方式放服务器上运行</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>动手写了个普通 Java 的 Maven 项目，将其打包放到服务器上运行</p>
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>在 <code>pom.xml</code> 中添加如下配置</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;pluginManagement&gt;</span><br><span class="line">        &lt;plugins&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-assembly-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;2.5.5&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;archive&gt;</span><br><span class="line">                        &lt;manifest&gt;</span><br><span class="line">                            &lt;!-- 这里是启动类全路径名 --&gt;</span><br><span class="line">                            &lt;mainClass&gt;com.xxx.XXXX&lt;&#x2F;mainClass&gt;</span><br><span class="line">                        &lt;&#x2F;manifest&gt;</span><br><span class="line">                    &lt;&#x2F;archive&gt;</span><br><span class="line">                    &lt;descriptorRefs&gt;</span><br><span class="line">                        &lt;descriptorRef&gt;jar-with-dependencies&lt;&#x2F;descriptorRef&gt;</span><br><span class="line">                    &lt;&#x2F;descriptorRefs&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-compiler-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;3.1&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;!-- jdk 版本 --&gt;</span><br><span class="line">                    &lt;source&gt;1.8&lt;&#x2F;source&gt;</span><br><span class="line">                    &lt;target&gt;1.8&lt;&#x2F;target&gt;</span><br><span class="line">                    &lt;encoding&gt;utf-8&lt;&#x2F;encoding&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">        &lt;&#x2F;plugins&gt;</span><br><span class="line">    &lt;&#x2F;pluginManagement&gt;</span><br><span class="line">&lt;&#x2F;build&gt;</span><br></pre></td></tr></table></figure>
-
-<p>请将 com.xxx.XXXX 改成你项目的主类</p>
-<p>终端下执行<code>mvn clean package assembly:single</code></p>
-<p><img src="/images/blog/2020-01-02-1.png" alt></p>
-<p>出现如图标志说明打包成功</p>
-<p>可以在target 目录下看到两个 jar 包，带 jar-with-dependencies 后缀的是带依赖的jar包</p>
-<p><img src="/images/blog/2020-01-02-2.png" alt></p>
-<p>这里选择将其上传到服务器上运行 <code>java -jar cdhAgent-1.0-SNAPSHOT-jar-with-dependencies.jar</code></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://blog.csdn.net/qq_27252133/article/details/82750599" target="_blank" rel="noopener">使用maven-assembly-plugin插件打包</a></li>
-<li><a href="https://blog.csdn.net/qq_16038125/article/details/60168389" target="_blank" rel="noopener">构建工具-Maven-使用maven-assembly-plugin将依赖打包进jar并指定JDK版本</a></li>
-<li><a href="https://www.cnblogs.com/binhua-liu/p/5604841.html" target="_blank" rel="noopener">如何配置pom.xml用maven打包java工程</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Tools</category>
-      </categories>
-  </entry>
-  <entry>
     <title>YARN Fair scheduler</title>
     <url>/2020/01/02/Yarn-Fair-Scheduler/</url>
     <content><![CDATA[<p>YARN 默认调度 Fair scheduler</p>
@@ -1275,6 +1247,34 @@
 ]]></content>
       <categories>
         <category>Yarn</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Maven 项目打成 jar 包运行</title>
+    <url>/2020/01/02/mavan-jar/</url>
+    <content><![CDATA[<p>普通 Java Maven 项目打成 jar 包方式放服务器上运行</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>动手写了个普通 Java 的 Maven 项目，将其打包放到服务器上运行</p>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>在 <code>pom.xml</code> 中添加如下配置</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;pluginManagement&gt;</span><br><span class="line">        &lt;plugins&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-assembly-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;2.5.5&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;archive&gt;</span><br><span class="line">                        &lt;manifest&gt;</span><br><span class="line">                            &lt;!-- 这里是启动类全路径名 --&gt;</span><br><span class="line">                            &lt;mainClass&gt;com.xxx.XXXX&lt;&#x2F;mainClass&gt;</span><br><span class="line">                        &lt;&#x2F;manifest&gt;</span><br><span class="line">                    &lt;&#x2F;archive&gt;</span><br><span class="line">                    &lt;descriptorRefs&gt;</span><br><span class="line">                        &lt;descriptorRef&gt;jar-with-dependencies&lt;&#x2F;descriptorRef&gt;</span><br><span class="line">                    &lt;&#x2F;descriptorRefs&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;maven-compiler-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;version&gt;3.1&lt;&#x2F;version&gt;</span><br><span class="line">                &lt;configuration&gt;</span><br><span class="line">                    &lt;!-- jdk 版本 --&gt;</span><br><span class="line">                    &lt;source&gt;1.8&lt;&#x2F;source&gt;</span><br><span class="line">                    &lt;target&gt;1.8&lt;&#x2F;target&gt;</span><br><span class="line">                    &lt;encoding&gt;utf-8&lt;&#x2F;encoding&gt;</span><br><span class="line">                &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">        &lt;&#x2F;plugins&gt;</span><br><span class="line">    &lt;&#x2F;pluginManagement&gt;</span><br><span class="line">&lt;&#x2F;build&gt;</span><br></pre></td></tr></table></figure>
+
+<p>请将 com.xxx.XXXX 改成你项目的主类</p>
+<p>终端下执行<code>mvn clean package assembly:single</code></p>
+<p><img src="/images/blog/2020-01-02-1.png" alt></p>
+<p>出现如图标志说明打包成功</p>
+<p>可以在target 目录下看到两个 jar 包，带 jar-with-dependencies 后缀的是带依赖的jar包</p>
+<p><img src="/images/blog/2020-01-02-2.png" alt></p>
+<p>这里选择将其上传到服务器上运行 <code>java -jar cdhAgent-1.0-SNAPSHOT-jar-with-dependencies.jar</code></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/qq_27252133/article/details/82750599" target="_blank" rel="noopener">使用maven-assembly-plugin插件打包</a></li>
+<li><a href="https://blog.csdn.net/qq_16038125/article/details/60168389" target="_blank" rel="noopener">构建工具-Maven-使用maven-assembly-plugin将依赖打包进jar并指定JDK版本</a></li>
+<li><a href="https://www.cnblogs.com/binhua-liu/p/5604841.html" target="_blank" rel="noopener">如何配置pom.xml用maven打包java工程</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Tools</category>
       </categories>
   </entry>
   <entry>
@@ -1818,17 +1818,6 @@
       </categories>
   </entry>
   <entry>
-    <title>牛逼的 Bitmap 算法</title>
-    <url>/2019/12/09/bitmap/</url>
-    <content><![CDATA[<p>牛逼的 Bitmap 算法</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前就知道位图很牛逼，感兴趣的可以看玻璃猫的文章<a href="https://mp.weixin.qq.com/s/XqRYoSmRFguVgdGx9WvPDQ" target="_blank" rel="noopener">【漫画】牛逼的Bitmap算法</a>，我只是个技术搬运工</p>
-]]></content>
-      <categories>
-        <category>Algorithm</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Cloudera Manager 中 Event Server 报 No such file or directory</title>
     <url>/2019/12/09/CM-Event-Server-NoSuchFileOrDirectory/</url>
     <content><![CDATA[<p>Cloudera Manager 中 Event Server 报 No such file or directory</p>
@@ -1847,6 +1836,17 @@
 ]]></content>
       <categories>
         <category>CDH</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>牛逼的 Bitmap 算法</title>
+    <url>/2019/12/09/bitmap/</url>
+    <content><![CDATA[<p>牛逼的 Bitmap 算法</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前就知道位图很牛逼，感兴趣的可以看玻璃猫的文章<a href="https://mp.weixin.qq.com/s/XqRYoSmRFguVgdGx9WvPDQ" target="_blank" rel="noopener">【漫画】牛逼的Bitmap算法</a>，我只是个技术搬运工</p>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
       </categories>
   </entry>
   <entry>
@@ -2459,6 +2459,35 @@
       </categories>
   </entry>
   <entry>
+    <title>元数据逆向修复原理</title>
+    <url>/2019/11/13/HBase-fix-meta/</url>
+    <content><![CDATA[<p>HBase运维基础之元数据逆向修复原理</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>大好的晚上时光肯定是用来学习的。</p>
+<h4 id="心得"><a href="#心得" class="headerlink" title="心得"></a>心得</h4><p>回顾<a href="https://mp.weixin.qq.com/s/yt4X2tDQrLx35NsviRHbPg" target="_blank" rel="noopener">HBase运维基础——元数据逆向修复原理</a>读了一遍，第一次读看的云里雾里的，<br>一年后再读果然相对容易多了。</p>
+<p>hbck 工具历来都是 HBase 线上运维大杀器，修复的过程得谨慎避免异常</p>
+<p>不过在 hbase2.0+ 以后 hbck 的所有修复功能全都不支持, 执行 <code>hbase hbck -help</code> 可见下图</p>
+<p><img src="/images/blog/2019-12-20-2.png" alt></p>
+<p>OfflineMetaRepair 工具未使用过，怀疑 2.x 估计不支持了，看源码验证了下</p>
+<p><img src="/images/blog/2019-11-13-3.png" alt></p>
+<p>科学上网后发现 hbase2.0+ 提供了一个叫 hbck2 工具，文章中的问题其实可以用 hbck2 解决的，亲测可以可用<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></p>
+<ul>
+<li><a href="https://yq.aliyun.com/articles/738176" target="_blank" rel="noopener">HBase 2.0.0 META 数据修复工具</a></li>
+<li><a href="https://www.jianshu.com/p/19bb8f7ff38c" target="_blank" rel="noopener">HBase 2.0 META 数据修复</a></li>
+</ul>
+<p>在 HBCK2 中找到 <a href="https://github.com/apache/hbase-operator-tools/blob/master/hbase-hbck2/src/main/java/org/apache/hbase/hbck1/OfflineMetaRepair.java" target="_blank" rel="noopener">OfflineMetaRepair 工具</a>，原来是将其添加到 hbase-operator-tools 中</p>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>在 hbase-operator-tools 中有关于 hbase:meta 表重建的介绍</p>
+<ul>
+<li>Online hbase:meta rebuild recipe</li>
+<li>Detailed rebuild recipe</li>
+</ul>
+<p>更多参阅<a href="https://github.com/apache/hbase-operator-tools/tree/master/hbase-hbck2#missing-regions-in-hbasemeta-regiontable-restorerebuild" target="_blank" rel="noopener">Missing Regions in hbase:meta region/table restore/rebuild</a> 到 <a href="https://github.com/apache/hbase-operator-tools/tree/master/hbase-hbck2#detailed-rebuild-recipe" target="_blank" rel="noopener">Detailed rebuild recipe</a> 部分</p>
+]]></content>
+      <categories>
+        <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
     <title>HDFS 安全模式</title>
     <url>/2019/11/13/hdfs-SafeMode/</url>
     <content><![CDATA[<p>Hadoop 安全模式 Safe mode</p>
@@ -2503,35 +2532,6 @@
 ]]></content>
       <categories>
         <category>HDFS</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>元数据逆向修复原理</title>
-    <url>/2019/11/13/HBase-fix-meta/</url>
-    <content><![CDATA[<p>HBase运维基础之元数据逆向修复原理</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>大好的晚上时光肯定是用来学习的。</p>
-<h4 id="心得"><a href="#心得" class="headerlink" title="心得"></a>心得</h4><p>回顾<a href="https://mp.weixin.qq.com/s/yt4X2tDQrLx35NsviRHbPg" target="_blank" rel="noopener">HBase运维基础——元数据逆向修复原理</a>读了一遍，第一次读看的云里雾里的，<br>一年后再读果然相对容易多了。</p>
-<p>hbck 工具历来都是 HBase 线上运维大杀器，修复的过程得谨慎避免异常</p>
-<p>不过在 hbase2.0+ 以后 hbck 的所有修复功能全都不支持, 执行 <code>hbase hbck -help</code> 可见下图</p>
-<p><img src="/images/blog/2019-12-20-2.png" alt></p>
-<p>OfflineMetaRepair 工具未使用过，怀疑 2.x 估计不支持了，看源码验证了下</p>
-<p><img src="/images/blog/2019-11-13-3.png" alt></p>
-<p>科学上网后发现 hbase2.0+ 提供了一个叫 hbck2 工具，文章中的问题其实可以用 hbck2 解决的，亲测可以可用<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></p>
-<ul>
-<li><a href="https://yq.aliyun.com/articles/738176" target="_blank" rel="noopener">HBase 2.0.0 META 数据修复工具</a></li>
-<li><a href="https://www.jianshu.com/p/19bb8f7ff38c" target="_blank" rel="noopener">HBase 2.0 META 数据修复</a></li>
-</ul>
-<p>在 HBCK2 中找到 <a href="https://github.com/apache/hbase-operator-tools/blob/master/hbase-hbck2/src/main/java/org/apache/hbase/hbck1/OfflineMetaRepair.java" target="_blank" rel="noopener">OfflineMetaRepair 工具</a>，原来是将其添加到 hbase-operator-tools 中</p>
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>在 hbase-operator-tools 中有关于 hbase:meta 表重建的介绍</p>
-<ul>
-<li>Online hbase:meta rebuild recipe</li>
-<li>Detailed rebuild recipe</li>
-</ul>
-<p>更多参阅<a href="https://github.com/apache/hbase-operator-tools/tree/master/hbase-hbck2#missing-regions-in-hbasemeta-regiontable-restorerebuild" target="_blank" rel="noopener">Missing Regions in hbase:meta region/table restore/rebuild</a> 到 <a href="https://github.com/apache/hbase-operator-tools/tree/master/hbase-hbck2#detailed-rebuild-recipe" target="_blank" rel="noopener">Detailed rebuild recipe</a> 部分</p>
-]]></content>
-      <categories>
-        <category>HBase</category>
       </categories>
   </entry>
   <entry>
@@ -2711,83 +2711,6 @@
       </categories>
   </entry>
   <entry>
-    <title>JVM 堆内存 heap 详解</title>
-    <url>/2019/11/04/Java-heap/</url>
-    <content><![CDATA[<p>JAVA堆内存管理是影响性能主要因素之一</p>
-<hr>
-<h4 id="堆划分"><a href="#堆划分" class="headerlink" title="堆划分"></a>堆划分</h4><p><img src="/images/blog/2019-11-05-1.png" alt></p>
-<ul>
-<li>JVM内存划分为堆内存和非堆内存，堆内存分为年轻代（Young Generation）、老年代（Old Generation），非堆内存就一个永久代（Permanent Generation）</li>
-<li>年轻代又分为 Eden 和 Survivor 区。Survivor区由 FromSpace 和 ToSpace 组成。Eden区占大容量，Survivor 两个区占小容量，默认比例是8:1:1</li>
-<li>堆内存用途: 存放的是对象，垃圾收集器就是收集这些对象，然后根据GC算法回收</li>
-<li>非堆内存用途: 永久代，也称为方法区，存储程序运行时长期存活的对象，比如类的元数据、方法、常量、属性等</li>
-</ul>
-<blockquote>
-<p>年轻代（New）: 年轻代用来存放JVM刚分配的Java对象<br>年老代（Tenured）: 年轻代中经过垃圾回收没有回收掉的对象将被Copy到年老代<br>永久代（Perm）: 永久代存放Class、Method元信息，其大小跟项目的规模、类、方法的量有关，一般设置为128M就足够，设置原则是预留30%的空间</p>
-</blockquote>
-<p><strong>在JDK1.8版本废弃了永久代，替代的是元空间（MetaSpace），元空间与永久代上类似，都是方法区的实现，他们最大区别是：元空间并不在JVM中，而是使用本地内存。</strong></p>
-<p>永久代有两个参数</p>
-<ul>
-<li>-XX:PermSize: 永久代初始大小</li>
-<li>-XX:MaxPermSize: 永久代最大允许大小</li>
-</ul>
-<p>元空间也有两个参数: </p>
-<ul>
-<li>-XX:MetaspaceSize: 初始化元空间大小，控制发生GC阈值</li>
-<li>-XX:MaxMetaspaceSize: 限制元空间大小上限，防止异常占用过多物理内存</li>
-</ul>
-<h4 id="堆内存溢出"><a href="#堆内存溢出" class="headerlink" title="堆内存溢出"></a>堆内存溢出</h4><p>在年轻代中经过GC后还存活的对象会被复制到老年代中。当老年代空间不足时，JVM会对老年代进行完全的垃圾回收（Full GC）</p>
-<p>如果GC后，还是无法存放从Survivor区复制过来的对象，就会出现OOM（Out of Memory）</p>
-<p>OOM（Out of Memory）异常常见有以下几个原因</p>
-<ul>
-<li>老年代内存不足: java.lang.OutOfMemoryError:Javaheapspace</li>
-<li>永久代内存不足: java.lang.OutOfMemoryError:PermGenspace</li>
-<li>代码bug，占用内存无法及时回收</li>
-</ul>
-<p>OOM在这几个内存区都有可能出现，实际遇到OOM时，能根据异常信息定位到哪个区的内存溢出</p>
-<p>可以通过添加个参数-XX:+HeapDumpOnOutMemoryError，让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便事后分析。 -XX:HeapDumpPath=${目录} 表示生成DUMP文件的路径，也可以指定文件名称，例-XX:HeapDumpPath=${目录}/java_heapdump.hprof</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/UncleWang001/articles/10422289.html" target="_blank" rel="noopener">JVM堆内存(heap)详解</a></li>
-<li><a href="https://juejin.im/post/5b8d2a5551882542ba1ddcf8" target="_blank" rel="noopener">JVM 系列文章之 Full GC 和 Minor GC</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>JVM</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>yum update操作导致系统版本升级</title>
-    <url>/2019/11/04/yum-upgrade-update/</url>
-    <content><![CDATA[<p>CentOS 下的 yum upgrade和 yum update区别</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>虚拟机初始化时是 CentOs7.6 的版本，在搭建CDH的时候查看系统版本突然发现变成 7.7</p>
-<p>这之间发生了些奇怪的事</p>
-<h4 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h4><p>原来是跟yum update有关</p>
-<blockquote>
-<ul>
-<li>yum update: 升级所有包同时也升级软件和系统内核</li>
-<li>yum upgrade: 只升级所有包，不升级软件和系统内核</li>
-</ul>
-</blockquote>
-<h4 id="测试样例"><a href="#测试样例" class="headerlink" title="测试样例"></a>测试样例</h4><p>升级前</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">系统版本： centos5.5</span><br><span class="line">内核版本： 2.6.18-194.el5</span><br></pre></td></tr></table></figure>
-
-<p>yum upgrade 升级后，只升级所有包，不升级软件和系统内核</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">系统版本： centos5.7</span><br><span class="line">内核版本： 2.6.18-194.el5</span><br></pre></td></tr></table></figure>
-
-<p>yum update 升级后，升级所有包同时也升级软件和系统内核</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">系统版本： centos5.7</span><br><span class="line">内核版本： 2.6.18-238.el5</span><br></pre></td></tr></table></figure>
-
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>生产环境对软件版本和内核版本要求非常精确，别没事有事随便的进行yum update操作！</p>
-<p>CentOS下的yum upgrade和yum update区别，没事别乱用，和Ubuntu的update不一样！</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
     <title>CDH 6.3.1 安装</title>
     <url>/2019/11/04/CDH-6.3.1/</url>
     <content><![CDATA[<p>CDH 6.3.1 安装</p>
@@ -2956,6 +2879,83 @@
       </categories>
   </entry>
   <entry>
+    <title>yum update操作导致系统版本升级</title>
+    <url>/2019/11/04/yum-upgrade-update/</url>
+    <content><![CDATA[<p>CentOS 下的 yum upgrade和 yum update区别</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>虚拟机初始化时是 CentOs7.6 的版本，在搭建CDH的时候查看系统版本突然发现变成 7.7</p>
+<p>这之间发生了些奇怪的事</p>
+<h4 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h4><p>原来是跟yum update有关</p>
+<blockquote>
+<ul>
+<li>yum update: 升级所有包同时也升级软件和系统内核</li>
+<li>yum upgrade: 只升级所有包，不升级软件和系统内核</li>
+</ul>
+</blockquote>
+<h4 id="测试样例"><a href="#测试样例" class="headerlink" title="测试样例"></a>测试样例</h4><p>升级前</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">系统版本： centos5.5</span><br><span class="line">内核版本： 2.6.18-194.el5</span><br></pre></td></tr></table></figure>
+
+<p>yum upgrade 升级后，只升级所有包，不升级软件和系统内核</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">系统版本： centos5.7</span><br><span class="line">内核版本： 2.6.18-194.el5</span><br></pre></td></tr></table></figure>
+
+<p>yum update 升级后，升级所有包同时也升级软件和系统内核</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">系统版本： centos5.7</span><br><span class="line">内核版本： 2.6.18-238.el5</span><br></pre></td></tr></table></figure>
+
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>生产环境对软件版本和内核版本要求非常精确，别没事有事随便的进行yum update操作！</p>
+<p>CentOS下的yum upgrade和yum update区别，没事别乱用，和Ubuntu的update不一样！</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>JVM 堆内存 heap 详解</title>
+    <url>/2019/11/04/Java-heap/</url>
+    <content><![CDATA[<p>JAVA堆内存管理是影响性能主要因素之一</p>
+<hr>
+<h4 id="堆划分"><a href="#堆划分" class="headerlink" title="堆划分"></a>堆划分</h4><p><img src="/images/blog/2019-11-05-1.png" alt></p>
+<ul>
+<li>JVM内存划分为堆内存和非堆内存，堆内存分为年轻代（Young Generation）、老年代（Old Generation），非堆内存就一个永久代（Permanent Generation）</li>
+<li>年轻代又分为 Eden 和 Survivor 区。Survivor区由 FromSpace 和 ToSpace 组成。Eden区占大容量，Survivor 两个区占小容量，默认比例是8:1:1</li>
+<li>堆内存用途: 存放的是对象，垃圾收集器就是收集这些对象，然后根据GC算法回收</li>
+<li>非堆内存用途: 永久代，也称为方法区，存储程序运行时长期存活的对象，比如类的元数据、方法、常量、属性等</li>
+</ul>
+<blockquote>
+<p>年轻代（New）: 年轻代用来存放JVM刚分配的Java对象<br>年老代（Tenured）: 年轻代中经过垃圾回收没有回收掉的对象将被Copy到年老代<br>永久代（Perm）: 永久代存放Class、Method元信息，其大小跟项目的规模、类、方法的量有关，一般设置为128M就足够，设置原则是预留30%的空间</p>
+</blockquote>
+<p><strong>在JDK1.8版本废弃了永久代，替代的是元空间（MetaSpace），元空间与永久代上类似，都是方法区的实现，他们最大区别是：元空间并不在JVM中，而是使用本地内存。</strong></p>
+<p>永久代有两个参数</p>
+<ul>
+<li>-XX:PermSize: 永久代初始大小</li>
+<li>-XX:MaxPermSize: 永久代最大允许大小</li>
+</ul>
+<p>元空间也有两个参数: </p>
+<ul>
+<li>-XX:MetaspaceSize: 初始化元空间大小，控制发生GC阈值</li>
+<li>-XX:MaxMetaspaceSize: 限制元空间大小上限，防止异常占用过多物理内存</li>
+</ul>
+<h4 id="堆内存溢出"><a href="#堆内存溢出" class="headerlink" title="堆内存溢出"></a>堆内存溢出</h4><p>在年轻代中经过GC后还存活的对象会被复制到老年代中。当老年代空间不足时，JVM会对老年代进行完全的垃圾回收（Full GC）</p>
+<p>如果GC后，还是无法存放从Survivor区复制过来的对象，就会出现OOM（Out of Memory）</p>
+<p>OOM（Out of Memory）异常常见有以下几个原因</p>
+<ul>
+<li>老年代内存不足: java.lang.OutOfMemoryError:Javaheapspace</li>
+<li>永久代内存不足: java.lang.OutOfMemoryError:PermGenspace</li>
+<li>代码bug，占用内存无法及时回收</li>
+</ul>
+<p>OOM在这几个内存区都有可能出现，实际遇到OOM时，能根据异常信息定位到哪个区的内存溢出</p>
+<p>可以通过添加个参数-XX:+HeapDumpOnOutMemoryError，让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便事后分析。 -XX:HeapDumpPath=${目录} 表示生成DUMP文件的路径，也可以指定文件名称，例-XX:HeapDumpPath=${目录}/java_heapdump.hprof</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/UncleWang001/articles/10422289.html" target="_blank" rel="noopener">JVM堆内存(heap)详解</a></li>
+<li><a href="https://juejin.im/post/5b8d2a5551882542ba1ddcf8" target="_blank" rel="noopener">JVM 系列文章之 Full GC 和 Minor GC</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>JVM</category>
+      </categories>
+  </entry>
+  <entry>
     <title>CMS 原理及调优</title>
     <url>/2019/10/29/CMS/</url>
     <content><![CDATA[<p>CMS(Concurrent Mark and Swee 并发-标记-清除)</p>
@@ -2981,13 +2981,9 @@
 </li>
 <li><p>永久代的使用率达到阈值 CMSInitiatingPermOccupancyFraction，默认92%，前提是开启 CMSClassUnloadingEnabled</p>
 </li>
-<li><p>新生代的晋升担保失败</p>
+<li><p>新生代的晋升担保失败(晋升担保失败触发Full GC)</p>
 </li>
 </ol>
-<p><strong>晋升担保失败</strong></p>
-<p>分配担保规则为只要老年代的连续空间大于新生代对象总大小或者历次晋升的平均大小就会进行Minor GC，否则将进行Full GC (这里的Full GC可以理解成Old GC，而CMS就是Old GC，所以对应的就是进行CMS GC，即周期性old GC)</p>
-<p><img src="/images/blog/2019-10-29-5.png" alt></p>
-<p>即图中绿色框部分</p>
 <h6 id="新生代垃圾回收"><a href="#新生代垃圾回收" class="headerlink" title="新生代垃圾回收"></a>新生代垃圾回收</h6><p>能与CMS搭配使用的新生代垃圾收集器有Serial收集器和ParNew收集器。这2个收集器都采用标记复制算法，都会触发STW事件，停止所有的应用线程。</p>
 <p>不同之处在于，Serial是单线程执行，ParNew是多线程执行</p>
 <p><img src="/images/blog/2019-10-29-1.png" alt></p>
@@ -3018,7 +3014,7 @@
 </li>
 <li><p>执行了System.gc()，前提是没有参数ExplicitGCInvokesConcurrent，也会进行压缩</p>
 </li>
-<li><p>Young GC 过程中发生 promotion failure </p>
+<li><p>Young GC 过程中发生 promotion failure</p>
 </li>
 </ol>
 <p>带压缩动作的算法，称为MSC，标记-清理-压缩，采用单线程，全暂停的方式进行垃圾收集，暂停时间很长很长</p>
@@ -3046,6 +3042,7 @@
 </ul>
 <p>发生 promotion failed 会有什么后果？就是紧接着触发concurrent mode failure</p>
 <p><code>concurrent mode failure</code>在执行 CMS GC 的过程中预留的内存空间不足以保存对象，这会导致 Concurrent Mode Failure 失败，这时会启用 Serial Old 收集器来重新进行老年代的收集。为什么CMS GC会有对象进入老年代？<br>因为存在可能业务线程会将大对象放入老年代，而此时老年代空间不足；或者 promotion failed 导致的对象晋升，而此时老年代空间不足或老年代空间足够，但存在大量碎片。 </p>
+<p>当出现<code>concurrent mode failure</code>的现象时，就意味着此时JVM将继续采用 Stop-The-World 的方式来进行 Full GC，Full GC 会启用 Serial Old 收集器， Serial Old 收集器是单线程收集器，这样就会导致 STW 更长</p>
 <p><code>concurrent mode interrupted</code> 是由于外部因素触发了 full gc，比如执行了System.gc()</p>
 <p>并发模式失败和晋升失败都会导致长时间的停顿，常见解决思路如下</p>
 <ul>
@@ -3059,6 +3056,7 @@
 <h4 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h4><p>周期性的CMS（background）只会回收老年代，除了周期性的进行GC之外，还有一些紧急情况，需要主动触发GC（foreground），主动触发的GC会连带一次Minor GC，所以也称为Full GC。主动触发的GC是会暂停所有用户现场的，俗称stop the world（STW）。</p>
 <p>在那些没有实现CMS的老虚拟机或者没有开启CMS的虚拟机中，每一次Old GC都是Full GC，且会STW，当然因为除了CMS之外，其他的老年代回收算法都是采用标记-整理的方式，所以肯定也是压缩的，。</p>
 <p>如果正在进行CMS回收，又触发了一次Full GC，则Full GC会抢占回收执行机会，停止CMS，采用Serial Old或Parallel Old这些采用标记-整理算法的GC方式（CMS采用的是标记-清理算法）进行Full GC</p>
+<p>在 JDK 9 中 CMS GC 被废弃后，现有应用程序的最佳处理方法是什么？感兴趣可以参阅<a href="https://mp.weixin.qq.com/s/i-MDolxTNGDWRB9Z_pq8rg" target="_blank" rel="noopener">CMS 被废弃了，该怎么办呢？</a></p>
 <hr>
 <p>参考链接</p>
 <ul>
@@ -3240,7 +3238,7 @@
 <h4 id="内存分配策略"><a href="#内存分配策略" class="headerlink" title="内存分配策略"></a>内存分配策略</h4><p>Java提供的自动内存管理，可以归结为解决了对象的内存分配和回收的问题，前面已经介绍了内存回收，下面介绍几条最普遍的内存分配策略</p>
 <p><img src="/images/blog/2020-02-10-1.png" alt></p>
 <ul>
-<li><p><strong>对象优先在Eden区分配</strong><br>大多数情况下，对象在先新生代Eden区中分配。当Eden区没有足够空间进行分配时，虚拟机将发起一次[^Young GC]:Minor GC</p>
+<li><p><strong>对象优先在Eden区分配</strong><br>大多数情况下，对象在先新生代Eden区中分配。当Eden区没有足够空间进行分配时，虚拟机将发起一次Young GC</p>
 </li>
 <li><p><strong>大对象之间进入老年代</strong><br>JVM提供了一个对象大小阈值参数(-XX:PretenureSizeThreshold，默认值为0，代表不管多大都是先在Eden中分配内存)，大于参数设置的阈值值的对象直接在老年代分配，这样可以避免对象在Eden及两个Survivor直接发生大内存复制</p>
 </li>
@@ -3330,41 +3328,6 @@
       </categories>
   </entry>
   <entry>
-    <title>HMaster 由于 MasterProcWals 过多导致启动选主超时</title>
-    <url>/2019/09/17/HBase-Master-Selection-timeout/</url>
-    <content><![CDATA[<p>由 MasterProcWals 状态日志过多导致的HBase Master重启失败问题</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于 Kylin 业务迁移后， Master 日志中仍然报出 Kylin 相关表的合并日志，因此对 HBase 进行滚动重启，发现重启主 Master 后发生选主超时</p>
-<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>CM 页面显示未发现有活动的 Master 并有红色告警提示</p>
-<p>但在 zookeeper 中 get /hbase/master 发现 100.106.37.5 的 master 选主已经成功</p>
-<p>查看对应日志发现一直刷如下信息</p>
-<p><img src="/images/blog/2019-09-17-6.png" alt></p>
-<p>去 HDFS 查看该路径下有接近 20000 个这样的日志文件，且单副本达到了300余G的大小</p>
-<p>同时根据已知 Master 进入活动状态需要读取并实例化所有正在运行的程序当前记录在 /hbase/MasterProcWALs/ 目录下对应的文件。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">MasterProcWAL: HMaster记录管理操作，比如解决冲突的服务器，表创建和其它DDLs等操作到它的WAL文件中，</span><br><span class="line">这个WALs存储在MasterProcWALs目录下，它不像RegionServer的WALs，HMaster的WAL也支持弹性操作，</span><br><span class="line">就是如果Master服务器挂了，其它的Master接管的时候继续操作这个文件。</span><br></pre></td></tr></table></figure>
-
-<p>因此推断是由于 MasterProcWA 日志文件太大太多，回放时间超过了 Master 选主时间</p>
-<p>等2万个日志文件刷完以后，Master 报如下错误</p>
-<p><img src="/images/blog/2019-09-18-1.png" alt></p>
-<p>再过 900000ms 这么长时间继续报该错误</p>
-<h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>根据日志和<a href="https://cloud.tencent.com/developer/article/1349438" target="_blank" rel="noopener">由MasterProcWals状态日志过多导致的HBase Master重启失败问题</a>猜测<br>可能是一个Bug</p>
-<p>move /hbase/MasterProcWALs 目录下的所有文件，重启 HBase Master 解决问题。</p>
-<p>重启 HBase 观察日志发现已经正常刷 Region 信息日志</p>
-<p><img src="/images/blog/2019-09-18-2.png" alt></p>
-<p>去 HBase Shell 中操作，报错ERROR：master is initializing，please wait（在这之前，没有移动 MasterProcWALs 日志 选主超时的时候，此时报错为ERRAOR：master server not running yet），证明已经重启成功，大概五分钟之后，Master 选主成功，CM页面告消失，HBase Shell 能够正常操作</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>从这次事故以后 MasterProcWals 状态日志就没有过多的情况了。</p>
-<p>据 Fayson 大神说该问题主要和HBase某个分支的实现方式有关，据说已经重新设计了该实现方式，新的实现方式能够避免该问题，将在CDH 6中应用。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://cloud.tencent.com/developer/article/1349438" target="_blank" rel="noopener">由MasterProcWals状态日志过多导致的HBase Master重启失败问题</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HBase 误删表恢复</title>
     <url>/2019/09/17/HBase-wrong-deletion-table/</url>
     <content><![CDATA[<p>HBase 误删表</p>
@@ -3418,6 +3381,41 @@
       </categories>
   </entry>
   <entry>
+    <title>HMaster 由于 MasterProcWals 过多导致启动选主超时</title>
+    <url>/2019/09/17/HBase-Master-Selection-timeout/</url>
+    <content><![CDATA[<p>由 MasterProcWals 状态日志过多导致的HBase Master重启失败问题</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>由于 Kylin 业务迁移后， Master 日志中仍然报出 Kylin 相关表的合并日志，因此对 HBase 进行滚动重启，发现重启主 Master 后发生选主超时</p>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>CM 页面显示未发现有活动的 Master 并有红色告警提示</p>
+<p>但在 zookeeper 中 get /hbase/master 发现 100.106.37.5 的 master 选主已经成功</p>
+<p>查看对应日志发现一直刷如下信息</p>
+<p><img src="/images/blog/2019-09-17-6.png" alt></p>
+<p>去 HDFS 查看该路径下有接近 20000 个这样的日志文件，且单副本达到了300余G的大小</p>
+<p>同时根据已知 Master 进入活动状态需要读取并实例化所有正在运行的程序当前记录在 /hbase/MasterProcWALs/ 目录下对应的文件。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">MasterProcWAL: HMaster记录管理操作，比如解决冲突的服务器，表创建和其它DDLs等操作到它的WAL文件中，</span><br><span class="line">这个WALs存储在MasterProcWALs目录下，它不像RegionServer的WALs，HMaster的WAL也支持弹性操作，</span><br><span class="line">就是如果Master服务器挂了，其它的Master接管的时候继续操作这个文件。</span><br></pre></td></tr></table></figure>
+
+<p>因此推断是由于 MasterProcWA 日志文件太大太多，回放时间超过了 Master 选主时间</p>
+<p>等2万个日志文件刷完以后，Master 报如下错误</p>
+<p><img src="/images/blog/2019-09-18-1.png" alt></p>
+<p>再过 900000ms 这么长时间继续报该错误</p>
+<h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>根据日志和<a href="https://cloud.tencent.com/developer/article/1349438" target="_blank" rel="noopener">由MasterProcWals状态日志过多导致的HBase Master重启失败问题</a>猜测<br>可能是一个Bug</p>
+<p>move /hbase/MasterProcWALs 目录下的所有文件，重启 HBase Master 解决问题。</p>
+<p>重启 HBase 观察日志发现已经正常刷 Region 信息日志</p>
+<p><img src="/images/blog/2019-09-18-2.png" alt></p>
+<p>去 HBase Shell 中操作，报错ERROR：master is initializing，please wait（在这之前，没有移动 MasterProcWALs 日志 选主超时的时候，此时报错为ERRAOR：master server not running yet），证明已经重启成功，大概五分钟之后，Master 选主成功，CM页面告消失，HBase Shell 能够正常操作</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>从这次事故以后 MasterProcWals 状态日志就没有过多的情况了。</p>
+<p>据 Fayson 大神说该问题主要和HBase某个分支的实现方式有关，据说已经重新设计了该实现方式，新的实现方式能够避免该问题，将在CDH 6中应用。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://cloud.tencent.com/developer/article/1349438" target="_blank" rel="noopener">由MasterProcWals状态日志过多导致的HBase Master重启失败问题</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
     <title>HMaster 定期清理 archive</title>
     <url>/2019/09/16/HMaster-clean-archive/</url>
     <content><![CDATA[<p>HFileCleaner 定期清理 archive 下的文件</p>
@@ -3453,54 +3451,6 @@
 ]]></content>
       <categories>
         <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Flink connector</title>
-    <url>/2019/09/01/Flink-Connector/</url>
-    <content><![CDATA[<p>Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Flink 是新一代流批统一的计算引擎，它需要从不同的第三方存储引擎中把数据读过来，进行处理，然后再写出到另外的存储引擎中。Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
-<p>Flink 里有以下几种方式，当然也不限于这几种方式可以跟外界进行数据交换</p>
-<ul>
-<li>Flink 里面预定义了一些 source 和 sink</li>
-<li>Flink 内部也提供了一些 Boundled connectors</li>
-<li>使用第三方 Apache Bahir 项目中提供的连接器</li>
-<li>通过异步 IO 方式</li>
-</ul>
-<h4 id="预定义的-source-和-sink"><a href="#预定义的-source-和-sink" class="headerlink" title="预定义的 source 和 sink"></a>预定义的 source 和 sink</h4><p>Flink 里预定义了一部分 source 和 sink。</p>
-<p><img src="/images/blog/2019-09-01-1.png" alt></p>
-<p><strong>基于文件的 source 和 sink</strong></p>
-<p>如果要从文本文件中读取数据，可以直接使用</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readTextFile(path)</span><br></pre></td></tr></table></figure>
-
-<p>就可以以文本的形式读取该文件中的内容。当然也可以使用</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readFile(fileInputFormat, path)</span><br></pre></td></tr></table></figure>
-
-<p>根据指定的 fileInputFormat 格式读取文件中的内容</p>
-<p>如果数据在 Flink 内进行了一系列的计算，想把结果写出到文件里，也可以直接使用内部预定义的一些 sink，<br>比如将结果已文本或 csv 格式写出到文件中，可以使用 DataStream 的 writeAsText(path) 和<br>writeAsCsv(path)</p>
-<p><strong>基于 Socket 的 Source 和 Sink</strong></p>
-<p>提供 Socket 的 host name 及 port，可以直接用 StreamExecutionEnvironment 预定的接口<br>socketTextStream 创建基于 Socket 的 source，从该 socket 中以文本的形式读取数据。<br>当然如果想把结果写出到另外一个 Socket，也可以直接调用 DataStream writeToSocket。</p>
-<p><strong>基于内存 Collections、Iterators 的 Source</strong></p>
-<p>可以直接基于内存中的集合或者迭代器，调用 StreamExecutionEnvironment fromCollection、fromElements 构建相应的 source。结果数据也可以直接 print、printToError 的方式写出到标准输出或标准错误。</p>
-<p>详细也可以参考 Flink 源码中提供的一些相对应的 Examples 来查看异常预定义 source 和 sink 的使用方法，例如 WordCount、SocketWindowWordCount。</p>
-<h4 id="Bundled-Connectors"><a href="#Bundled-Connectors" class="headerlink" title="Bundled Connectors"></a>Bundled Connectors</h4><p>Flink 里已经提供了一些绑定的 Connector，例如 kafka source 和 sink，Es sink等。读写 kafka、es、rabbitMQ 时可以直接使用相应 connector 的 api 即可。第二部分会详细介绍生产环境中最常用的 kafka connector。</p>
-<p>虽然该部分是 Flink 项目源代码里的一部分，但是真正意义上不算作 Flink 引擎相关逻辑，并且该部分没有打包在二进制的发布包里面。所以在提交 Job 时候需要注意， job 代码 jar 包中一定要将相应的 connetor 相关类打包进去，否则在提交作业时就会失败，提示找不到相应的类，或初始化某些类异常。</p>
-<p><img src="/images/blog/2019-09-01-2.png" alt></p>
-<h4 id="Apache-Bahir-中的连接器"><a href="#Apache-Bahir-中的连接器" class="headerlink" title="Apache Bahir 中的连接器"></a>Apache Bahir 中的连接器</h4><p>Apache Bahir 最初是从 Apache Spark 中独立出来项目提供，以提供不限于 Spark 相关的扩展/插件、连接器和其他可插入组件的实现。通过提供多样化的流连接器（streaming connectors）和 SQL 数据源扩展分析平台的覆盖面。如有需要写到 flume、redis 的需求的话，可以使用该项目提供的 connector。</p>
-<p><img src="/images/blog/2019-09-01-3.png" alt></p>
-<h4 id="Async-I-O"><a href="#Async-I-O" class="headerlink" title="Async I/O"></a>Async I/O</h4><p>流计算中经常需要与外部存储系统交互，比如需要关联 MySQL 中的某个表。一般来说，如果用同步 I/O 的方式，会造成系统中出现大的等待时间，影响吞吐和延迟。为了解决这个问题，异步 I/O 可以并发处理多个请求，提高吞吐，减少延迟。</p>
-<p>Async 的原理可参考<a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/dev/stream/asyncio.html" target="_blank" rel="noopener">官方文档</a></p>
-<p><img src="/images/blog/2019-09-01-4.png" alt></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://mp.weixin.qq.com/s/p-YKnKnEnLbRfW7dfKxrcw" target="_blank" rel="noopener">如何正确使用 Flink Connector？</a></li>
-<li><a href="https://github.com/flink-china/flink-training-course" target="_blank" rel="noopener">Flink 中文视频课程</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Flink</category>
       </categories>
   </entry>
   <entry>
@@ -3557,6 +3507,54 @@
 <li><a href="https://github.com/flink-china/flink-training-course" target="_blank" rel="noopener">Flink 中文视频课程</a></li>
 <li><a href="https://www.jianshu.com/p/f9d447a3c48f" target="_blank" rel="noopener">Flink Kafka Connector 详解</a></li>
 <li><a href="https://cloud.tencent.com/developer/article/1406134" target="_blank" rel="noopener">Apache-Flink深度解析-DataStream-Connectors之Kafka</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Flink</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Flink connector</title>
+    <url>/2019/09/01/Flink-Connector/</url>
+    <content><![CDATA[<p>Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Flink 是新一代流批统一的计算引擎，它需要从不同的第三方存储引擎中把数据读过来，进行处理，然后再写出到另外的存储引擎中。Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
+<p>Flink 里有以下几种方式，当然也不限于这几种方式可以跟外界进行数据交换</p>
+<ul>
+<li>Flink 里面预定义了一些 source 和 sink</li>
+<li>Flink 内部也提供了一些 Boundled connectors</li>
+<li>使用第三方 Apache Bahir 项目中提供的连接器</li>
+<li>通过异步 IO 方式</li>
+</ul>
+<h4 id="预定义的-source-和-sink"><a href="#预定义的-source-和-sink" class="headerlink" title="预定义的 source 和 sink"></a>预定义的 source 和 sink</h4><p>Flink 里预定义了一部分 source 和 sink。</p>
+<p><img src="/images/blog/2019-09-01-1.png" alt></p>
+<p><strong>基于文件的 source 和 sink</strong></p>
+<p>如果要从文本文件中读取数据，可以直接使用</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readTextFile(path)</span><br></pre></td></tr></table></figure>
+
+<p>就可以以文本的形式读取该文件中的内容。当然也可以使用</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readFile(fileInputFormat, path)</span><br></pre></td></tr></table></figure>
+
+<p>根据指定的 fileInputFormat 格式读取文件中的内容</p>
+<p>如果数据在 Flink 内进行了一系列的计算，想把结果写出到文件里，也可以直接使用内部预定义的一些 sink，<br>比如将结果已文本或 csv 格式写出到文件中，可以使用 DataStream 的 writeAsText(path) 和<br>writeAsCsv(path)</p>
+<p><strong>基于 Socket 的 Source 和 Sink</strong></p>
+<p>提供 Socket 的 host name 及 port，可以直接用 StreamExecutionEnvironment 预定的接口<br>socketTextStream 创建基于 Socket 的 source，从该 socket 中以文本的形式读取数据。<br>当然如果想把结果写出到另外一个 Socket，也可以直接调用 DataStream writeToSocket。</p>
+<p><strong>基于内存 Collections、Iterators 的 Source</strong></p>
+<p>可以直接基于内存中的集合或者迭代器，调用 StreamExecutionEnvironment fromCollection、fromElements 构建相应的 source。结果数据也可以直接 print、printToError 的方式写出到标准输出或标准错误。</p>
+<p>详细也可以参考 Flink 源码中提供的一些相对应的 Examples 来查看异常预定义 source 和 sink 的使用方法，例如 WordCount、SocketWindowWordCount。</p>
+<h4 id="Bundled-Connectors"><a href="#Bundled-Connectors" class="headerlink" title="Bundled Connectors"></a>Bundled Connectors</h4><p>Flink 里已经提供了一些绑定的 Connector，例如 kafka source 和 sink，Es sink等。读写 kafka、es、rabbitMQ 时可以直接使用相应 connector 的 api 即可。第二部分会详细介绍生产环境中最常用的 kafka connector。</p>
+<p>虽然该部分是 Flink 项目源代码里的一部分，但是真正意义上不算作 Flink 引擎相关逻辑，并且该部分没有打包在二进制的发布包里面。所以在提交 Job 时候需要注意， job 代码 jar 包中一定要将相应的 connetor 相关类打包进去，否则在提交作业时就会失败，提示找不到相应的类，或初始化某些类异常。</p>
+<p><img src="/images/blog/2019-09-01-2.png" alt></p>
+<h4 id="Apache-Bahir-中的连接器"><a href="#Apache-Bahir-中的连接器" class="headerlink" title="Apache Bahir 中的连接器"></a>Apache Bahir 中的连接器</h4><p>Apache Bahir 最初是从 Apache Spark 中独立出来项目提供，以提供不限于 Spark 相关的扩展/插件、连接器和其他可插入组件的实现。通过提供多样化的流连接器（streaming connectors）和 SQL 数据源扩展分析平台的覆盖面。如有需要写到 flume、redis 的需求的话，可以使用该项目提供的 connector。</p>
+<p><img src="/images/blog/2019-09-01-3.png" alt></p>
+<h4 id="Async-I-O"><a href="#Async-I-O" class="headerlink" title="Async I/O"></a>Async I/O</h4><p>流计算中经常需要与外部存储系统交互，比如需要关联 MySQL 中的某个表。一般来说，如果用同步 I/O 的方式，会造成系统中出现大的等待时间，影响吞吐和延迟。为了解决这个问题，异步 I/O 可以并发处理多个请求，提高吞吐，减少延迟。</p>
+<p>Async 的原理可参考<a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/dev/stream/asyncio.html" target="_blank" rel="noopener">官方文档</a></p>
+<p><img src="/images/blog/2019-09-01-4.png" alt></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/p-YKnKnEnLbRfW7dfKxrcw" target="_blank" rel="noopener">如何正确使用 Flink Connector？</a></li>
+<li><a href="https://github.com/flink-china/flink-training-course" target="_blank" rel="noopener">Flink 中文视频课程</a></li>
 </ul>
 ]]></content>
       <categories>
@@ -3629,6 +3627,55 @@
 <li><a href="https://blog.csdn.net/guotao15285007494/article/details/84135713" target="_blank" rel="noopener">Linux CPU使用率超过100%的原因</a></li>
 <li><a href="https://www.cnblogs.com/shengs/p/5148284.html" target="_blank" rel="noopener">性能分析Linux服务器CPU利用率</a></li>
 </ul>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Linux 内存</title>
+    <url>/2019/08/28/Linux-Memory/</url>
+    <content><![CDATA[<p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。阅读<a href="https://www.jellythink.com/archives/462" target="_blank" rel="noopener">Linux性能监测：内存篇</a></p>
+<h4 id="物理内存和虚拟内存"><a href="#物理内存和虚拟内存" class="headerlink" title="物理内存和虚拟内存"></a>物理内存和虚拟内存</h4><p>说到内存，我们都会说到物理内存和虚拟内存的</p>
+<p>物理内存就是真实的硬件设备，也就是咱们的内存条</p>
+<p>虚拟内存（Virtual Memory）是把计算机的内存空间扩展到硬盘，物理内存（RAM）和硬盘的一部分空间（SWAP）组合在一起作为虚拟内存为计算机提供了一个连贯的虚拟内存空间</p>
+<p>好处是我们拥有的内存“变多了”，可以运行更多、更大的程序，坏处是把部分硬盘当内存用整体性能受到影响，硬盘读写速度要比内存慢几个数量级，并且RAM和SWAP之间的交换增加了系统的负担</p>
+<p>需要记住的一点是Linux会在物理内存不足时，使用交换分区的虚拟内存</p>
+<p>关于虚拟内存更多跳转<a href="https://www.cnblogs.com/yitianyouyitian/p/9603390.html" target="_blank" rel="noopener">内存参数</a></p>
+<p>关于物理内存和虚拟内存的释放参阅<a href="https://www.cnblogs.com/bymo/p/7569281.html" target="_blank" rel="noopener">Linux 释放物理内存和虚拟内存</a></p>
+<p>物理内存释放有坑。。。。 <a href="http://www.51niux.com/?id=76" target="_blank" rel="noopener">Linux 清除内存中的cache</a> 内核2.6的版本执行上述的操作都没问题的，但是到了内核3系列，就不能执行echo 0 &gt;/proc/sys/vm/drop_caches的操作了，这是一个坑，重启才能改回去</p>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>请跳转阅读<a href="https://www.cnblogs.com/operationhome/p/10362776.html" target="_blank" rel="noopener">centos6 free 和 centos 7的free 的差异与对比</a></p>
+<p>free命令可以显示Linux系统中空闲的、已用的物理内存及swap内存，及被内核使用的buffer</p>
+<p>free命令习惯上有以下几种形式</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">free -k # 以KB为单位显示内存使用情况</span><br><span class="line">free -m # 以MB为单位显示内存使用情况</span><br><span class="line">free -g # 以GB为单位显示内存使用情况</span><br><span class="line">free -h # 以人类友好的方式显示内存使用情况</span><br></pre></td></tr></table></figure>
+
+<p>输入free -m时，系统就会输出以下内容</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# free -g</span><br><span class="line">             total       used       free     shared    buffers     cached</span><br><span class="line">Mem:            61         19         41          0          0         10</span><br><span class="line">-&#x2F;+ buffers&#x2F;cache:          8         52</span><br><span class="line">Swap:            4          0          4</span><br></pre></td></tr></table></figure>
+
+<p>输出解释<br>total: 内存总数，物理内存总数<br>used: 已经使用的内存数<br>free: 空闲的内存数<br>shared: 多个进程共享的内存总额<br>buffers: 缓冲内存数<br>cached: 缓存内存数<br>- buffers/cached: 应用使用内存数<br>+ buffers/cached: 应用可用内存数<br>Swap: 交换分区，虚拟内存  </p>
+<p>通过free命令查看机器空闲内存时，会发现free的值很小。<br>这主要是因为，在Linux系统中有这么一种思想，内存不用白不用，因此它尽可能的cache和buffer一些数据，以方便下次使用。<br>但实际上这些内存也是可以立刻拿来使用</p>
+<p>在使用free命令时，都是需要重点关注 <code>- buffers/cached</code>和 + <code>buffers/cached</code>。</p>
+<p>- buffers/cached，即used - buffers/cached，表示应用程序实际使用的内存<br>+ buffers/cached，即free + buffers/cached，表示理论上都可以被使用的内存    </p>
+<p>可见-buffers/cache反映的是被程序实实在在吃掉的内存，而+buffers/cache反映的是可以挪用的内存总数。</p>
+<h4 id="cache、buffer"><a href="#cache、buffer" class="headerlink" title="cache、buffer"></a>cache、buffer</h4><p>buffer和cache是两个在计算机技术中被用滥的名词，放在不通语境下会有不同的意义</p>
+<p>在Linux的内存管理中，这里的buffer指Linux内存的：Buffer cache。这里的cache指Linux内存中的：Page cache。翻译成中文可以叫做缓冲区缓存和页面缓存</p>
+<p><strong>cached</strong></p>
+<p>当程序启动的时候，Linux内核首先检查CPU的缓存和物理内存，如果数据已经在内存里就忽略，如果数据不在内存里就引起一个缺页中断（Page Fault），然后从硬盘读取缺页，并把缺页缓存到物理内存里。</p>
+<p>缺页中断可分为主缺页中断（Major Page Fault）和次缺页中断（Minor Page Fault），要从磁盘读取数据而产生的中断是主缺页中断；数据已经被读入内存并被缓存起来，但是没有向MMU注册的情况，操作系统只需要在MMU中注册相关页对应的物理地址即可，从内存缓存区中而不是直接从硬盘中读取数据而产生的中断是次缺页中断。</p>
+<p>内存缓存区起到了预读硬盘的作用，内核先在物理内存里寻找缺页，没有的话产生次缺页中断从内存缓存里找，如果还没有发现的话就从硬盘读取。</p>
+<p>这里说的内存缓存区即为cached，主要用于提升读取相关页面的效率，内核会将经常访问的页面放到cached中，这样就提高了页面的命中率，cached越大，命中率就越高，就减少了I/O读请求</p>
+<p>如果 cache 的值很大，说明cache住的文件数很多。如果频繁访问到的文件都能被cache住，那么磁盘的读IO 必会非常小</p>
+<p>所以cached是用来给文件做缓冲。cached直接用来记忆我们打开的文件</p>
+<p><strong>buffers</strong></p>
+<p>Buffer cache则主要是设计用来在系统对块设备进行读写的时候，对块进行数据缓存的系统来使用</p>
+<p>buffers 主要用于I/O写，将应用程序的多次零碎写事件，集中到一个缓冲区(即buffers)，然后再一次性写入磁盘中，这样就提高了写磁盘的效率</p>
+<blockquote>
+<p>来自马哥Linux运维对Buffer和Cache解读</p>
+<p>Cache（缓存）位于CPU与内存之间的临时存储器，缓存容量比内存小的多但交换速度比内存要快得多。Cache通过缓存文件数据块，解决CPU运算速度与内存读写速度不匹配的矛盾，提高CPU和内存之间的数据交换速度。Cache缓存越大，CPU处理速度越快。</p>
+<p>Buffer（缓冲）高速缓冲存储器，通过缓存磁盘（I/O设备）数据块，加快对磁盘上数据的访问，减少I/O，提高内存和硬盘（或其他I/O设备）之间的数据交换速度。Buffer是即将要被写入磁盘的，而Cache是被从磁盘中读出来的。</p>
+</blockquote>
 ]]></content>
       <categories>
         <category>Linux</category>
@@ -3715,55 +3762,6 @@
 <li><a href="https://www.jianshu.com/p/be05dc99c447" target="_blank" rel="noopener">网关（Gateway）</a></li>
 <li><a href="https://www.cnblogs.com/cjm123/p/8513939.html" target="_blank" rel="noopener">默认网关是多少</a></li>
 </ul>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Linux 内存</title>
-    <url>/2019/08/28/Linux-Memory/</url>
-    <content><![CDATA[<p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。阅读<a href="https://www.jellythink.com/archives/462" target="_blank" rel="noopener">Linux性能监测：内存篇</a></p>
-<h4 id="物理内存和虚拟内存"><a href="#物理内存和虚拟内存" class="headerlink" title="物理内存和虚拟内存"></a>物理内存和虚拟内存</h4><p>说到内存，我们都会说到物理内存和虚拟内存的</p>
-<p>物理内存就是真实的硬件设备，也就是咱们的内存条</p>
-<p>虚拟内存（Virtual Memory）是把计算机的内存空间扩展到硬盘，物理内存（RAM）和硬盘的一部分空间（SWAP）组合在一起作为虚拟内存为计算机提供了一个连贯的虚拟内存空间</p>
-<p>好处是我们拥有的内存“变多了”，可以运行更多、更大的程序，坏处是把部分硬盘当内存用整体性能受到影响，硬盘读写速度要比内存慢几个数量级，并且RAM和SWAP之间的交换增加了系统的负担</p>
-<p>需要记住的一点是Linux会在物理内存不足时，使用交换分区的虚拟内存</p>
-<p>关于虚拟内存更多跳转<a href="https://www.cnblogs.com/yitianyouyitian/p/9603390.html" target="_blank" rel="noopener">内存参数</a></p>
-<p>关于物理内存和虚拟内存的释放参阅<a href="https://www.cnblogs.com/bymo/p/7569281.html" target="_blank" rel="noopener">Linux 释放物理内存和虚拟内存</a></p>
-<p>物理内存释放有坑。。。。 <a href="http://www.51niux.com/?id=76" target="_blank" rel="noopener">Linux 清除内存中的cache</a> 内核2.6的版本执行上述的操作都没问题的，但是到了内核3系列，就不能执行echo 0 &gt;/proc/sys/vm/drop_caches的操作了，这是一个坑，重启才能改回去</p>
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>请跳转阅读<a href="https://www.cnblogs.com/operationhome/p/10362776.html" target="_blank" rel="noopener">centos6 free 和 centos 7的free 的差异与对比</a></p>
-<p>free命令可以显示Linux系统中空闲的、已用的物理内存及swap内存，及被内核使用的buffer</p>
-<p>free命令习惯上有以下几种形式</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">free -k # 以KB为单位显示内存使用情况</span><br><span class="line">free -m # 以MB为单位显示内存使用情况</span><br><span class="line">free -g # 以GB为单位显示内存使用情况</span><br><span class="line">free -h # 以人类友好的方式显示内存使用情况</span><br></pre></td></tr></table></figure>
-
-<p>输入free -m时，系统就会输出以下内容</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# free -g</span><br><span class="line">             total       used       free     shared    buffers     cached</span><br><span class="line">Mem:            61         19         41          0          0         10</span><br><span class="line">-&#x2F;+ buffers&#x2F;cache:          8         52</span><br><span class="line">Swap:            4          0          4</span><br></pre></td></tr></table></figure>
-
-<p>输出解释<br>total: 内存总数，物理内存总数<br>used: 已经使用的内存数<br>free: 空闲的内存数<br>shared: 多个进程共享的内存总额<br>buffers: 缓冲内存数<br>cached: 缓存内存数<br>- buffers/cached: 应用使用内存数<br>+ buffers/cached: 应用可用内存数<br>Swap: 交换分区，虚拟内存  </p>
-<p>通过free命令查看机器空闲内存时，会发现free的值很小。<br>这主要是因为，在Linux系统中有这么一种思想，内存不用白不用，因此它尽可能的cache和buffer一些数据，以方便下次使用。<br>但实际上这些内存也是可以立刻拿来使用</p>
-<p>在使用free命令时，都是需要重点关注 <code>- buffers/cached</code>和 + <code>buffers/cached</code>。</p>
-<p>- buffers/cached，即used - buffers/cached，表示应用程序实际使用的内存<br>+ buffers/cached，即free + buffers/cached，表示理论上都可以被使用的内存    </p>
-<p>可见-buffers/cache反映的是被程序实实在在吃掉的内存，而+buffers/cache反映的是可以挪用的内存总数。</p>
-<h4 id="cache、buffer"><a href="#cache、buffer" class="headerlink" title="cache、buffer"></a>cache、buffer</h4><p>buffer和cache是两个在计算机技术中被用滥的名词，放在不通语境下会有不同的意义</p>
-<p>在Linux的内存管理中，这里的buffer指Linux内存的：Buffer cache。这里的cache指Linux内存中的：Page cache。翻译成中文可以叫做缓冲区缓存和页面缓存</p>
-<p><strong>cached</strong></p>
-<p>当程序启动的时候，Linux内核首先检查CPU的缓存和物理内存，如果数据已经在内存里就忽略，如果数据不在内存里就引起一个缺页中断（Page Fault），然后从硬盘读取缺页，并把缺页缓存到物理内存里。</p>
-<p>缺页中断可分为主缺页中断（Major Page Fault）和次缺页中断（Minor Page Fault），要从磁盘读取数据而产生的中断是主缺页中断；数据已经被读入内存并被缓存起来，但是没有向MMU注册的情况，操作系统只需要在MMU中注册相关页对应的物理地址即可，从内存缓存区中而不是直接从硬盘中读取数据而产生的中断是次缺页中断。</p>
-<p>内存缓存区起到了预读硬盘的作用，内核先在物理内存里寻找缺页，没有的话产生次缺页中断从内存缓存里找，如果还没有发现的话就从硬盘读取。</p>
-<p>这里说的内存缓存区即为cached，主要用于提升读取相关页面的效率，内核会将经常访问的页面放到cached中，这样就提高了页面的命中率，cached越大，命中率就越高，就减少了I/O读请求</p>
-<p>如果 cache 的值很大，说明cache住的文件数很多。如果频繁访问到的文件都能被cache住，那么磁盘的读IO 必会非常小</p>
-<p>所以cached是用来给文件做缓冲。cached直接用来记忆我们打开的文件</p>
-<p><strong>buffers</strong></p>
-<p>Buffer cache则主要是设计用来在系统对块设备进行读写的时候，对块进行数据缓存的系统来使用</p>
-<p>buffers 主要用于I/O写，将应用程序的多次零碎写事件，集中到一个缓冲区(即buffers)，然后再一次性写入磁盘中，这样就提高了写磁盘的效率</p>
-<blockquote>
-<p>来自马哥Linux运维对Buffer和Cache解读</p>
-<p>Cache（缓存）位于CPU与内存之间的临时存储器，缓存容量比内存小的多但交换速度比内存要快得多。Cache通过缓存文件数据块，解决CPU运算速度与内存读写速度不匹配的矛盾，提高CPU和内存之间的数据交换速度。Cache缓存越大，CPU处理速度越快。</p>
-<p>Buffer（缓冲）高速缓冲存储器，通过缓存磁盘（I/O设备）数据块，加快对磁盘上数据的访问，减少I/O，提高内存和硬盘（或其他I/O设备）之间的数据交换速度。Buffer是即将要被写入磁盘的，而Cache是被从磁盘中读出来的。</p>
-</blockquote>
 ]]></content>
       <categories>
         <category>Linux</category>
@@ -3920,33 +3918,6 @@
       </categories>
   </entry>
   <entry>
-    <title>ulimit 未生效</title>
-    <url>/2019/08/16/ulimit-Invalid/</url>
-    <content><![CDATA[<p>ulimit 未生效</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在安装启动 elasticsearch 时遇些问题。</p>
-<p><code>max file descriptors [65535] for elasticsearch process is too low, increase to at least [65536]</code></p>
-<p>根据搜索到的资料<a href="https://www.jianshu.com/p/2285f1f8ec21" target="_blank" rel="noopener">elasticsearch启动常见的几个报错</a>，我尝试切换到root用户，编辑limits.conf添加如下内容</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
-
-<p>然后又切回普通账号来启动ES，发现还是报错。。(ES6.x之后为了安全只能普通账号启动)</p>
-<p>Orz，又开启了排查问题之路</p>
-<h4 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h4><p>在 root 账号下执行 <code>ulimit -n</code> 输出 128000</p>
-<p>但是我在 普通账号下执行 <code>ulimit -n</code> 输出 65535</p>
-<p>额。说明普通账号未生效，百思不解。</p>
-<p>尝试依靠搜索引擎寻求帮助，找到<a href="https://blog.csdn.net/weixin_34331102/article/details/92789331" target="_blank" rel="noopener">limits.conf不生效问题</a>也没解决问题</p>
-<p>寻求 Sa 同学帮忙之后了解到这个<code>/etc/security/limits.d/90-nofile.conf</code>文件设置会覆盖全局设置。</p>
-<p>将该文件进行修改</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.d&#x2F;90-nofile.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
-
-<p><code>ulimit -n</code> 再查看发现已修改</p>
-<p>完结、撒花</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Flink-Kafka 内置 Schemas</title>
     <url>/2019/08/16/Flink-Kafka-deserialization/</url>
     <content><![CDATA[<p>Apache Flink 内部提供了内置的常用消息格式的 Schemas</p>
@@ -3989,6 +3960,33 @@
 ]]></content>
       <categories>
         <category>Flink</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>ulimit 未生效</title>
+    <url>/2019/08/16/ulimit-Invalid/</url>
+    <content><![CDATA[<p>ulimit 未生效</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在安装启动 elasticsearch 时遇些问题。</p>
+<p><code>max file descriptors [65535] for elasticsearch process is too low, increase to at least [65536]</code></p>
+<p>根据搜索到的资料<a href="https://www.jianshu.com/p/2285f1f8ec21" target="_blank" rel="noopener">elasticsearch启动常见的几个报错</a>，我尝试切换到root用户，编辑limits.conf添加如下内容</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
+
+<p>然后又切回普通账号来启动ES，发现还是报错。。(ES6.x之后为了安全只能普通账号启动)</p>
+<p>Orz，又开启了排查问题之路</p>
+<h4 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h4><p>在 root 账号下执行 <code>ulimit -n</code> 输出 128000</p>
+<p>但是我在 普通账号下执行 <code>ulimit -n</code> 输出 65535</p>
+<p>额。说明普通账号未生效，百思不解。</p>
+<p>尝试依靠搜索引擎寻求帮助，找到<a href="https://blog.csdn.net/weixin_34331102/article/details/92789331" target="_blank" rel="noopener">limits.conf不生效问题</a>也没解决问题</p>
+<p>寻求 Sa 同学帮忙之后了解到这个<code>/etc/security/limits.d/90-nofile.conf</code>文件设置会覆盖全局设置。</p>
+<p>将该文件进行修改</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.d&#x2F;90-nofile.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
+
+<p><code>ulimit -n</code> 再查看发现已修改</p>
+<p>完结、撒花</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
       </categories>
   </entry>
   <entry>
@@ -4770,55 +4768,6 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
       </categories>
   </entry>
   <entry>
-    <title>Impala 操作 Kudu 表报错影响使用</title>
-    <url>/2019/07/24/Impala-Kudu-FATAL_UNAUTHORIZED/</url>
-    <content><![CDATA[<p>Impala 操作 Kudu 表报 Not authorized: unencrypted connections from publicly routable IPs are prohibited.</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>又到晚饭点时间。一如以往的在去吃晚饭的路上，此时企业微信弹窗闪了一下。</p>
-<p>数据平台部的同事说他们内部的 CDH 集群 Impala 操作 Kudu 表报错了，寻求解决帮助。</p>
-<p>那还能说，吃饭的速度都快了很多，就为了早点回来解决。</p>
-<h4 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h4><p>问题现场，执行 SQL 复现报错。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">WARNINGS: TransmitData() to 100.106.38.12:27000 failed: Not authorized: Client connection negotiation failed: client connection to 100.106.38.12:27000: FATAL_UNAUTHORIZED: Not authorized: unencrypted connections from publicly routable IPs are prohibited. See --trusted_subnets flag for more information.: 100.106.40.23:32811</span><br></pre></td></tr></table></figure>
-
-<p><img src="/images/blog/2019-07-24-2.png" alt> </p>
-<p>定眼一看，这种报错没见过，翻译过来就是<code>致命的未授权：未授权：禁止来自公共可路由IP的未加密连接。</code></p>
-<p>没见过这种报错信息。看来只能寻求搜索引擎了。某度搜索没有找到想要的，还是谷歌给力，直接找到 cloudera 问题帖子。</p>
-<p><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener">KUDU trusted subnets does not work </a></p>
-<p>问题相似度极高。而且还是已经解决的帖子。看来有成功的希望啊。</p>
-<p><img src="/images/blog/2019-07-24-3.png" alt> </p>
-<p>翻译过来就是 <code>Impala已经从5.15开始将krpc用于transmitdata（）rpc。因此，您也需要在IMPALA配置中以相同的方式配置“trusted_subnets”标志（它不会从kudu配置中获取）。</code></p>
-<p>这套集群是 CHD 6.1.0 的，看来很可能符合这个问题，且也说了是不会从 Kudu 配置中获取 trusted_subnets 标志。</p>
-<p>这里就有个问题了。trusted_subnets 是啥？ 碰巧的是原提问者也在问题中说到这个</p>
-<p><img src="/images/blog/2019-07-24-8.png" alt> </p>
-<p>我也不是很清楚，但是感觉这个很关键，去 Impala 配置和 Kudu 配置搜索了下这个关键字。</p>
-<p>只在 Kudu 中搜索到了，Impala 未找到这个，也符合原文说过 IMPALA 需要以相同的方式配置 </p>
-<p><img src="/images/blog/2019-07-24-4.png" alt> </p>
-<p>这时候脑海中有个困惑，trusted_subnets 在 Impala 中怎么配置呢？</p>
-<p>我对比了下 Kudu 的配置位置，Kudu 是在代码段位置配置，我猜测 Impala 应该也是在这配置。</p>
-<p>在 Impala 配置中搜索<code>代码块</code>出现好几个地方可以添加。</p>
-<p>这时候我只能凭经验猜测 <code>Impala 命令行参数高级配置代码段</code>和<code>Impala 服务环境高级配置代码段</code>可能性大，不太可能是其他服务。</p>
-<p>抱着试一试心态在这两个地方添加下方配置。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">--trusted_subnets&#x3D;0.0.0.0&#x2F;0</span><br><span class="line">--rpc-authentication&#x3D;disabled</span><br><span class="line">--rpc-encryption&#x3D;disabled</span><br></pre></td></tr></table></figure>
-
-<p>保存时CM报<code>Impala 服务环境高级配置代码段</code>配置错误</p>
-<p><img src="/images/blog/2019-07-24-6.png" alt> </p>
-<p>看来只能先去掉，去掉后没有报错。</p>
-<p><img src="/images/blog/2019-07-24-5.png" alt> </p>
-<p>重启 Impala 后再执行发现问题解决。</p>
-<p><img src="/images/blog/2019-07-24-7.png" alt> </p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>谷歌大法好啊，感谢前人栽树，后人乘凉，没有他们的，我也不能把问题解决。</p>
-<p>这里中的为什么，我就没过多研究了，因为本人对 Kudu 了解不多，暂时放着。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener"> KUDU trusted subnets does not work </a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Impala</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Flink 部署模式</title>
     <url>/2019/07/24/Flink-Deployment-Patterns/</url>
     <content><![CDATA[<p>大数据计算引擎 Flink 部署模式</p>
@@ -4928,6 +4877,55 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
 ]]></content>
       <categories>
         <category>Flink</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Impala 操作 Kudu 表报错影响使用</title>
+    <url>/2019/07/24/Impala-Kudu-FATAL_UNAUTHORIZED/</url>
+    <content><![CDATA[<p>Impala 操作 Kudu 表报 Not authorized: unencrypted connections from publicly routable IPs are prohibited.</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>又到晚饭点时间。一如以往的在去吃晚饭的路上，此时企业微信弹窗闪了一下。</p>
+<p>数据平台部的同事说他们内部的 CDH 集群 Impala 操作 Kudu 表报错了，寻求解决帮助。</p>
+<p>那还能说，吃饭的速度都快了很多，就为了早点回来解决。</p>
+<h4 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h4><p>问题现场，执行 SQL 复现报错。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">WARNINGS: TransmitData() to 100.106.38.12:27000 failed: Not authorized: Client connection negotiation failed: client connection to 100.106.38.12:27000: FATAL_UNAUTHORIZED: Not authorized: unencrypted connections from publicly routable IPs are prohibited. See --trusted_subnets flag for more information.: 100.106.40.23:32811</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-07-24-2.png" alt> </p>
+<p>定眼一看，这种报错没见过，翻译过来就是<code>致命的未授权：未授权：禁止来自公共可路由IP的未加密连接。</code></p>
+<p>没见过这种报错信息。看来只能寻求搜索引擎了。某度搜索没有找到想要的，还是谷歌给力，直接找到 cloudera 问题帖子。</p>
+<p><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener">KUDU trusted subnets does not work </a></p>
+<p>问题相似度极高。而且还是已经解决的帖子。看来有成功的希望啊。</p>
+<p><img src="/images/blog/2019-07-24-3.png" alt> </p>
+<p>翻译过来就是 <code>Impala已经从5.15开始将krpc用于transmitdata（）rpc。因此，您也需要在IMPALA配置中以相同的方式配置“trusted_subnets”标志（它不会从kudu配置中获取）。</code></p>
+<p>这套集群是 CHD 6.1.0 的，看来很可能符合这个问题，且也说了是不会从 Kudu 配置中获取 trusted_subnets 标志。</p>
+<p>这里就有个问题了。trusted_subnets 是啥？ 碰巧的是原提问者也在问题中说到这个</p>
+<p><img src="/images/blog/2019-07-24-8.png" alt> </p>
+<p>我也不是很清楚，但是感觉这个很关键，去 Impala 配置和 Kudu 配置搜索了下这个关键字。</p>
+<p>只在 Kudu 中搜索到了，Impala 未找到这个，也符合原文说过 IMPALA 需要以相同的方式配置 </p>
+<p><img src="/images/blog/2019-07-24-4.png" alt> </p>
+<p>这时候脑海中有个困惑，trusted_subnets 在 Impala 中怎么配置呢？</p>
+<p>我对比了下 Kudu 的配置位置，Kudu 是在代码段位置配置，我猜测 Impala 应该也是在这配置。</p>
+<p>在 Impala 配置中搜索<code>代码块</code>出现好几个地方可以添加。</p>
+<p>这时候我只能凭经验猜测 <code>Impala 命令行参数高级配置代码段</code>和<code>Impala 服务环境高级配置代码段</code>可能性大，不太可能是其他服务。</p>
+<p>抱着试一试心态在这两个地方添加下方配置。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">--trusted_subnets&#x3D;0.0.0.0&#x2F;0</span><br><span class="line">--rpc-authentication&#x3D;disabled</span><br><span class="line">--rpc-encryption&#x3D;disabled</span><br></pre></td></tr></table></figure>
+
+<p>保存时CM报<code>Impala 服务环境高级配置代码段</code>配置错误</p>
+<p><img src="/images/blog/2019-07-24-6.png" alt> </p>
+<p>看来只能先去掉，去掉后没有报错。</p>
+<p><img src="/images/blog/2019-07-24-5.png" alt> </p>
+<p>重启 Impala 后再执行发现问题解决。</p>
+<p><img src="/images/blog/2019-07-24-7.png" alt> </p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>谷歌大法好啊，感谢前人栽树，后人乘凉，没有他们的，我也不能把问题解决。</p>
+<p>这里中的为什么，我就没过多研究了，因为本人对 Kudu 了解不多，暂时放着。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener"> KUDU trusted subnets does not work </a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Impala</category>
       </categories>
   </entry>
   <entry>
@@ -5758,6 +5756,48 @@ HBase 在 HDFS 上存储 region 的路径就是 region encoded。</code></p>
       </categories>
   </entry>
   <entry>
+    <title>SSH 使用私钥登陆</title>
+    <url>/2019/06/24/SSH-ssh_rsa/</url>
+    <content><![CDATA[<p>SSH 使用私钥登陆</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>今天大数据开发找到我，让我帮他到业务运维机器上 scp 一个文件到大数据的接口机上。</p>
+<p>业务运维发了一个 key 文件给我，让我通过 key 文件上去拿。</p>
+<p>我登陆服务器都是用密码登陆的，这种用 key 的方式不会。</p>
+<p>赶紧某歌学习下，并记录下来</p>
+<h4 id="私钥、公钥"><a href="#私钥、公钥" class="headerlink" title="私钥、公钥"></a>私钥、公钥</h4><p>在当前用户家目录下的 .ssh 可以看到如下文件</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@zhazhahui .ssh]# ls</span><br><span class="line">authorized_keys  id_rsa  id_rsa.pub  known_hosts</span><br></pre></td></tr></table></figure>
+
+<p>id_rsa 为私钥、id_rsa.pub 为公钥</p>
+<p>对比同事发的内容，知道发给我的是私钥。</p>
+<p>那就是他把私钥对应的公钥复制到了 authorized_keys 文件内了</p>
+<p>我直接拿他给的私钥登陆即可</p>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><p>1 导入私钥，将私钥文件放到当前登陆用户目录下的 .ssh 目录下。 </p>
+<p>将发给我的私钥写入 ssh_rsa 文件</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim ssh_rsa</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>指定私钥登陆</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ssh -i .ssh&#x2F;ssh_rsa  root@target.com</span><br></pre></td></tr></table></figure>
+
+<p>如果出现了下面这种情况</p>
+<p><img src="/images/blog/2019-06-24-1.png" alt></p>
+<p>这是因为私钥文件权限太高了，比较不安全，所以被阻止，需要将ssh_rsa的权限设置低一些比如 0400</p>
+<p>chmod 0400 .ssh/ssh_rsa</p>
+<p>这样就可以登陆成功了</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/demonxian3/p/8331545.html" target="_blank" rel="noopener">SSH私用私钥登陆</a></li>
+<li><a href="https://www.cnblogs.com/hellotracy/articles/5179985.html" target="_blank" rel="noopener">ssh public key private key 免密码</a></li>
+<li><a href="https://www.runoob.com/w3cnote/set-ssh-login-key.html" target="_blank" rel="noopener">设置 SSH 通过密钥登录</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
     <title>记一次 RegionServer 宕机排查过程</title>
     <url>/2019/06/24/HBase-RS-shutdown/</url>
     <content><![CDATA[<p>记一次 RegionServer 宕机排查过程</p>
@@ -5803,48 +5843,6 @@ HBase 在 HDFS 上存储 region 的路径就是 region encoded。</code></p>
 ]]></content>
       <categories>
         <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>SSH 使用私钥登陆</title>
-    <url>/2019/06/24/SSH-ssh_rsa/</url>
-    <content><![CDATA[<p>SSH 使用私钥登陆</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>今天大数据开发找到我，让我帮他到业务运维机器上 scp 一个文件到大数据的接口机上。</p>
-<p>业务运维发了一个 key 文件给我，让我通过 key 文件上去拿。</p>
-<p>我登陆服务器都是用密码登陆的，这种用 key 的方式不会。</p>
-<p>赶紧某歌学习下，并记录下来</p>
-<h4 id="私钥、公钥"><a href="#私钥、公钥" class="headerlink" title="私钥、公钥"></a>私钥、公钥</h4><p>在当前用户家目录下的 .ssh 可以看到如下文件</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@zhazhahui .ssh]# ls</span><br><span class="line">authorized_keys  id_rsa  id_rsa.pub  known_hosts</span><br></pre></td></tr></table></figure>
-
-<p>id_rsa 为私钥、id_rsa.pub 为公钥</p>
-<p>对比同事发的内容，知道发给我的是私钥。</p>
-<p>那就是他把私钥对应的公钥复制到了 authorized_keys 文件内了</p>
-<p>我直接拿他给的私钥登陆即可</p>
-<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><p>1 导入私钥，将私钥文件放到当前登陆用户目录下的 .ssh 目录下。 </p>
-<p>将发给我的私钥写入 ssh_rsa 文件</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim ssh_rsa</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>指定私钥登陆</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ssh -i .ssh&#x2F;ssh_rsa  root@target.com</span><br></pre></td></tr></table></figure>
-
-<p>如果出现了下面这种情况</p>
-<p><img src="/images/blog/2019-06-24-1.png" alt></p>
-<p>这是因为私钥文件权限太高了，比较不安全，所以被阻止，需要将ssh_rsa的权限设置低一些比如 0400</p>
-<p>chmod 0400 .ssh/ssh_rsa</p>
-<p>这样就可以登陆成功了</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/demonxian3/p/8331545.html" target="_blank" rel="noopener">SSH私用私钥登陆</a></li>
-<li><a href="https://www.cnblogs.com/hellotracy/articles/5179985.html" target="_blank" rel="noopener">ssh public key private key 免密码</a></li>
-<li><a href="https://www.runoob.com/w3cnote/set-ssh-login-key.html" target="_blank" rel="noopener">设置 SSH 通过密钥登录</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Linux</category>
       </categories>
   </entry>
   <entry>
@@ -6779,6 +6777,57 @@ Table Znode选项
       </categories>
   </entry>
   <entry>
+    <title>使用 HBase 存储图片</title>
+    <url>/2019/06/01/HBase-save-picture/</url>
+    <content><![CDATA[<p>本文主要描述如何将图片文件转成 sequence file，然后保存到 HBase</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 可用于来数据文件。假设我们碰到的是图片文件呢，该如何保存或存储呢。<br>本文主要描述如何将图片文件转成sequence file，然后保存到HBase。</p>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li><p>文件处理流程</p>
+</li>
+<li><p>准备上传文件的Java代码</p>
+</li>
+<li><p>运行代码</p>
+</li>
+<li><p>读HBase并本地输出</p>
+</li>
+</ol>
+<h4 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h4><p><img src="/images/blog/2019-06-01-4.png" alt> </p>
+<p>先在本地准备了一堆图片文件</p>
+<p><img src="/images/blog/2019-06-01-1.png" alt> </p>
+<p>上传到 HDFS</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line">for i in &#96;ls imgs&#96;;</span><br><span class="line">do</span><br><span class="line">        hadoop fs -put imgs&#x2F;$i &#x2F;tmp&#x2F;lihm&#x2F;picHbase</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-06-01-2.png" alt> </p>
+<p>然后通过Java程序遍历所有图片生成一个Sequence File，然后把Sequence File入库到HBase<br>在入库过程中，我们读取图片文件的文件名作为Rowkey，另外将整个图片内容转为bytes存储在HBase表的一个column里。</p>
+<p>最后可以通过Hue来进行查看图片，当然你也可以考虑对接到你自己的查询系统。</p>
+<h4 id="准备上传文件的-Java-代码"><a href="#准备上传文件的-Java-代码" class="headerlink" title="准备上传文件的 Java 代码"></a>准备上传文件的 Java 代码</h4><p>Maven 配置</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;packaging&gt;jar&lt;&#x2F;packaging&gt;</span><br><span class="line">&lt;name&gt;hbase-exmaple&lt;&#x2F;name&gt;</span><br><span class="line">&lt;url&gt;http:&#x2F;&#x2F;maven.apache.org&lt;&#x2F;url&gt;</span><br><span class="line">&lt;properties&gt;</span><br><span class="line">    &lt;project.build.sourceEncoding&gt;UTF-8&lt;&#x2F;project.build.sourceEncoding&gt;</span><br><span class="line">&lt;&#x2F;properties&gt;</span><br><span class="line">&lt;repositories&gt;</span><br><span class="line">    &lt;repository&gt;</span><br><span class="line">        &lt;id&gt;cloudera&lt;&#x2F;id&gt;</span><br><span class="line">        &lt;url&gt;https:&#x2F;&#x2F;repository.cloudera.com&#x2F;artifactory&#x2F;cloudera-repos&#x2F;&lt;&#x2F;url&gt;</span><br><span class="line">        &lt;name&gt;Cloudera Repositories&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;snapshots&gt;</span><br><span class="line">            &lt;enabled&gt;false&lt;&#x2F;enabled&gt;</span><br><span class="line">        &lt;&#x2F;snapshots&gt;</span><br><span class="line">    &lt;&#x2F;repository&gt;</span><br><span class="line">&lt;&#x2F;repositories&gt;</span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.apache.hadoop&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;hadoop-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;2.6.0-cdh5.7.1&lt;&#x2F;version&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">    &lt;!-- https:&#x2F;&#x2F;mvnrepository.com&#x2F;artifact&#x2F;org.apache.hbase&#x2F;hbase-client --&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.apache.hbase&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;hbase-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;1.2.0-cdh5.7.1&lt;&#x2F;version&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;junit&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;junit&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;3.8.1&lt;&#x2F;version&gt;</span><br><span class="line">        &lt;scope&gt;test&lt;&#x2F;scope&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">&lt;&#x2F;dependencies&gt;</span><br></pre></td></tr></table></figure>
+
+<p>上传文件到HBase的Java代码</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">package cn.lihm.hbaseproj;</span><br><span class="line"></span><br><span class="line">import java.io.File;</span><br><span class="line">import java.io.FileOutputStream;</span><br><span class="line">import java.io.IOException;</span><br><span class="line">import java.net.URI;</span><br><span class="line">import java.net.URISyntaxException;</span><br><span class="line"></span><br><span class="line">import org.apache.commons.io.IOUtils;</span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.fs.FSDataInputStream;</span><br><span class="line">import org.apache.hadoop.fs.FileStatus;</span><br><span class="line">import org.apache.hadoop.fs.FileSystem;</span><br><span class="line">import org.apache.hadoop.fs.Path;</span><br><span class="line">import org.apache.hadoop.hbase.HBaseConfiguration;</span><br><span class="line">import org.apache.hadoop.hbase.TableName;</span><br><span class="line">import org.apache.hadoop.hbase.client.*;</span><br><span class="line">import org.apache.hadoop.hbase.util.Bytes;</span><br><span class="line">import org.apache.hadoop.io.BytesWritable;</span><br><span class="line">import org.apache.hadoop.io.SequenceFile;</span><br><span class="line">import org.apache.hadoop.io.Text;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line"> * @author lihm</span><br><span class="line"> * @date 2019-06-01 15:26</span><br><span class="line"> * @description TODO</span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">public class SequenceFileTest &#123;</span><br><span class="line"></span><br><span class="line">    private static String inpath &#x3D; &quot;&#x2F;tmp&#x2F;lihm&#x2F;picHbase&quot;;</span><br><span class="line">    private static String outpath &#x3D; &quot;&#x2F;tmp&#x2F;lihm&#x2F;out&quot;;</span><br><span class="line">    private static SequenceFile.Writer writer &#x3D; null;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 递归文件;并将文件写成SequenceFile文件</span><br><span class="line">     *</span><br><span class="line">     * @param fileSystem</span><br><span class="line">     * @param path</span><br><span class="line">     * @throws Exception</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void listFileAndWriteToSequenceFile(FileSystem fileSystem, String path) throws Exception&#123;</span><br><span class="line">        final FileStatus[] listStatuses &#x3D; fileSystem.listStatus(new Path(path));</span><br><span class="line">        for (FileStatus fileStatus : listStatuses) &#123;</span><br><span class="line">            if(fileStatus.isFile())&#123;</span><br><span class="line">                Text fileText &#x3D; new Text(fileStatus.getPath().toString());</span><br><span class="line">                System.out.println(fileText.toString());</span><br><span class="line">                &#x2F;&#x2F;返回一个SequenceFile.Writer实例 需要数据流和path对象 将数据写入了path对象</span><br><span class="line">                FSDataInputStream in &#x3D; fileSystem.open(new Path(fileText.toString()));</span><br><span class="line">                byte[] buffer &#x3D; IOUtils.toByteArray(in);</span><br><span class="line">                in.read(buffer);</span><br><span class="line">                BytesWritable value &#x3D; new BytesWritable(buffer);</span><br><span class="line">                &#x2F;&#x2F;写成SequenceFile文件</span><br><span class="line">                writer.append(fileText, value);</span><br><span class="line">            &#125;</span><br><span class="line">            if(fileStatus.isDirectory())&#123;</span><br><span class="line">                listFileAndWriteToSequenceFile(fileSystem,fileStatus.getPath().toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 将二进制流转化后的图片输出到本地</span><br><span class="line">     *</span><br><span class="line">     * @param bs 二进制图片</span><br><span class="line">     * @param picPath 本地路径</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void picFileOutput(byte[] bs, String picPath) &#123;</span><br><span class="line">        &#x2F;&#x2F; 将输出的二进制流转化后的图片的路径</span><br><span class="line">        File file &#x3D; new File(picPath);</span><br><span class="line">        try &#123;</span><br><span class="line">            FileOutputStream fos &#x3D; new FileOutputStream(file);</span><br><span class="line">            fos.write(bs);</span><br><span class="line">            fos.close();</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 读 hbase 图片</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void readPicHBase() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Configuration hbaseConf &#x3D; HBaseConfiguration.create();</span><br><span class="line">            &#x2F;&#x2F; 公司 HBase 集群</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;100.73.12.11&quot;);</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.property.clientPort&quot;, &quot;2181&quot;);</span><br><span class="line">            hbaseConf.set(&quot;zookeeper.znode.parent&quot;, &quot;&#x2F;hbase&quot;);</span><br><span class="line">            Connection connection &#x3D; ConnectionFactory.createConnection(hbaseConf);</span><br><span class="line">            Table table &#x3D; connection.getTable(TableName.valueOf(&quot;tu&quot;));</span><br><span class="line">            Get get &#x3D; new Get(&quot;8cd2f12410037fe73cfeb7b6a65be935.jpg&quot;.getBytes());</span><br><span class="line">            Result rs &#x3D; table.get(get);</span><br><span class="line">            &#x2F;&#x2F; 保存get result的结果，字节数组形式</span><br><span class="line">            byte[] bs &#x3D; rs.value();</span><br><span class="line">            picFileOutput(bs, &quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;picHBase&#x2F;8cd2f12410037fe73cfeb7b6a65be935.jpg&quot;);</span><br><span class="line">            table.close();</span><br><span class="line">            connection.close();</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 将图片文件转成sequence file，然后保存到HBase</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void picToHBase() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Configuration hbaseConf &#x3D; HBaseConfiguration.create();</span><br><span class="line">            &#x2F;&#x2F; 公司 HBase 集群</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;100.73.12.11&quot;);</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.property.clientPort&quot;, &quot;2181&quot;);</span><br><span class="line">            hbaseConf.set(&quot;zookeeper.znode.parent&quot;, &quot;&#x2F;hbase&quot;);</span><br><span class="line">            Connection connection &#x3D; ConnectionFactory.createConnection(hbaseConf);</span><br><span class="line">            Table table &#x3D; connection.getTable(TableName.valueOf(&quot;tu&quot;));</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 设置读取本地磁盘文件</span><br><span class="line">            Configuration conf &#x3D; new Configuration();</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;core-site.xml&quot;));</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;yarn-site.xml&quot;));</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;hdfs-site.xml&quot;));</span><br><span class="line">            URI uri &#x3D; new URI(inpath);</span><br><span class="line">            FileSystem fileSystem &#x3D; FileSystem.get(uri, conf,&quot;hdfs&quot;);</span><br><span class="line">            &#x2F;&#x2F; 实例化writer对象</span><br><span class="line">            writer &#x3D; SequenceFile.createWriter(fileSystem, conf, new Path(outpath), Text.class, BytesWritable.class);</span><br><span class="line">            &#x2F;&#x2F; 递归遍历文件夹，并将文件下的文件写入 sequenceFile 文件</span><br><span class="line">            listFileAndWriteToSequenceFile(fileSystem, inpath);</span><br><span class="line">            &#x2F;&#x2F; 关闭流</span><br><span class="line">            org.apache.hadoop.io.IOUtils.closeStream(writer);</span><br><span class="line">            &#x2F;&#x2F; 读取所有文件</span><br><span class="line">            URI seqURI &#x3D; new URI(outpath);</span><br><span class="line">            FileSystem fileSystemSeq &#x3D; FileSystem.get(seqURI, conf);</span><br><span class="line">            SequenceFile.Reader reader &#x3D; new SequenceFile.Reader(fileSystemSeq, new Path(outpath), conf);</span><br><span class="line">            Text key &#x3D; new Text();</span><br><span class="line">            BytesWritable val &#x3D; new BytesWritable();</span><br><span class="line">            &#x2F;&#x2F; key &#x3D; (Text) ReflectionUtils.newInstance(reader.getKeyClass(), conf);</span><br><span class="line">            &#x2F;&#x2F; val &#x3D; (BytesWritable) ReflectionUtils.newInstance(reader.getValueClass(), conf);</span><br><span class="line">            int i &#x3D; 0;</span><br><span class="line">            while(reader.next(key, val))&#123;</span><br><span class="line">                &#x2F;&#x2F; 读取图片文件的文件名作为 Rowkey</span><br><span class="line">                String temp &#x3D; key.toString();</span><br><span class="line">                temp &#x3D; temp.substring(temp.lastIndexOf(&quot;&#x2F;&quot;) + 1);</span><br><span class="line">                &#x2F;&#x2F; rowKey 设计</span><br><span class="line">                String rowKey &#x3D; temp;</span><br><span class="line">                &#x2F;&#x2F; String rowKey &#x3D; Integer.valueOf(tmp[0])-1+&quot;_&quot;+Integer.valueOf(tmp[1])&#x2F;2+&quot;_&quot;+Integer.valueOf(tmp[2])&#x2F;2;</span><br><span class="line">                System.out.println(rowKey);</span><br><span class="line">                &#x2F;&#x2F; 构造 Put</span><br><span class="line">                Put put &#x3D; new Put(Bytes.toBytes(rowKey));</span><br><span class="line">                &#x2F;&#x2F; 指定列簇名称、列修饰符、列值 temp.getBytes()</span><br><span class="line">                put.addColumn(&quot;picinfo&quot;.getBytes(), &quot;content&quot;.getBytes() , val.getBytes());</span><br><span class="line">                table.put(put);</span><br><span class="line">            &#125;</span><br><span class="line">            table.close();</span><br><span class="line">            connection.close();</span><br><span class="line">            org.apache.hadoop.io.IOUtils.closeStream(reader);</span><br><span class="line"></span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (URISyntaxException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        picToHBase();</span><br><span class="line">        readPicHBase();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="运行代码"><a href="#运行代码" class="headerlink" title="运行代码"></a>运行代码</h4><p>首先在 HBase 中建一张表用来保存文本文件</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create &#39;tu&#39;,  &#39;picinfo&#39;</span><br></pre></td></tr></table></figure>
+
+<p>注意修改代码中的配置项，如文本文件所在的 HDFS 目录，集群的 Zookeeper 地址，conf 配置路径等。</p>
+<p>我是在本地电脑上运行的。也可以将代码打成jar包并上传到集群服务器节点。该过程略。</p>
+<h4 id="HBase-查询验证"><a href="#HBase-查询验证" class="headerlink" title="HBase 查询验证"></a>HBase 查询验证</h4><p>我是将其输出到本地路径下</p>
+<p><img src="/images/blog/2019-06-01-3.png" alt> </p>
+<p>也可以用 Hue 中查询验证。</p>
+<p><img src="/images/blog/2019-06-19-4.png" alt> </p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/KA1EupPqm8uzRk7_-8D3KA" target="_blank" rel="noopener">HBase实操 如何使用HBase存储图片</a></li>
+<li><a href="https://blog.csdn.net/love666666shen/article/details/82931783" target="_blank" rel="noopener">HBase存储、插入、修改、读取图片操作</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
     <title>JVM 板斧</title>
     <url>/2019/06/01/Java-Tools/</url>
     <content><![CDATA[<p>Java 排查问题的命令和工具</p>
@@ -6838,57 +6887,6 @@ Table Znode选项
 ]]></content>
       <categories>
         <category>JVM</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>使用 HBase 存储图片</title>
-    <url>/2019/06/01/HBase-save-picture/</url>
-    <content><![CDATA[<p>本文主要描述如何将图片文件转成 sequence file，然后保存到 HBase</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 可用于来数据文件。假设我们碰到的是图片文件呢，该如何保存或存储呢。<br>本文主要描述如何将图片文件转成sequence file，然后保存到HBase。</p>
-<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><ol>
-<li><p>文件处理流程</p>
-</li>
-<li><p>准备上传文件的Java代码</p>
-</li>
-<li><p>运行代码</p>
-</li>
-<li><p>读HBase并本地输出</p>
-</li>
-</ol>
-<h4 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h4><p><img src="/images/blog/2019-06-01-4.png" alt> </p>
-<p>先在本地准备了一堆图片文件</p>
-<p><img src="/images/blog/2019-06-01-1.png" alt> </p>
-<p>上传到 HDFS</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line">for i in &#96;ls imgs&#96;;</span><br><span class="line">do</span><br><span class="line">        hadoop fs -put imgs&#x2F;$i &#x2F;tmp&#x2F;lihm&#x2F;picHbase</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<p><img src="/images/blog/2019-06-01-2.png" alt> </p>
-<p>然后通过Java程序遍历所有图片生成一个Sequence File，然后把Sequence File入库到HBase<br>在入库过程中，我们读取图片文件的文件名作为Rowkey，另外将整个图片内容转为bytes存储在HBase表的一个column里。</p>
-<p>最后可以通过Hue来进行查看图片，当然你也可以考虑对接到你自己的查询系统。</p>
-<h4 id="准备上传文件的-Java-代码"><a href="#准备上传文件的-Java-代码" class="headerlink" title="准备上传文件的 Java 代码"></a>准备上传文件的 Java 代码</h4><p>Maven 配置</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;packaging&gt;jar&lt;&#x2F;packaging&gt;</span><br><span class="line">&lt;name&gt;hbase-exmaple&lt;&#x2F;name&gt;</span><br><span class="line">&lt;url&gt;http:&#x2F;&#x2F;maven.apache.org&lt;&#x2F;url&gt;</span><br><span class="line">&lt;properties&gt;</span><br><span class="line">    &lt;project.build.sourceEncoding&gt;UTF-8&lt;&#x2F;project.build.sourceEncoding&gt;</span><br><span class="line">&lt;&#x2F;properties&gt;</span><br><span class="line">&lt;repositories&gt;</span><br><span class="line">    &lt;repository&gt;</span><br><span class="line">        &lt;id&gt;cloudera&lt;&#x2F;id&gt;</span><br><span class="line">        &lt;url&gt;https:&#x2F;&#x2F;repository.cloudera.com&#x2F;artifactory&#x2F;cloudera-repos&#x2F;&lt;&#x2F;url&gt;</span><br><span class="line">        &lt;name&gt;Cloudera Repositories&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;snapshots&gt;</span><br><span class="line">            &lt;enabled&gt;false&lt;&#x2F;enabled&gt;</span><br><span class="line">        &lt;&#x2F;snapshots&gt;</span><br><span class="line">    &lt;&#x2F;repository&gt;</span><br><span class="line">&lt;&#x2F;repositories&gt;</span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.apache.hadoop&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;hadoop-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;2.6.0-cdh5.7.1&lt;&#x2F;version&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">    &lt;!-- https:&#x2F;&#x2F;mvnrepository.com&#x2F;artifact&#x2F;org.apache.hbase&#x2F;hbase-client --&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.apache.hbase&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;hbase-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;1.2.0-cdh5.7.1&lt;&#x2F;version&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;junit&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;junit&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;3.8.1&lt;&#x2F;version&gt;</span><br><span class="line">        &lt;scope&gt;test&lt;&#x2F;scope&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">&lt;&#x2F;dependencies&gt;</span><br></pre></td></tr></table></figure>
-
-<p>上传文件到HBase的Java代码</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">package cn.lihm.hbaseproj;</span><br><span class="line"></span><br><span class="line">import java.io.File;</span><br><span class="line">import java.io.FileOutputStream;</span><br><span class="line">import java.io.IOException;</span><br><span class="line">import java.net.URI;</span><br><span class="line">import java.net.URISyntaxException;</span><br><span class="line"></span><br><span class="line">import org.apache.commons.io.IOUtils;</span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.fs.FSDataInputStream;</span><br><span class="line">import org.apache.hadoop.fs.FileStatus;</span><br><span class="line">import org.apache.hadoop.fs.FileSystem;</span><br><span class="line">import org.apache.hadoop.fs.Path;</span><br><span class="line">import org.apache.hadoop.hbase.HBaseConfiguration;</span><br><span class="line">import org.apache.hadoop.hbase.TableName;</span><br><span class="line">import org.apache.hadoop.hbase.client.*;</span><br><span class="line">import org.apache.hadoop.hbase.util.Bytes;</span><br><span class="line">import org.apache.hadoop.io.BytesWritable;</span><br><span class="line">import org.apache.hadoop.io.SequenceFile;</span><br><span class="line">import org.apache.hadoop.io.Text;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line"> * @author lihm</span><br><span class="line"> * @date 2019-06-01 15:26</span><br><span class="line"> * @description TODO</span><br><span class="line"> *&#x2F;</span><br><span class="line"></span><br><span class="line">public class SequenceFileTest &#123;</span><br><span class="line"></span><br><span class="line">    private static String inpath &#x3D; &quot;&#x2F;tmp&#x2F;lihm&#x2F;picHbase&quot;;</span><br><span class="line">    private static String outpath &#x3D; &quot;&#x2F;tmp&#x2F;lihm&#x2F;out&quot;;</span><br><span class="line">    private static SequenceFile.Writer writer &#x3D; null;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 递归文件;并将文件写成SequenceFile文件</span><br><span class="line">     *</span><br><span class="line">     * @param fileSystem</span><br><span class="line">     * @param path</span><br><span class="line">     * @throws Exception</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void listFileAndWriteToSequenceFile(FileSystem fileSystem, String path) throws Exception&#123;</span><br><span class="line">        final FileStatus[] listStatuses &#x3D; fileSystem.listStatus(new Path(path));</span><br><span class="line">        for (FileStatus fileStatus : listStatuses) &#123;</span><br><span class="line">            if(fileStatus.isFile())&#123;</span><br><span class="line">                Text fileText &#x3D; new Text(fileStatus.getPath().toString());</span><br><span class="line">                System.out.println(fileText.toString());</span><br><span class="line">                &#x2F;&#x2F;返回一个SequenceFile.Writer实例 需要数据流和path对象 将数据写入了path对象</span><br><span class="line">                FSDataInputStream in &#x3D; fileSystem.open(new Path(fileText.toString()));</span><br><span class="line">                byte[] buffer &#x3D; IOUtils.toByteArray(in);</span><br><span class="line">                in.read(buffer);</span><br><span class="line">                BytesWritable value &#x3D; new BytesWritable(buffer);</span><br><span class="line">                &#x2F;&#x2F;写成SequenceFile文件</span><br><span class="line">                writer.append(fileText, value);</span><br><span class="line">            &#125;</span><br><span class="line">            if(fileStatus.isDirectory())&#123;</span><br><span class="line">                listFileAndWriteToSequenceFile(fileSystem,fileStatus.getPath().toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 将二进制流转化后的图片输出到本地</span><br><span class="line">     *</span><br><span class="line">     * @param bs 二进制图片</span><br><span class="line">     * @param picPath 本地路径</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void picFileOutput(byte[] bs, String picPath) &#123;</span><br><span class="line">        &#x2F;&#x2F; 将输出的二进制流转化后的图片的路径</span><br><span class="line">        File file &#x3D; new File(picPath);</span><br><span class="line">        try &#123;</span><br><span class="line">            FileOutputStream fos &#x3D; new FileOutputStream(file);</span><br><span class="line">            fos.write(bs);</span><br><span class="line">            fos.close();</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 读 hbase 图片</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void readPicHBase() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Configuration hbaseConf &#x3D; HBaseConfiguration.create();</span><br><span class="line">            &#x2F;&#x2F; 公司 HBase 集群</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;100.73.12.11&quot;);</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.property.clientPort&quot;, &quot;2181&quot;);</span><br><span class="line">            hbaseConf.set(&quot;zookeeper.znode.parent&quot;, &quot;&#x2F;hbase&quot;);</span><br><span class="line">            Connection connection &#x3D; ConnectionFactory.createConnection(hbaseConf);</span><br><span class="line">            Table table &#x3D; connection.getTable(TableName.valueOf(&quot;tu&quot;));</span><br><span class="line">            Get get &#x3D; new Get(&quot;8cd2f12410037fe73cfeb7b6a65be935.jpg&quot;.getBytes());</span><br><span class="line">            Result rs &#x3D; table.get(get);</span><br><span class="line">            &#x2F;&#x2F; 保存get result的结果，字节数组形式</span><br><span class="line">            byte[] bs &#x3D; rs.value();</span><br><span class="line">            picFileOutput(bs, &quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;picHBase&#x2F;8cd2f12410037fe73cfeb7b6a65be935.jpg&quot;);</span><br><span class="line">            table.close();</span><br><span class="line">            connection.close();</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;**</span><br><span class="line">     * 将图片文件转成sequence file，然后保存到HBase</span><br><span class="line">     *&#x2F;</span><br><span class="line">    public static void picToHBase() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Configuration hbaseConf &#x3D; HBaseConfiguration.create();</span><br><span class="line">            &#x2F;&#x2F; 公司 HBase 集群</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;100.73.12.11&quot;);</span><br><span class="line">            hbaseConf.set(&quot;hbase.zookeeper.property.clientPort&quot;, &quot;2181&quot;);</span><br><span class="line">            hbaseConf.set(&quot;zookeeper.znode.parent&quot;, &quot;&#x2F;hbase&quot;);</span><br><span class="line">            Connection connection &#x3D; ConnectionFactory.createConnection(hbaseConf);</span><br><span class="line">            Table table &#x3D; connection.getTable(TableName.valueOf(&quot;tu&quot;));</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 设置读取本地磁盘文件</span><br><span class="line">            Configuration conf &#x3D; new Configuration();</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;core-site.xml&quot;));</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;yarn-site.xml&quot;));</span><br><span class="line">            conf.addResource(new Path(&quot;&#x2F;Users&#x2F;tu&#x2F;Public&#x2F;ZaWu&#x2F;conf.cloudera.yarn&#x2F;hdfs-site.xml&quot;));</span><br><span class="line">            URI uri &#x3D; new URI(inpath);</span><br><span class="line">            FileSystem fileSystem &#x3D; FileSystem.get(uri, conf,&quot;hdfs&quot;);</span><br><span class="line">            &#x2F;&#x2F; 实例化writer对象</span><br><span class="line">            writer &#x3D; SequenceFile.createWriter(fileSystem, conf, new Path(outpath), Text.class, BytesWritable.class);</span><br><span class="line">            &#x2F;&#x2F; 递归遍历文件夹，并将文件下的文件写入 sequenceFile 文件</span><br><span class="line">            listFileAndWriteToSequenceFile(fileSystem, inpath);</span><br><span class="line">            &#x2F;&#x2F; 关闭流</span><br><span class="line">            org.apache.hadoop.io.IOUtils.closeStream(writer);</span><br><span class="line">            &#x2F;&#x2F; 读取所有文件</span><br><span class="line">            URI seqURI &#x3D; new URI(outpath);</span><br><span class="line">            FileSystem fileSystemSeq &#x3D; FileSystem.get(seqURI, conf);</span><br><span class="line">            SequenceFile.Reader reader &#x3D; new SequenceFile.Reader(fileSystemSeq, new Path(outpath), conf);</span><br><span class="line">            Text key &#x3D; new Text();</span><br><span class="line">            BytesWritable val &#x3D; new BytesWritable();</span><br><span class="line">            &#x2F;&#x2F; key &#x3D; (Text) ReflectionUtils.newInstance(reader.getKeyClass(), conf);</span><br><span class="line">            &#x2F;&#x2F; val &#x3D; (BytesWritable) ReflectionUtils.newInstance(reader.getValueClass(), conf);</span><br><span class="line">            int i &#x3D; 0;</span><br><span class="line">            while(reader.next(key, val))&#123;</span><br><span class="line">                &#x2F;&#x2F; 读取图片文件的文件名作为 Rowkey</span><br><span class="line">                String temp &#x3D; key.toString();</span><br><span class="line">                temp &#x3D; temp.substring(temp.lastIndexOf(&quot;&#x2F;&quot;) + 1);</span><br><span class="line">                &#x2F;&#x2F; rowKey 设计</span><br><span class="line">                String rowKey &#x3D; temp;</span><br><span class="line">                &#x2F;&#x2F; String rowKey &#x3D; Integer.valueOf(tmp[0])-1+&quot;_&quot;+Integer.valueOf(tmp[1])&#x2F;2+&quot;_&quot;+Integer.valueOf(tmp[2])&#x2F;2;</span><br><span class="line">                System.out.println(rowKey);</span><br><span class="line">                &#x2F;&#x2F; 构造 Put</span><br><span class="line">                Put put &#x3D; new Put(Bytes.toBytes(rowKey));</span><br><span class="line">                &#x2F;&#x2F; 指定列簇名称、列修饰符、列值 temp.getBytes()</span><br><span class="line">                put.addColumn(&quot;picinfo&quot;.getBytes(), &quot;content&quot;.getBytes() , val.getBytes());</span><br><span class="line">                table.put(put);</span><br><span class="line">            &#125;</span><br><span class="line">            table.close();</span><br><span class="line">            connection.close();</span><br><span class="line">            org.apache.hadoop.io.IOUtils.closeStream(reader);</span><br><span class="line"></span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (URISyntaxException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        picToHBase();</span><br><span class="line">        readPicHBase();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="运行代码"><a href="#运行代码" class="headerlink" title="运行代码"></a>运行代码</h4><p>首先在 HBase 中建一张表用来保存文本文件</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create &#39;tu&#39;,  &#39;picinfo&#39;</span><br></pre></td></tr></table></figure>
-
-<p>注意修改代码中的配置项，如文本文件所在的 HDFS 目录，集群的 Zookeeper 地址，conf 配置路径等。</p>
-<p>我是在本地电脑上运行的。也可以将代码打成jar包并上传到集群服务器节点。该过程略。</p>
-<h4 id="HBase-查询验证"><a href="#HBase-查询验证" class="headerlink" title="HBase 查询验证"></a>HBase 查询验证</h4><p>我是将其输出到本地路径下</p>
-<p><img src="/images/blog/2019-06-01-3.png" alt> </p>
-<p>也可以用 Hue 中查询验证。</p>
-<p><img src="/images/blog/2019-06-19-4.png" alt> </p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://mp.weixin.qq.com/s/KA1EupPqm8uzRk7_-8D3KA" target="_blank" rel="noopener">HBase实操 如何使用HBase存储图片</a></li>
-<li><a href="https://blog.csdn.net/love666666shen/article/details/82931783" target="_blank" rel="noopener">HBase存储、插入、修改、读取图片操作</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>HBase</category>
       </categories>
   </entry>
   <entry>
@@ -7507,60 +7505,6 @@ Table Znode选项
       </categories>
   </entry>
   <entry>
-    <title>桶排序</title>
-    <url>/2019/05/01/bucket-sort/</url>
-    <content><![CDATA[<p>桶排序(Bucket Sort)是时间复杂度为O(n)的排序</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>排序算法是每个程序员应该掌握的。</p>
-<h4 id="适用范围"><a href="#适用范围" class="headerlink" title="适用范围"></a>适用范围</h4><p>待排序的元素能够均匀分布在某一个范围[MIN, MAX]之间。</p>
-<h4 id="空间复杂度"><a href="#空间复杂度" class="headerlink" title="空间复杂度"></a>空间复杂度</h4><p>桶排序需要两个辅助空间：</p>
-<ol>
-<li><p>第一个辅助空间，是桶空间B</p>
-</li>
-<li><p>第二个辅助空间，是桶内的元素链表空间</p>
-</li>
-</ol>
-<p>总的来说，空间复杂度是O(n)。</p>
-<h4 id="关键步骤"><a href="#关键步骤" class="headerlink" title="关键步骤"></a>关键步骤</h4><p>桶排序有两个关键步骤: </p>
-<blockquote>
-<ol>
-<li>扫描待排序数据A[N]，对于元素A[i]，放入对应的桶X</li>
-<li>A[i]放入桶X，如果桶X已经有了若干元素，使用插入排序，将arr[i]放到桶内合适的位置</li>
-</ol>
-</blockquote>
-<p>桶X内的所有元素，是一直有序的</p>
-<p>插入排序是稳定的，因此桶内元素顺序也是稳定的。</p>
-<p>PS: 桶排序是一种思想，桶里面的排序其实并不一定非得是插入排序。<br>将数组元素分配到多个桶后，可以使用不同的排序算法或递归应用桶排序算法，将每个桶单独排序。 </p>
-<p>当arr[N]中的所有元素，都按照上述步骤放入对应的桶后，就完成了全量的排序。</p>
-<p>举个例子</p>
-<p>假设待排序的数组均匀分布在[0, 99]之间：</p>
-<p>{5,18,27,33,42,66,90,8,81,47,13,67,9,36,62,22}</p>
-<p>可以设定10个桶，申请额外的空间bucket[10]来作为辅助空间。其中，每个桶bucket[i]来存放[10 * i, 10 * i + 9]的元素链表。</p>
-<p><img src="/images/blog/2019-05-01-3.png" alt> </p>
-<p>上图所示:</p>
-<blockquote>
-<ul>
-<li>待排序的数组为unsorted[16]</li>
-<li>桶空间是buket[10]</li>
-<li>扫描所有元素之后，元素被放到了自己对应的桶里</li>
-<li>每个桶内，使用插入排序，保证一直是有序的</li>
-</ul>
-</blockquote>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>桶排序(Bucket Sort)，总结:</p>
-<p>是一种复杂度为O(n)的排序</p>
-<p>是一种稳定的排序</p>
-<p>适用于数据均匀分布在一个区间内的场景</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://mp.weixin.qq.com/s/r8mArZzAJ-uC002z48HWJw" target="_blank" rel="noopener">拜托，面试别再问我桶排序了！！！</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Algorithm</category>
-      </categories>
-  </entry>
-  <entry>
     <title>计数排序</title>
     <url>/2019/05/01/counting-sort/</url>
     <content><![CDATA[<p>计数排序(Counting Sort)是时间复杂度为O(n)的排序</p>
@@ -7670,6 +7614,60 @@ Table Znode选项
 <li><a href="https://mp.weixin.qq.com/s/Z8gU9QLpMnA-zoMc9ZeR2w" target="_blank" rel="noopener">拜托，面试别再问我基数排序了！！！</a></li>
 <li><a href="https://blog.csdn.net/sb985/article/details/79921571" target="_blank" rel="noopener">计数排序，桶排序，基数排序</a></li>
 <li><a href="https://blog.csdn.net/u011948899/article/details/78027838" target="_blank" rel="noopener">基数排序（LSD+MSD）详解</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>桶排序</title>
+    <url>/2019/05/01/bucket-sort/</url>
+    <content><![CDATA[<p>桶排序(Bucket Sort)是时间复杂度为O(n)的排序</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>排序算法是每个程序员应该掌握的。</p>
+<h4 id="适用范围"><a href="#适用范围" class="headerlink" title="适用范围"></a>适用范围</h4><p>待排序的元素能够均匀分布在某一个范围[MIN, MAX]之间。</p>
+<h4 id="空间复杂度"><a href="#空间复杂度" class="headerlink" title="空间复杂度"></a>空间复杂度</h4><p>桶排序需要两个辅助空间：</p>
+<ol>
+<li><p>第一个辅助空间，是桶空间B</p>
+</li>
+<li><p>第二个辅助空间，是桶内的元素链表空间</p>
+</li>
+</ol>
+<p>总的来说，空间复杂度是O(n)。</p>
+<h4 id="关键步骤"><a href="#关键步骤" class="headerlink" title="关键步骤"></a>关键步骤</h4><p>桶排序有两个关键步骤: </p>
+<blockquote>
+<ol>
+<li>扫描待排序数据A[N]，对于元素A[i]，放入对应的桶X</li>
+<li>A[i]放入桶X，如果桶X已经有了若干元素，使用插入排序，将arr[i]放到桶内合适的位置</li>
+</ol>
+</blockquote>
+<p>桶X内的所有元素，是一直有序的</p>
+<p>插入排序是稳定的，因此桶内元素顺序也是稳定的。</p>
+<p>PS: 桶排序是一种思想，桶里面的排序其实并不一定非得是插入排序。<br>将数组元素分配到多个桶后，可以使用不同的排序算法或递归应用桶排序算法，将每个桶单独排序。 </p>
+<p>当arr[N]中的所有元素，都按照上述步骤放入对应的桶后，就完成了全量的排序。</p>
+<p>举个例子</p>
+<p>假设待排序的数组均匀分布在[0, 99]之间：</p>
+<p>{5,18,27,33,42,66,90,8,81,47,13,67,9,36,62,22}</p>
+<p>可以设定10个桶，申请额外的空间bucket[10]来作为辅助空间。其中，每个桶bucket[i]来存放[10 * i, 10 * i + 9]的元素链表。</p>
+<p><img src="/images/blog/2019-05-01-3.png" alt> </p>
+<p>上图所示:</p>
+<blockquote>
+<ul>
+<li>待排序的数组为unsorted[16]</li>
+<li>桶空间是buket[10]</li>
+<li>扫描所有元素之后，元素被放到了自己对应的桶里</li>
+<li>每个桶内，使用插入排序，保证一直是有序的</li>
+</ul>
+</blockquote>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>桶排序(Bucket Sort)，总结:</p>
+<p>是一种复杂度为O(n)的排序</p>
+<p>是一种稳定的排序</p>
+<p>适用于数据均匀分布在一个区间内的场景</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/r8mArZzAJ-uC002z48HWJw" target="_blank" rel="noopener">拜托，面试别再问我桶排序了！！！</a></li>
 </ul>
 ]]></content>
       <categories>
@@ -7858,154 +7856,6 @@ ReadNumber为x即表示MemStore中所有WriteNumber小于或等于x的数据都�
       </categories>
   </entry>
   <entry>
-    <title>信息类 APP 组合</title>
-    <url>/2019/04/27/Information-class-APP-combination/</url>
-    <content><![CDATA[<p>信息类 APP 获取的信息，是为了知识的产生提供支持。</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>手机的优势在于它的便携性，加上入口窄使得人更加专注，已经成为获取信息的中流砥柱</p>
-<p>首先，弄清什么是信息。<br>其次，明确需要哪些信息。<br>最后，才是选择适合自己的的APP。</p>
-<p>什么是信息呢</p>
-<p>基于这个解释，我需要获取的信息，是为了知识的产生提供支持。而哪些信息可以成为我的知识呢，我终结了以下几点：</p>
-<p>时事动向，包括新闻，IT、财经。<br>技术提升<br>个人成长，主要通过读书。<br>财经知识，所有的问题，归根结底还是钱的问题。<br>另外，我还单独拎出一个分类，它虽然不能直接为行动提供依据，但也不可忽视。<br>开心生活</p>
-<h5 id="个人成长"><a href="#个人成长" class="headerlink" title="个人成长"></a>个人成长</h5><h5 id="1-得到"><a href="#1-得到" class="headerlink" title="1. 得到"></a>1. 得到</h5><p>罗辑思维的产品。有些观点很新颖，但是有些观点不太认同，学会保持自己的判断能力。</p>
-<p>现在更多的是批判性地看罗胖胖一本正经的胡说八道</p>
-<h5 id="2-微信"><a href="#2-微信" class="headerlink" title="2. 微信"></a>2. 微信</h5><p>持续关注优秀的微信公众号</p>
-<h5 id="3-微信读书"><a href="#3-微信读书" class="headerlink" title="3. 微信读书"></a>3. 微信读书</h5><p>买了自动续费会员，当作对自己的投资。</p>
-<h4 id="财经资讯"><a href="#财经资讯" class="headerlink" title="财经资讯"></a>财经资讯</h4><h5 id="1-同花顺"><a href="#1-同花顺" class="headerlink" title="1. 同花顺"></a>1. 同花顺</h5><p>关注股票的动态</p>
-<h5 id="2-支付宝"><a href="#2-支付宝" class="headerlink" title="2. 支付宝"></a>2. 支付宝</h5><p>关注个人的基金状态。</p>
-<h4 id="傻乐"><a href="#傻乐" class="headerlink" title="傻乐"></a>傻乐</h4><h5 id="1-虎扑"><a href="#1-虎扑" class="headerlink" title="1. 虎扑"></a>1. 虎扑</h5><p>直男社区。</p>
-<h5 id="2-微博"><a href="#2-微博" class="headerlink" title="2. 微博"></a>2. 微博</h5><p>微博获取写官方热点。有时候会分享些生活上的小事。</p>
-]]></content>
-      <categories>
-        <category>Life</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>GitFlow 工作流</title>
-    <url>/2019/04/27/gitflow/</url>
-    <content><![CDATA[<p>工作中会用到的 Git 分支模型。</p>
-<hr>
-<h4 id="闲言"><a href="#闲言" class="headerlink" title="闲言"></a>闲言</h4><p>学生生涯比较 low 。没用过分之管理。都是直接在 master 分之上简单粗爆。</p>
-<p>毕业后进入一个公司，可能工作是运维。发现身边同事也没有分之管理的意识。也是在 master 上简单粗爆。</p>
-<p>偶然机会好朋友跟我分享说他们是使用 GitFlow 分之管理的。带着改变自己开发习惯的心态了解了一波。</p>
-<p>GitFlow 工作流定义了一个围绕项目发布的严格分支模型。虽然比功能分支工作流复杂几分，<br>但提供了用于一个健壮的用于管理大型项目的框架。</p>
-<p><img src="/images/blog/2019-04-27-2.png" alt></p>
-<p>偌大的图觉得有些晕。别怕，下面来看下具体描述</p>
-<h4 id="GitFlow-工作流"><a href="#GitFlow-工作流" class="headerlink" title="GitFlow 工作流"></a>GitFlow 工作流</h4><p>在你开始阅读之前，请记住：流程应被视作为指导方针，而非“铁律”。我们只是想告诉你可能的做法。<br>因此，如果有必要的话，你可以组合使用不同的流程</p>
-<p><img src="/images/blog/2019-04-27-3.png" alt></p>
-<h4 id="工作方式"><a href="#工作方式" class="headerlink" title="工作方式"></a>工作方式</h4><p>GitFlow 工作流仍然用中央仓库作为所有开发者的交互中心。和其它的工作流一样，开发者在本地工作并push分支到要中央仓库中。</p>
-<h4 id="分支介绍"><a href="#分支介绍" class="headerlink" title="分支介绍"></a>分支介绍</h4><pre><code>master: 这个分支的代码是发布到生产的代码
-
-develop: 这个分支的代码是预发布到生产的代码
-
-release: 这个分支的代码是新版本发布到生产的代码
-
-feature: 这个分支的代码是新需求开发的代码
-
-hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>常用的分支约定</p>
-<blockquote>
-<ul>
-<li>用于新建发布分支的分支: develop</li>
-<li>用于合并的分支: master</li>
-<li>分支命名: release-* 或 release/*</li>
-</ul>
-</blockquote>
-<h4 id="历史分支"><a href="#历史分支" class="headerlink" title="历史分支"></a>历史分支</h4><p>GitFlow 工作流使用2个分支来记录项目的历史。master 分支存储了正式发布的历史，<br>而 develop 分支作为功能的集成分支。这样也方便master分支上的所有提交分配一个版本号。</p>
-<p><img src="/images/blog/2019-04-27-4.png" alt></p>
-<h4 id="功能分支"><a href="#功能分支" class="headerlink" title="功能分支"></a>功能分支</h4><p>每个新功能位于一个自己的分支，这样可以push到中央仓库以备份和协作。<br>但功能分支不是从master分支上拉出新分支，而是使用develop分支作为父分支。<br>当新功能完成时，合并回develop分支。新功能提交应该从不直接与master分支交互。</p>
-<p><img src="/images/blog/2019-04-27-5.png" alt></p>
-<p><strong>注意，从各种含义和目的上来看，功能分支加上develop分支就是功能分支工作流的用法。但Gitflow工作流没有在这里止步。</strong></p>
-<h4 id="发布分支"><a href="#发布分支" class="headerlink" title="发布分支"></a>发布分支</h4><p>一旦 develop 分支上有了做一次发布（或者说快到了既定的发布日）的足够功能，就从develop分支上fork一个发布分支。<br>新建的分支用于开始发布循环，所以从这个时间点开始之后新的功能不能再加到这个分支上 —— 这个分支只应该做Bug修复、文档生成和其它面向发布任务。<br>一旦对外发布的工作都完成了，发布分支合并到master分支并分配一个版本号打好Tag(所有在 master 分支上的 commit应该 Tag)。<br>另外，这些从新建发布分支以来的做的修改要合并回develop分支。</p>
-<p>使用一个用于发布准备的专门分支，使得一个团队可以在完善当前的发布版本的同时，另一个团队可以继续开发下个版本的功能。<br>这也打造定义良好的开发阶段（比如，可以很轻松地说，『这周我们要做准备发布版本4.0』，并且在仓库的目录结构中可以实际看到）。</p>
-<p><img src="/images/blog/2019-04-27-6.png" alt></p>
-<h4 id="维护分支"><a href="#维护分支" class="headerlink" title="维护分支"></a>维护分支</h4><p>维护分支或说是热修复（hotfix）分支用于生成快速给产品发布版本（production releases）打补丁，这是唯一可以直接从master分支fork出来的分支。修复完成，修改应该马上合并回master分支和develop分支（当前的发布分支），master分支应该用新的版本号打好Tag。</p>
-<p><img src="/images/blog/2019-04-27-7.png" alt></p>
-<p>为Bug修复使用专门分支，让团队可以处理掉问题而不用打断其它工作或是等待下一个发布循环。你可以把维护分支想成是一个直接在master分支上处理的临时发布。</p>
-<h4 id="场景设想"><a href="#场景设想" class="headerlink" title="场景设想"></a>场景设想</h4><p>下面列举一些可能你在工作中会经常面对的场景</p>
-<ol>
-<li><p>组长分配新需求下来，安排下周上线（假设是 1227 号），你看看当前有没有下周版本的分支？有的话很简单，checkout 下周分支（feature_app1.1.0_1227）来开发就行，没有的话这时需要新建分支，从 develop 分支创建新的 feature 分支（feature_app1.1.0_1227）,然后将对应的 pom.xml 版本号修改成 1.1.0-SNAPSHOT，注意命名，比如这里我用 feature 做前缀，你也可以自己设定一个规则。</p>
-</li>
-<li><p>开发完 feature_app1.1.0_1227 需求，移交了测试，很遗憾，测试出现了 n 个 bug，这时依旧在 feature_app1.1.0_1227 上修复 bug。</p>
-</li>
-<li><p>终于到了发版前一天，测试 MM 说 n 轮测试完了，没问题，拉上线版本，再做一次回归测试。这时，你就需要把 feature_app1.1.0_1227 分支合并到 develop 分支，然后从 develop 分支中创建新的分支 release_app1.1.0_1227，然后修改对应的版本号为 1.1.0-RELEASE。</p>
-</li>
-<li><p>到了发版日早上了，测试 MM 用了 release_app1.1.0_1227 版本测试了一番，又发现了一个 bug。别慌，只要不是生产的 bug，都好解决。这时你要在 release_app1.1.0_1227 修复 bug，切记不能在 feature_app1.1.0_1227 上修改，feature_app1.1.0_1227 分支已经没有多大作用了，只用来看代码提交记录。</p>
-</li>
-<li><p>安安全全的到了晚上，开始发版了，发完版突然发现了有异常，定位问题后发现是有一行代码写错了，跟组长确认后，在 release_app1.1.0_1227 分支上做了修改，重新打包后发版，验证了一段时间，没问题了。。。</p>
-</li>
-<li><p>发版总算完成了，这时，别忘记把 release_app1.1.0_1227 版本合并到 develop 和 master 分支。还有一点很重要的，把 develop 分支代码合并到 1227 以后的版本（如果已经有1227 以后的版本的话）。注意：这个步骤合并代码要谨慎，如果有别人的代码合并冲突比较大，需要找那个开发的同事一起合并代码。总算可以睡个好觉了。。。</p>
-</li>
-<li><p>告别了旧需求，迎来了新需求，接下来的需求开发就按上面的步骤走。。。</p>
-</li>
-<li><p>第二天，突然生产上一直报 NullPointerException，定位发现是一行代码没有判空导致的，三番确认，原来这个数据以前是不为空的，现在确实需要支持有些数据为空的，需要紧急修复这个 bug，和组长确认之后，从 master 分支上拉了一个 hotfix_app1.1.1_1228 分支代码，修复了 NullPointerException，打包后上线，验证没问题后，把 hotfix_app1.1.1_1228 分支合并到 develop 和 master 分支，并把 develop 分支合并到 1227 以后的版本。</p>
-</li>
-</ol>
-<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>下面的示例演示本工作流如何用于管理单个发布循环。假设你已经创建了一个中央仓库。</p>
-<h5 id="1-创建开发分支"><a href="#1-创建开发分支" class="headerlink" title="1. 创建开发分支"></a>1. 创建开发分支</h5><p><img src="/images/blog/2019-04-27-8.png" alt></p>
-<p>第一步为master分支配套一个develop分支。简单来做可以本地创建一个空的develop分支，push到服务器上</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git branch develop</span><br><span class="line">git push -u origin develop</span><br></pre></td></tr></table></figure>
-<p>以后这个分支将会包含了项目的全部历史，而master分支将只包含了部分历史。其它开发者这时应该克隆中央仓库，建好develop分支的跟踪分支</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git clone url</span><br><span class="line">git checkout -b develop origin&#x2F;develop</span><br></pre></td></tr></table></figure>
-<p>现在每个开发人员都有了这些历史分支的本地拷贝。</p>
-<h5 id="2-工程师A和工程师B开始开发新功能"><a href="#2-工程师A和工程师B开始开发新功能" class="headerlink" title="2. 工程师A和工程师B开始开发新功能"></a>2. 工程师A和工程师B开始开发新功能</h5><p><img src="/images/blog/2019-04-27-9.png" alt></p>
-<p>这个示例中，工程师A和工程师B开始各自的功能开发。他们需要为各自的功能创建相应的分支。新分支不是基于master分支，而是应该基于develop分支：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout -b some-feature develop</span><br></pre></td></tr></table></figure>
-
-<p>他们用老套路添加提交到各自功能分支上：编辑、暂存、提交</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git status</span><br><span class="line">git add</span><br><span class="line">git commit</span><br></pre></td></tr></table></figure>
-
-<h5 id="3-工程师A完成功能开发"><a href="#3-工程师A完成功能开发" class="headerlink" title="3. 工程师A完成功能开发"></a>3. 工程师A完成功能开发</h5><p><img src="/images/blog/2019-04-27-10.png" alt></p>
-<p>添加了提交后，工程师A觉得她的功能OK了。</p>
-<p>如果团队使用Pull Requests，这时候可以发起一个用于合并到develop分支。</p>
-<p>否则她可以直接合并到她本地的develop分支后push到中央仓库。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git pull origin develop</span><br><span class="line">git checkout develop</span><br><span class="line">git merge some-feature</span><br><span class="line">git push</span><br><span class="line">git branch -d some-feature</span><br></pre></td></tr></table></figure>
-
-<p>git pull 命令在合并功能前确保develop分支是最新的。</p>
-<p>注意，功能决不应该直接合并到master分支。</p>
-<h5 id="4-工程师A开始准备发布"><a href="#4-工程师A开始准备发布" class="headerlink" title="4. 工程师A开始准备发布"></a>4. 工程师A开始准备发布</h5><p><img src="/images/blog/2019-04-27-11.png" alt></p>
-<p>这个时候工程师B正在实现他的功能，工程师A开始准备她的第一个项目正式发布。</p>
-<p>像功能开发一样，她用一个新的分支来做发布准备。这一步也确定了发布的版本号：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout -b release-0.1 develop</span><br></pre></td></tr></table></figure>
-
-<p>这个分支是清理发布、执行所有测试、更新文档和其它为下个发布做准备操作的地方，像是一个专门用于改善发布的功能分支。</p>
-<p>只要工程师A创建这个分支并push到中央仓库，这个发布就是功能冻结的。任何不在develop分支中的新功能都推到下个发布循环中。</p>
-<h5 id="5-工程师A完成发布"><a href="#5-工程师A完成发布" class="headerlink" title="5. 工程师A完成发布"></a>5. 工程师A完成发布</h5><p><img src="/images/blog/2019-04-27-12.png" alt></p>
-<p>一旦准备好了对外发布，工程师A合并修改到master分支和develop分支上，删除发布分支。合并回develop分支很重要，因为在发布分支中已经提交的更新需要在后面的新功能中也要是可用的。</p>
-<p>另外，如果工程师A的团队要求Code Review，这是一个发起Pull Request的理想时机。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge release-0.1</span><br><span class="line">git push</span><br><span class="line">git checkout develop</span><br><span class="line">git merge release-0.1</span><br><span class="line">git push</span><br><span class="line">git branch -d release-0.1</span><br></pre></td></tr></table></figure>
-
-<p>发布分支是作为功能开发（develop分支）和对外发布（master分支）间的缓冲。只要有合并到master分支，就应该打好Tag以方便跟踪。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git tag -a 0.1 -m &quot;Initial public release&quot; master</span><br><span class="line">git push --tags</span><br></pre></td></tr></table></figure>
-
-<p>Git有提供各种勾子（hook），即仓库有事件发生时触发执行的脚本。可以配置一个勾子，在你push中央仓库的master分支时，自动构建好对外发布。</p>
-<h5 id="6-最终用户发现Bug"><a href="#6-最终用户发现Bug" class="headerlink" title="6. 最终用户发现Bug"></a>6. 最终用户发现Bug</h5><p><img src="/images/blog/2019-04-27-13.png" alt></p>
-<p>对外发布后，工程师A回去和工程师B一起做下个发布的新功能开发，直到有最终用户开了一个Ticket抱怨当前版本的一个Bug。</p>
-<p>为了处理Bug，工程师A（或工程师B）从master分支上拉出了一个维护分支，提交修改以解决问题，然后直接合并回master分支：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout -b issue-#001 master</span><br></pre></td></tr></table></figure>
-
-<p>Fix the bug</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge issue-#001</span><br><span class="line">git push</span><br></pre></td></tr></table></figure>
-
-<p>就像发布分支，维护分支中新加这些重要修改需要包含到develop分支中，所以工程师A要执行一个合并操作。然后就可以安全地删除这个分支了：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout develop</span><br><span class="line">git merge issue-#001</span><br><span class="line">git push</span><br><span class="line">git branch -d issue-#001</span><br></pre></td></tr></table></figure>
-
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>Git是一个不错的版本管理工具，但也仅仅是工具。记住，这里演示的工作流只是可能用法的例子，而不是在实际工作中使用Git不可违逆的条例。</p>
-<p>所以不要畏惧按自己需要对工作流的用法做取舍。不变的目标就是让Git为你所用。</p>
-<p>一个标准的 Git 分支模型，在不管工作上还是学习上，在需要分支管理的时候，回忆起有这么一个图，根据你的场景再应用进去，肯定会少走很多弯路。</p>
-<p><strong>最后我想了想，应该保持分之不删除。这样以后可以在 log 中和仓库中可以追溯历史。因原文有，所以我保留了，待我实践过这套流程后再回来修复</strong></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/myqianlan/p/4195994.html" target="_blank" rel="noopener">Git基本命令和GitFlow工作流</a></li>
-<li><a href="https://mp.weixin.qq.com/s/Ypf4umT0mWb0lC5GHgc0Lg" target="_blank" rel="noopener">成熟的 Git 分支模型</a></li>
-<li><a href="http://www.cnblogs.com/cnblogsfans/p/5075073.html" target="_blank" rel="noopener">Git 在团队中的最佳实践–如何正确使用Git Flow</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Tools</category>
-      </categories>
-  </entry>
-  <entry>
     <title>高效的一天可以这样过</title>
     <url>/2019/04/27/my-life/</url>
     <content><![CDATA[<p>高效的一天可以这样过</p>
@@ -8181,6 +8031,154 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 <ul>
 <li><a href="https://hellokangning.github.io/zh/post/an-efficient-day/#7-30-9-00" target="_blank" rel="noopener">高效的一天可以这样过</a></li>
 </ul>
+]]></content>
+      <categories>
+        <category>Life</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>GitFlow 工作流</title>
+    <url>/2019/04/27/gitflow/</url>
+    <content><![CDATA[<p>工作中会用到的 Git 分支模型。</p>
+<hr>
+<h4 id="闲言"><a href="#闲言" class="headerlink" title="闲言"></a>闲言</h4><p>学生生涯比较 low 。没用过分之管理。都是直接在 master 分之上简单粗爆。</p>
+<p>毕业后进入一个公司，可能工作是运维。发现身边同事也没有分之管理的意识。也是在 master 上简单粗爆。</p>
+<p>偶然机会好朋友跟我分享说他们是使用 GitFlow 分之管理的。带着改变自己开发习惯的心态了解了一波。</p>
+<p>GitFlow 工作流定义了一个围绕项目发布的严格分支模型。虽然比功能分支工作流复杂几分，<br>但提供了用于一个健壮的用于管理大型项目的框架。</p>
+<p><img src="/images/blog/2019-04-27-2.png" alt></p>
+<p>偌大的图觉得有些晕。别怕，下面来看下具体描述</p>
+<h4 id="GitFlow-工作流"><a href="#GitFlow-工作流" class="headerlink" title="GitFlow 工作流"></a>GitFlow 工作流</h4><p>在你开始阅读之前，请记住：流程应被视作为指导方针，而非“铁律”。我们只是想告诉你可能的做法。<br>因此，如果有必要的话，你可以组合使用不同的流程</p>
+<p><img src="/images/blog/2019-04-27-3.png" alt></p>
+<h4 id="工作方式"><a href="#工作方式" class="headerlink" title="工作方式"></a>工作方式</h4><p>GitFlow 工作流仍然用中央仓库作为所有开发者的交互中心。和其它的工作流一样，开发者在本地工作并push分支到要中央仓库中。</p>
+<h4 id="分支介绍"><a href="#分支介绍" class="headerlink" title="分支介绍"></a>分支介绍</h4><pre><code>master: 这个分支的代码是发布到生产的代码
+
+develop: 这个分支的代码是预发布到生产的代码
+
+release: 这个分支的代码是新版本发布到生产的代码
+
+feature: 这个分支的代码是新需求开发的代码
+
+hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>常用的分支约定</p>
+<blockquote>
+<ul>
+<li>用于新建发布分支的分支: develop</li>
+<li>用于合并的分支: master</li>
+<li>分支命名: release-* 或 release/*</li>
+</ul>
+</blockquote>
+<h4 id="历史分支"><a href="#历史分支" class="headerlink" title="历史分支"></a>历史分支</h4><p>GitFlow 工作流使用2个分支来记录项目的历史。master 分支存储了正式发布的历史，<br>而 develop 分支作为功能的集成分支。这样也方便master分支上的所有提交分配一个版本号。</p>
+<p><img src="/images/blog/2019-04-27-4.png" alt></p>
+<h4 id="功能分支"><a href="#功能分支" class="headerlink" title="功能分支"></a>功能分支</h4><p>每个新功能位于一个自己的分支，这样可以push到中央仓库以备份和协作。<br>但功能分支不是从master分支上拉出新分支，而是使用develop分支作为父分支。<br>当新功能完成时，合并回develop分支。新功能提交应该从不直接与master分支交互。</p>
+<p><img src="/images/blog/2019-04-27-5.png" alt></p>
+<p><strong>注意，从各种含义和目的上来看，功能分支加上develop分支就是功能分支工作流的用法。但Gitflow工作流没有在这里止步。</strong></p>
+<h4 id="发布分支"><a href="#发布分支" class="headerlink" title="发布分支"></a>发布分支</h4><p>一旦 develop 分支上有了做一次发布（或者说快到了既定的发布日）的足够功能，就从develop分支上fork一个发布分支。<br>新建的分支用于开始发布循环，所以从这个时间点开始之后新的功能不能再加到这个分支上 —— 这个分支只应该做Bug修复、文档生成和其它面向发布任务。<br>一旦对外发布的工作都完成了，发布分支合并到master分支并分配一个版本号打好Tag(所有在 master 分支上的 commit应该 Tag)。<br>另外，这些从新建发布分支以来的做的修改要合并回develop分支。</p>
+<p>使用一个用于发布准备的专门分支，使得一个团队可以在完善当前的发布版本的同时，另一个团队可以继续开发下个版本的功能。<br>这也打造定义良好的开发阶段（比如，可以很轻松地说，『这周我们要做准备发布版本4.0』，并且在仓库的目录结构中可以实际看到）。</p>
+<p><img src="/images/blog/2019-04-27-6.png" alt></p>
+<h4 id="维护分支"><a href="#维护分支" class="headerlink" title="维护分支"></a>维护分支</h4><p>维护分支或说是热修复（hotfix）分支用于生成快速给产品发布版本（production releases）打补丁，这是唯一可以直接从master分支fork出来的分支。修复完成，修改应该马上合并回master分支和develop分支（当前的发布分支），master分支应该用新的版本号打好Tag。</p>
+<p><img src="/images/blog/2019-04-27-7.png" alt></p>
+<p>为Bug修复使用专门分支，让团队可以处理掉问题而不用打断其它工作或是等待下一个发布循环。你可以把维护分支想成是一个直接在master分支上处理的临时发布。</p>
+<h4 id="场景设想"><a href="#场景设想" class="headerlink" title="场景设想"></a>场景设想</h4><p>下面列举一些可能你在工作中会经常面对的场景</p>
+<ol>
+<li><p>组长分配新需求下来，安排下周上线（假设是 1227 号），你看看当前有没有下周版本的分支？有的话很简单，checkout 下周分支（feature_app1.1.0_1227）来开发就行，没有的话这时需要新建分支，从 develop 分支创建新的 feature 分支（feature_app1.1.0_1227）,然后将对应的 pom.xml 版本号修改成 1.1.0-SNAPSHOT，注意命名，比如这里我用 feature 做前缀，你也可以自己设定一个规则。</p>
+</li>
+<li><p>开发完 feature_app1.1.0_1227 需求，移交了测试，很遗憾，测试出现了 n 个 bug，这时依旧在 feature_app1.1.0_1227 上修复 bug。</p>
+</li>
+<li><p>终于到了发版前一天，测试 MM 说 n 轮测试完了，没问题，拉上线版本，再做一次回归测试。这时，你就需要把 feature_app1.1.0_1227 分支合并到 develop 分支，然后从 develop 分支中创建新的分支 release_app1.1.0_1227，然后修改对应的版本号为 1.1.0-RELEASE。</p>
+</li>
+<li><p>到了发版日早上了，测试 MM 用了 release_app1.1.0_1227 版本测试了一番，又发现了一个 bug。别慌，只要不是生产的 bug，都好解决。这时你要在 release_app1.1.0_1227 修复 bug，切记不能在 feature_app1.1.0_1227 上修改，feature_app1.1.0_1227 分支已经没有多大作用了，只用来看代码提交记录。</p>
+</li>
+<li><p>安安全全的到了晚上，开始发版了，发完版突然发现了有异常，定位问题后发现是有一行代码写错了，跟组长确认后，在 release_app1.1.0_1227 分支上做了修改，重新打包后发版，验证了一段时间，没问题了。。。</p>
+</li>
+<li><p>发版总算完成了，这时，别忘记把 release_app1.1.0_1227 版本合并到 develop 和 master 分支。还有一点很重要的，把 develop 分支代码合并到 1227 以后的版本（如果已经有1227 以后的版本的话）。注意：这个步骤合并代码要谨慎，如果有别人的代码合并冲突比较大，需要找那个开发的同事一起合并代码。总算可以睡个好觉了。。。</p>
+</li>
+<li><p>告别了旧需求，迎来了新需求，接下来的需求开发就按上面的步骤走。。。</p>
+</li>
+<li><p>第二天，突然生产上一直报 NullPointerException，定位发现是一行代码没有判空导致的，三番确认，原来这个数据以前是不为空的，现在确实需要支持有些数据为空的，需要紧急修复这个 bug，和组长确认之后，从 master 分支上拉了一个 hotfix_app1.1.1_1228 分支代码，修复了 NullPointerException，打包后上线，验证没问题后，把 hotfix_app1.1.1_1228 分支合并到 develop 和 master 分支，并把 develop 分支合并到 1227 以后的版本。</p>
+</li>
+</ol>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>下面的示例演示本工作流如何用于管理单个发布循环。假设你已经创建了一个中央仓库。</p>
+<h5 id="1-创建开发分支"><a href="#1-创建开发分支" class="headerlink" title="1. 创建开发分支"></a>1. 创建开发分支</h5><p><img src="/images/blog/2019-04-27-8.png" alt></p>
+<p>第一步为master分支配套一个develop分支。简单来做可以本地创建一个空的develop分支，push到服务器上</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git branch develop</span><br><span class="line">git push -u origin develop</span><br></pre></td></tr></table></figure>
+<p>以后这个分支将会包含了项目的全部历史，而master分支将只包含了部分历史。其它开发者这时应该克隆中央仓库，建好develop分支的跟踪分支</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git clone url</span><br><span class="line">git checkout -b develop origin&#x2F;develop</span><br></pre></td></tr></table></figure>
+<p>现在每个开发人员都有了这些历史分支的本地拷贝。</p>
+<h5 id="2-工程师A和工程师B开始开发新功能"><a href="#2-工程师A和工程师B开始开发新功能" class="headerlink" title="2. 工程师A和工程师B开始开发新功能"></a>2. 工程师A和工程师B开始开发新功能</h5><p><img src="/images/blog/2019-04-27-9.png" alt></p>
+<p>这个示例中，工程师A和工程师B开始各自的功能开发。他们需要为各自的功能创建相应的分支。新分支不是基于master分支，而是应该基于develop分支：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout -b some-feature develop</span><br></pre></td></tr></table></figure>
+
+<p>他们用老套路添加提交到各自功能分支上：编辑、暂存、提交</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git status</span><br><span class="line">git add</span><br><span class="line">git commit</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-工程师A完成功能开发"><a href="#3-工程师A完成功能开发" class="headerlink" title="3. 工程师A完成功能开发"></a>3. 工程师A完成功能开发</h5><p><img src="/images/blog/2019-04-27-10.png" alt></p>
+<p>添加了提交后，工程师A觉得她的功能OK了。</p>
+<p>如果团队使用Pull Requests，这时候可以发起一个用于合并到develop分支。</p>
+<p>否则她可以直接合并到她本地的develop分支后push到中央仓库。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git pull origin develop</span><br><span class="line">git checkout develop</span><br><span class="line">git merge some-feature</span><br><span class="line">git push</span><br><span class="line">git branch -d some-feature</span><br></pre></td></tr></table></figure>
+
+<p>git pull 命令在合并功能前确保develop分支是最新的。</p>
+<p>注意，功能决不应该直接合并到master分支。</p>
+<h5 id="4-工程师A开始准备发布"><a href="#4-工程师A开始准备发布" class="headerlink" title="4. 工程师A开始准备发布"></a>4. 工程师A开始准备发布</h5><p><img src="/images/blog/2019-04-27-11.png" alt></p>
+<p>这个时候工程师B正在实现他的功能，工程师A开始准备她的第一个项目正式发布。</p>
+<p>像功能开发一样，她用一个新的分支来做发布准备。这一步也确定了发布的版本号：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout -b release-0.1 develop</span><br></pre></td></tr></table></figure>
+
+<p>这个分支是清理发布、执行所有测试、更新文档和其它为下个发布做准备操作的地方，像是一个专门用于改善发布的功能分支。</p>
+<p>只要工程师A创建这个分支并push到中央仓库，这个发布就是功能冻结的。任何不在develop分支中的新功能都推到下个发布循环中。</p>
+<h5 id="5-工程师A完成发布"><a href="#5-工程师A完成发布" class="headerlink" title="5. 工程师A完成发布"></a>5. 工程师A完成发布</h5><p><img src="/images/blog/2019-04-27-12.png" alt></p>
+<p>一旦准备好了对外发布，工程师A合并修改到master分支和develop分支上，删除发布分支。合并回develop分支很重要，因为在发布分支中已经提交的更新需要在后面的新功能中也要是可用的。</p>
+<p>另外，如果工程师A的团队要求Code Review，这是一个发起Pull Request的理想时机。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge release-0.1</span><br><span class="line">git push</span><br><span class="line">git checkout develop</span><br><span class="line">git merge release-0.1</span><br><span class="line">git push</span><br><span class="line">git branch -d release-0.1</span><br></pre></td></tr></table></figure>
+
+<p>发布分支是作为功能开发（develop分支）和对外发布（master分支）间的缓冲。只要有合并到master分支，就应该打好Tag以方便跟踪。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git tag -a 0.1 -m &quot;Initial public release&quot; master</span><br><span class="line">git push --tags</span><br></pre></td></tr></table></figure>
+
+<p>Git有提供各种勾子（hook），即仓库有事件发生时触发执行的脚本。可以配置一个勾子，在你push中央仓库的master分支时，自动构建好对外发布。</p>
+<h5 id="6-最终用户发现Bug"><a href="#6-最终用户发现Bug" class="headerlink" title="6. 最终用户发现Bug"></a>6. 最终用户发现Bug</h5><p><img src="/images/blog/2019-04-27-13.png" alt></p>
+<p>对外发布后，工程师A回去和工程师B一起做下个发布的新功能开发，直到有最终用户开了一个Ticket抱怨当前版本的一个Bug。</p>
+<p>为了处理Bug，工程师A（或工程师B）从master分支上拉出了一个维护分支，提交修改以解决问题，然后直接合并回master分支：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout -b issue-#001 master</span><br></pre></td></tr></table></figure>
+
+<p>Fix the bug</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge issue-#001</span><br><span class="line">git push</span><br></pre></td></tr></table></figure>
+
+<p>就像发布分支，维护分支中新加这些重要修改需要包含到develop分支中，所以工程师A要执行一个合并操作。然后就可以安全地删除这个分支了：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">git checkout develop</span><br><span class="line">git merge issue-#001</span><br><span class="line">git push</span><br><span class="line">git branch -d issue-#001</span><br></pre></td></tr></table></figure>
+
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>Git是一个不错的版本管理工具，但也仅仅是工具。记住，这里演示的工作流只是可能用法的例子，而不是在实际工作中使用Git不可违逆的条例。</p>
+<p>所以不要畏惧按自己需要对工作流的用法做取舍。不变的目标就是让Git为你所用。</p>
+<p>一个标准的 Git 分支模型，在不管工作上还是学习上，在需要分支管理的时候，回忆起有这么一个图，根据你的场景再应用进去，肯定会少走很多弯路。</p>
+<p><strong>最后我想了想，应该保持分之不删除。这样以后可以在 log 中和仓库中可以追溯历史。因原文有，所以我保留了，待我实践过这套流程后再回来修复</strong></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/myqianlan/p/4195994.html" target="_blank" rel="noopener">Git基本命令和GitFlow工作流</a></li>
+<li><a href="https://mp.weixin.qq.com/s/Ypf4umT0mWb0lC5GHgc0Lg" target="_blank" rel="noopener">成熟的 Git 分支模型</a></li>
+<li><a href="http://www.cnblogs.com/cnblogsfans/p/5075073.html" target="_blank" rel="noopener">Git 在团队中的最佳实践–如何正确使用Git Flow</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Tools</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>信息类 APP 组合</title>
+    <url>/2019/04/27/Information-class-APP-combination/</url>
+    <content><![CDATA[<p>信息类 APP 获取的信息，是为了知识的产生提供支持。</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>手机的优势在于它的便携性，加上入口窄使得人更加专注，已经成为获取信息的中流砥柱</p>
+<p>首先，弄清什么是信息。<br>其次，明确需要哪些信息。<br>最后，才是选择适合自己的的APP。</p>
+<p>什么是信息呢</p>
+<p>基于这个解释，我需要获取的信息，是为了知识的产生提供支持。而哪些信息可以成为我的知识呢，我终结了以下几点：</p>
+<p>时事动向，包括新闻，IT、财经。<br>技术提升<br>个人成长，主要通过读书。<br>财经知识，所有的问题，归根结底还是钱的问题。<br>另外，我还单独拎出一个分类，它虽然不能直接为行动提供依据，但也不可忽视。<br>开心生活</p>
+<h5 id="个人成长"><a href="#个人成长" class="headerlink" title="个人成长"></a>个人成长</h5><h5 id="1-得到"><a href="#1-得到" class="headerlink" title="1. 得到"></a>1. 得到</h5><p>罗辑思维的产品。有些观点很新颖，但是有些观点不太认同，学会保持自己的判断能力。</p>
+<p>现在更多的是批判性地看罗胖胖一本正经的胡说八道</p>
+<h5 id="2-微信"><a href="#2-微信" class="headerlink" title="2. 微信"></a>2. 微信</h5><p>持续关注优秀的微信公众号</p>
+<h5 id="3-微信读书"><a href="#3-微信读书" class="headerlink" title="3. 微信读书"></a>3. 微信读书</h5><p>买了自动续费会员，当作对自己的投资。</p>
+<h4 id="财经资讯"><a href="#财经资讯" class="headerlink" title="财经资讯"></a>财经资讯</h4><h5 id="1-同花顺"><a href="#1-同花顺" class="headerlink" title="1. 同花顺"></a>1. 同花顺</h5><p>关注股票的动态</p>
+<h5 id="2-支付宝"><a href="#2-支付宝" class="headerlink" title="2. 支付宝"></a>2. 支付宝</h5><p>关注个人的基金状态。</p>
+<h4 id="傻乐"><a href="#傻乐" class="headerlink" title="傻乐"></a>傻乐</h4><h5 id="1-虎扑"><a href="#1-虎扑" class="headerlink" title="1. 虎扑"></a>1. 虎扑</h5><p>直男社区。</p>
+<h5 id="2-微博"><a href="#2-微博" class="headerlink" title="2. 微博"></a>2. 微博</h5><p>微博获取写官方热点。有时候会分享些生活上的小事。</p>
 ]]></content>
       <categories>
         <category>Life</category>
@@ -8441,32 +8439,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>PostMan 的基本使用汇总</title>
-    <url>/2019/04/10/postman-post-put/</url>
-    <content><![CDATA[<p>PostMan 发送 JSON 格式的 POST/PUT 请求</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>用 POSTMAN 发送 JSON 格式的 POST/PUT 请求</p>
-<h4 id="设置Header"><a href="#设置Header" class="headerlink" title="设置Header"></a>设置Header</h4><p>Content-Type  application/json</p>
-<p><img src="/images/blog/2019-04-10-5.png" alt></p>
-<h4 id="设置Body"><a href="#设置Body" class="headerlink" title="设置Body"></a>设置Body</h4><p>选择 raw</p>
-<p><img src="/images/blog/2019-04-10-6.png" alt></p>
-<h4 id="PUT-请求"><a href="#PUT-请求" class="headerlink" title="PUT 请求"></a>PUT 请求</h4><p>把请求方式改为 PUT即可</p>
-<p><img src="/images/blog/2019-04-10-7.png" alt></p>
-<h4 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h4><p>GET 请求选择是 Params 面板填写参数</p>
-<p><img src="/images/blog/2019-04-10-8.png" alt></p>
-<h4 id="登录鉴权"><a href="#登录鉴权" class="headerlink" title="登录鉴权"></a>登录鉴权</h4><p>有时候需要登陆鉴权的需求。 这里不重复写了。移步 落落殿下的 <a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://blog.csdn.net/rziqq/article/details/77715085#commentBox" target="_blank" rel="noopener">用POSTMAN发送JSON格式的POST请求</a></li>
-<li><a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Tools</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Curl 模拟 GET\POST 请求</title>
     <url>/2019/04/10/linux-curl/</url>
     <content><![CDATA[<p>Curl 模拟 GET\POST 请求，以及 curl post 上传文件</p>
@@ -8511,6 +8483,32 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>PostMan 的基本使用汇总</title>
+    <url>/2019/04/10/postman-post-put/</url>
+    <content><![CDATA[<p>PostMan 发送 JSON 格式的 POST/PUT 请求</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>用 POSTMAN 发送 JSON 格式的 POST/PUT 请求</p>
+<h4 id="设置Header"><a href="#设置Header" class="headerlink" title="设置Header"></a>设置Header</h4><p>Content-Type  application/json</p>
+<p><img src="/images/blog/2019-04-10-5.png" alt></p>
+<h4 id="设置Body"><a href="#设置Body" class="headerlink" title="设置Body"></a>设置Body</h4><p>选择 raw</p>
+<p><img src="/images/blog/2019-04-10-6.png" alt></p>
+<h4 id="PUT-请求"><a href="#PUT-请求" class="headerlink" title="PUT 请求"></a>PUT 请求</h4><p>把请求方式改为 PUT即可</p>
+<p><img src="/images/blog/2019-04-10-7.png" alt></p>
+<h4 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h4><p>GET 请求选择是 Params 面板填写参数</p>
+<p><img src="/images/blog/2019-04-10-8.png" alt></p>
+<h4 id="登录鉴权"><a href="#登录鉴权" class="headerlink" title="登录鉴权"></a>登录鉴权</h4><p>有时候需要登陆鉴权的需求。 这里不重复写了。移步 落落殿下的 <a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/rziqq/article/details/77715085#commentBox" target="_blank" rel="noopener">用POSTMAN发送JSON格式的POST请求</a></li>
+<li><a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Tools</category>
       </categories>
   </entry>
   <entry>
@@ -9041,63 +9039,85 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>HDFS 块故障</title>
-    <url>/2019/03/14/hdfs-block-fault/</url>
-    <content><![CDATA[<p>发现测试集群HDFS报丢失块的告警。 对块进行修复</p>
+    <title>Hadoop + HBase 单机安装部署</title>
+    <url>/2019/03/14/apache-hadoop/</url>
+    <content><![CDATA[<p>单机搭建部署 Hadoop 、HBase</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>发现测试集群HDFS报丢失块的告警。 </p>
-<p><img src="/images/blog/2019-03-14-4.png" alt></p>
-<p>如果块损坏过多，超过设置的百分比，NameNode 会进入安全模式。需要退出安全模式处理</p>
-<h4 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h4><p>解决方法：</p>
-<ul>
-<li>如果文件不重要，可以直接删除此文件；或删除后重新复制一份到集群中</li>
-<li>如果不能删除，需要从上面命令中找到发生在哪台机器上，然后到此机器上查看日志。</li>
-</ul>
-<p>先确认集群有没有datanode宕机</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo -u hdfs hdfs dfsadmin -report</span><br></pre></td></tr></table></figure>
-
-<p>查看丢失块的信息</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 需要hdfs权限权限操作。如果没有hdfs 账号，则在命令前加 sudo -u hdfs ，以hdfs权限运行该命令</span><br><span class="line"></span><br><span class="line"># 检查整个文件系统，检查哪些数据块丢失了</span><br><span class="line">hdfs fsck &#x2F;</span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息</span><br><span class="line">hdfs fsck -list-corruptfileblocks   </span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息  -locations位置信息  -blocks各个块的信息   -files显示文件信息，包括文件名称，大小，块数量和健康状况（是否有缺失的块）</span><br><span class="line">hdfs fsck &lt;path&gt; -locations -blocks -files</span><br></pre></td></tr></table></figure>
-<p><img src="/images/blog/2019-03-14-5.png" alt></p>
-<p><img src="/images/blog/2019-03-14-6.png" alt></p>
-<p>当然，这只是数据允许丢失的情况下可以使用的一种简单粗暴的方法<code>hdfs fsck / -delete</code>, 是删除所有损坏的块的数据文件，会导致数据彻底丢失</p>
-<p>生产上还是无法使用这种直接删数据的方法的</p>
-<p>那么生产上应该怎么处理这种情况呢？</p>
-<ol>
-<li>首先<code>hdfs fsck -list-corruptfileblocks</code>找到数据块的位置</li>
-<li><code>hdfs debug recoverLease [-path &lt;path&gt;] [-retries &lt;num-retries&gt;]</code>用这个命令恢复上面路径丢失的数据块，最后一个参数是重试次数</li>
-</ol>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前一直是使用 CDH 。 准备入坑源码。所以想搭建一套 Apache 的来玩玩。</p>
+<p>选择的版本：</p>
 <blockquote>
-<p>自动修复<br>hdfs当然会自动修复损坏的数据块，当数据块损坏后，DN节点执⾏directoryscan（datanode进行内存和磁盘数据集块校验）操作之前，都不会发现损坏；也就是directoryscan操作校验是间隔6h<br>dfs.datanode.directoryscan.interval : 21600</p>
-<p>在DN向NN进⾏blockreport前，都不会恢复数据块;也就是blockreport操作是间隔6h<br>dfs.blockreport.intervalMsec : 21600000<br>最终当NN收到blockreport才会进⾏恢复操作<br>生产中倾向于使用手动修复的方法去修复损坏的数据块。</p>
-</blockquote>
-<p>具体的实操请转移这里阅读<a href="https://ruozedata.github.io/2019/06/06/%E7%94%9F%E4%BA%A7HDFS%20Block%E6%8D%9F%E5%9D%8F%E6%81%A2%E5%A4%8D%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5(%E5%90%AB%E6%80%9D%E8%80%83%E9%A2%98)/" target="_blank" rel="noopener">生产HDFS Block损坏恢复最佳实践(含思考题)</a>，注意地方：</p>
 <ul>
-<li>删除块和meta文件之后要重启HDFS，模拟损坏效果，不重启的话直接fsck检查看不到块损坏</li>
+<li>Hadoop: 2.7.7</li>
+<li>HBase: 1.2.11</li>
+<li>Linux: CentOs 6.5</li>
+<li>JDK: jdk1.8.0_161</li>
 </ul>
-<h4 id="HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法"><a href="#HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法" class="headerlink" title="HDFS block丢失过多进入安全模式（Safe mode）的解决方法"></a>HDFS block丢失过多进入安全模式（Safe mode）的解决方法</h4><p>前面介绍的是简单的块损坏。 后面遇到一次丢失块比例高达 13% 的测试环境。</p>
-<p>由于系统断电，内存不足等原因导致 DN 丢失超过设置的丢失百分比，系统自动进入安全模式。</p>
-<p>解决办法就是把宕机 DN 重启恢复回来，然后观察是否能够恢复。</p>
-<p>不然只能退出安全模式。清理损坏的块。</p>
-<p><strong>注意: 这种方式会出现数据丢失，损坏的block会被删掉</strong> 请慎重</p>
-<p>退出安全模式：</p>
-<p><img src="/images/blog/2019-03-14-7.png" alt></p>
-<p>离开安全模式后使用<code>hdfs dfsadmin -safemode get</code>查看，<code>Safe mode is OFF</code> 为安全模式关闭，<code>Safe mode is ON</code>为安全模式开启</p>
-<p>如果无法离开安全模式，那就强制离开<code>hdfs dfsadmin -safemode forceExit</code></p>
-<p>执行健康检查，删除损坏掉的block <code>hdfs fsck / -delete</code></p>
+</blockquote>
+<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>安装jdk，配置环境变量。 这个网上很多，自行百度。</p>
+<p>Hadoop、HBase tar包去官方网站下载即可</p>
+<p>下载之后将其解压。</p>
+<p><img src="/images/blog/2019-03-14-8.png" alt></p>
+<h4 id="配置-Hadoop-环境变量"><a href="#配置-Hadoop-环境变量" class="headerlink" title="配置 Hadoop 环境变量"></a>配置 Hadoop 环境变量</h4><h5 id="1-配置hadoop-env-sh、yarn-env-sh"><a href="#1-配置hadoop-env-sh、yarn-env-sh" class="headerlink" title="1. 配置hadoop-env.sh、yarn-env.sh"></a>1. 配置hadoop-env.sh、yarn-env.sh</h5><p>在Hadoop安装目录下 etc/hadoop</p>
+<p>在 hadoop-env.sh、yarn-env.sh  </p>
+<p>加入 export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
+<p>保存退出</p>
+<h5 id="2-配置HADOOP-HOME"><a href="#2-配置HADOOP-HOME" class="headerlink" title="2. 配置HADOOP_HOME"></a>2. 配置HADOOP_HOME</h5><p>修改全局环境变量</p>
+<p>在 /etc/profile </p>
+<p>export HADOOP_HOME=/opt/hadoop-2.7.3 # Hadoop的安装路径</p>
+<p>export PATH=$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$PATH</p>
+<h4 id="配置基本相关xml"><a href="#配置基本相关xml" class="headerlink" title="配置基本相关xml"></a>配置基本相关xml</h4><h5 id="core-site-xml"><a href="#core-site-xml" class="headerlink" title="core-site.xml"></a>core-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;fs.defaultFS&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hadoop.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;tmp&lt;&#x2F;value&gt; </span><br><span class="line">                &lt;description&gt;namenode上本地的hadoop临时文件夹&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="hdfs-site-xml"><a href="#hdfs-site-xml" class="headerlink" title="hdfs-site.xml"></a>hdfs-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">              &lt;name&gt;dfs.replication&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;1&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;数据需要备份的数量，不能大于集群的机器数量，默认为3&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.namenode.name.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;nn&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;description&gt;namenode上存储hdfs名字空间元数据&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.datanode.data.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;dn&lt;&#x2F;value&gt;</span><br><span class="line">             &lt;description&gt;datanode上数据块的物理存储位置&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　　　&lt;name&gt;dfs.namenode.secondary.http-address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　　　&lt;value&gt;localhost:9001&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;SecondaryNameNode HTTP 端口。如端口为 0，服务器将在自由端口启动。&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;  </span><br><span class="line">        &lt;property&gt; </span><br><span class="line">              &lt;name&gt;dfs.webhdfs.enabled&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;true&lt;&#x2F;value&gt; </span><br><span class="line">              &lt;description&gt;设置为true，可以在浏览器中IP+port查看&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="mapred-site-xml"><a href="#mapred-site-xml" class="headerlink" title="mapred-site.xml"></a>mapred-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.framework.name&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;yarn&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;mapreduce运用了yarn框架，设置name为yarn&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:10020&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;历史服务器,查看Mapreduce作业记录&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:19888&lt;&#x2F;value&gt;</span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;mapreduce_shuffle&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;NodeManager上运行的附属服务，用于运行mapreduce&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services.mapreduce.shuffle.class&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8032&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对客户端暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.scheduler.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8030&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对ApplicationMaster暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.resource-tracker.address&lt;&#x2F;name&gt;  </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8031&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对NodeManager暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.admin.address&lt;&#x2F;name&gt;   </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8033&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对管理员暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">           &lt;value&gt;localhost:8088&lt;&#x2F;value&gt; </span><br><span class="line">           &lt;description&gt;ResourceManager 对外web暴露的地址，可在浏览器查看&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Hadoop的启动与停止"><a href="#Hadoop的启动与停止" class="headerlink" title="Hadoop的启动与停止"></a>Hadoop的启动与停止</h4><h5 id="1-格式化namenode"><a href="#1-格式化namenode" class="headerlink" title="1. 格式化namenode"></a>1. 格式化namenode</h5><p>bin/hadoop namenode -format</p>
+<p><img src="/images/blog/2019-04-27-1.png" alt></p>
+<p>出现 successfully formatted 即可</p>
+<h5 id="2-启动-HDFS、YARN"><a href="#2-启动-HDFS、YARN" class="headerlink" title="2. 启动 HDFS、YARN"></a>2. 启动 HDFS、YARN</h5><p>一起启动</p>
+<p>sbin/start-all.sh</p>
+<p>也可以分开启动</p>
+<p>sbin/start-dfs.sh</p>
+<p>sbin/start-yarn.sh</p>
+<h5 id="3-验证"><a href="#3-验证" class="headerlink" title="3. 验证"></a>3. 验证</h5><p>在命令行输入 jps 可以看到启动的 Java 进程，接着在看看是否有 HDFS、Yarn 的角色</p>
+<p><img src="/images/blog/2019-03-14-9.png" alt></p>
+<p>在浏览器中输入http://{ip}:50070 查看 NameNode 状态。 ip 为你安装的机器 IP</p>
+<h5 id="4-停止"><a href="#4-停止" class="headerlink" title="4. 停止"></a>4. 停止</h5><p>停止hadoop，进入Hadoop目录下，输入命令：</p>
+<p>sbin/stop-all.sh。</p>
+<p>同样也可以分开停止的。</p>
+<p>sbin/stop-dfs.sh</p>
+<p>sbin/stop-yarn.sh</p>
+<h4 id="HBase"><a href="#HBase" class="headerlink" title="HBase"></a>HBase</h4><h5 id="1-配置HADOOP-HOME"><a href="#1-配置HADOOP-HOME" class="headerlink" title="1. 配置HADOOP_HOME"></a>1. 配置HADOOP_HOME</h5><p>在 /etc/profile 中加入</p>
+<p>export HBASE_HOME=/opt/hbase-1.2.11</p>
+<p>export PATH=$HBASE_HOME/bin:$PATH</p>
+<h5 id="2-hbase-site-xml"><a href="#2-hbase-site-xml" class="headerlink" title="2. hbase-site.xml"></a>2. hbase-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;!-- 端口要和Hadoop的fs.defaultFS端口一致--&gt;</span><br><span class="line">           &lt;!-- hbase存放数据目录 --&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　   &lt;name&gt;hbase.cluster.distributed&lt;&#x2F;name&gt; &lt;!-- 是否分布式部署 --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;false&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hbase.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;tmp&lt;&#x2F;value&gt;</span><br><span class="line">                &lt;description&gt;hbase临时文件目录&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.quorum&lt;&#x2F;name&gt; &lt;!-- list of  zookooper --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;localhost&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt; 　　　 </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.property.dataDir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;zookeeper&lt;&#x2F;value&gt;</span><br><span class="line">            &lt;description&gt;zookooper配置、日志等的存储位置&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-hbase-env-sh"><a href="#3-hbase-env-sh" class="headerlink" title="3. hbase-env.sh"></a>3. hbase-env.sh</h5><p>使用 HBase 自带的zookeeper</p>
+<p>export HBASE_MANAGES_ZK=true </p>
+<p>指定 JDK</p>
+<p>export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
+<h4 id="启动与停止Hbase"><a href="#启动与停止Hbase" class="headerlink" title="启动与停止Hbase"></a>启动与停止Hbase</h4><p>在Hadoop已经启动成功的基础上，输入 start-hbase.sh ，过几秒钟便启动完成。</p>
+<p>输入jps命令查看进程是否启动成功，若 机器 上出现 HMaster 即可。 (不知道为什么。我这里没有出现 HQuorumPeer，不知道是不是版本的原因)</p>
+<p>输入 hbase 可以看到支持的命令服务。 zkcli 是进入 HBase 自带的 zk 的命令</p>
+<p>输入 hbase shell 命令 进入 HBase 命令模式</p>
+<p>在浏览器中输入http://{ip}:16010 就可以在界面上看到 HBase 的配置了</p>
+<p>当要停止hbase时输入stop-hbase.sh，过几秒后hbase就会被停止了。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>这只是简易版的。生产环境的要求肯定不止这些。参考者请注意。</p>
+<p>这里有个地方没弄懂。尝试过配置 HBase Master 的端口为 16000。 发现未生效。端口是随机的。。。<br>没想明白为什么。等看下源码找找原因。</p>
+<p>附上 HBase 端口设置参数</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">hbase-site.xml</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16010&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16201&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16301&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br></pre></td></tr></table></figure>
+
 <hr>
 <p>参考链接</p>
 <ul>
-<li><a href="https://blog.csdn.net/mnasd/article/details/82143653" target="_blank" rel="noopener">查看修复HDFS中丢失的块 &amp;HDFS block丢失过多进入安全模式（safe mode）的解决方法</a></li>
-<li><a href="https://www.cnblogs.com/admln/p/5822004.html" target="_blank" rel="noopener">查看修复HDFS中丢失的块</a></li>
-</ul>
-<ul>
-<li><a href="https://blog.csdn.net/qq_32641659/article/details/88243255" target="_blank" rel="noopener">hadoop之hdfs生产数据块损坏修复方法</a></li>
-<li><a href="https://blog.csdn.net/eryehong/article/details/95167059" target="_blank" rel="noopener">【学习笔记】Hadoop之HDFS Block损坏恢复最佳实践(含思考题)</a></li>
+<li><a href="https://www.cnblogs.com/lzxlfly/p/7221890.html" target="_blank" rel="noopener">Hadoop2.7.3+Hbase-1.2.6完全分布式安装部署</a></li>
+<li><a href="https://www.cnblogs.com/jing1996/p/8038219.html" target="_blank" rel="noopener">Hadoop2.7.4安装配置</a></li>
 </ul>
 ]]></content>
       <categories>
-        <category>HDFS</category>
+        <category>Hadoop</category>
       </categories>
   </entry>
   <entry>
@@ -9250,88 +9270,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>Hadoop + HBase 单机安装部署</title>
-    <url>/2019/03/14/apache-hadoop/</url>
-    <content><![CDATA[<p>单机搭建部署 Hadoop 、HBase</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前一直是使用 CDH 。 准备入坑源码。所以想搭建一套 Apache 的来玩玩。</p>
-<p>选择的版本：</p>
-<blockquote>
-<ul>
-<li>Hadoop: 2.7.7</li>
-<li>HBase: 1.2.11</li>
-<li>Linux: CentOs 6.5</li>
-<li>JDK: jdk1.8.0_161</li>
-</ul>
-</blockquote>
-<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>安装jdk，配置环境变量。 这个网上很多，自行百度。</p>
-<p>Hadoop、HBase tar包去官方网站下载即可</p>
-<p>下载之后将其解压。</p>
-<p><img src="/images/blog/2019-03-14-8.png" alt></p>
-<h4 id="配置-Hadoop-环境变量"><a href="#配置-Hadoop-环境变量" class="headerlink" title="配置 Hadoop 环境变量"></a>配置 Hadoop 环境变量</h4><h5 id="1-配置hadoop-env-sh、yarn-env-sh"><a href="#1-配置hadoop-env-sh、yarn-env-sh" class="headerlink" title="1. 配置hadoop-env.sh、yarn-env.sh"></a>1. 配置hadoop-env.sh、yarn-env.sh</h5><p>在Hadoop安装目录下 etc/hadoop</p>
-<p>在 hadoop-env.sh、yarn-env.sh  </p>
-<p>加入 export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
-<p>保存退出</p>
-<h5 id="2-配置HADOOP-HOME"><a href="#2-配置HADOOP-HOME" class="headerlink" title="2. 配置HADOOP_HOME"></a>2. 配置HADOOP_HOME</h5><p>修改全局环境变量</p>
-<p>在 /etc/profile </p>
-<p>export HADOOP_HOME=/opt/hadoop-2.7.3 # Hadoop的安装路径</p>
-<p>export PATH=$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$PATH</p>
-<h4 id="配置基本相关xml"><a href="#配置基本相关xml" class="headerlink" title="配置基本相关xml"></a>配置基本相关xml</h4><h5 id="core-site-xml"><a href="#core-site-xml" class="headerlink" title="core-site.xml"></a>core-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;fs.defaultFS&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hadoop.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;tmp&lt;&#x2F;value&gt; </span><br><span class="line">                &lt;description&gt;namenode上本地的hadoop临时文件夹&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="hdfs-site-xml"><a href="#hdfs-site-xml" class="headerlink" title="hdfs-site.xml"></a>hdfs-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">              &lt;name&gt;dfs.replication&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;1&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;数据需要备份的数量，不能大于集群的机器数量，默认为3&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.namenode.name.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;nn&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;description&gt;namenode上存储hdfs名字空间元数据&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.datanode.data.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;dn&lt;&#x2F;value&gt;</span><br><span class="line">             &lt;description&gt;datanode上数据块的物理存储位置&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　　　&lt;name&gt;dfs.namenode.secondary.http-address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　　　&lt;value&gt;localhost:9001&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;SecondaryNameNode HTTP 端口。如端口为 0，服务器将在自由端口启动。&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;  </span><br><span class="line">        &lt;property&gt; </span><br><span class="line">              &lt;name&gt;dfs.webhdfs.enabled&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;true&lt;&#x2F;value&gt; </span><br><span class="line">              &lt;description&gt;设置为true，可以在浏览器中IP+port查看&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="mapred-site-xml"><a href="#mapred-site-xml" class="headerlink" title="mapred-site.xml"></a>mapred-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.framework.name&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;yarn&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;mapreduce运用了yarn框架，设置name为yarn&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:10020&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;历史服务器,查看Mapreduce作业记录&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:19888&lt;&#x2F;value&gt;</span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;mapreduce_shuffle&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;NodeManager上运行的附属服务，用于运行mapreduce&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services.mapreduce.shuffle.class&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8032&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对客户端暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.scheduler.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8030&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对ApplicationMaster暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.resource-tracker.address&lt;&#x2F;name&gt;  </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8031&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对NodeManager暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.admin.address&lt;&#x2F;name&gt;   </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8033&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对管理员暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">           &lt;value&gt;localhost:8088&lt;&#x2F;value&gt; </span><br><span class="line">           &lt;description&gt;ResourceManager 对外web暴露的地址，可在浏览器查看&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Hadoop的启动与停止"><a href="#Hadoop的启动与停止" class="headerlink" title="Hadoop的启动与停止"></a>Hadoop的启动与停止</h4><h5 id="1-格式化namenode"><a href="#1-格式化namenode" class="headerlink" title="1. 格式化namenode"></a>1. 格式化namenode</h5><p>bin/hadoop namenode -format</p>
-<p><img src="/images/blog/2019-04-27-1.png" alt></p>
-<p>出现 successfully formatted 即可</p>
-<h5 id="2-启动-HDFS、YARN"><a href="#2-启动-HDFS、YARN" class="headerlink" title="2. 启动 HDFS、YARN"></a>2. 启动 HDFS、YARN</h5><p>一起启动</p>
-<p>sbin/start-all.sh</p>
-<p>也可以分开启动</p>
-<p>sbin/start-dfs.sh</p>
-<p>sbin/start-yarn.sh</p>
-<h5 id="3-验证"><a href="#3-验证" class="headerlink" title="3. 验证"></a>3. 验证</h5><p>在命令行输入 jps 可以看到启动的 Java 进程，接着在看看是否有 HDFS、Yarn 的角色</p>
-<p><img src="/images/blog/2019-03-14-9.png" alt></p>
-<p>在浏览器中输入http://{ip}:50070 查看 NameNode 状态。 ip 为你安装的机器 IP</p>
-<h5 id="4-停止"><a href="#4-停止" class="headerlink" title="4. 停止"></a>4. 停止</h5><p>停止hadoop，进入Hadoop目录下，输入命令：</p>
-<p>sbin/stop-all.sh。</p>
-<p>同样也可以分开停止的。</p>
-<p>sbin/stop-dfs.sh</p>
-<p>sbin/stop-yarn.sh</p>
-<h4 id="HBase"><a href="#HBase" class="headerlink" title="HBase"></a>HBase</h4><h5 id="1-配置HADOOP-HOME"><a href="#1-配置HADOOP-HOME" class="headerlink" title="1. 配置HADOOP_HOME"></a>1. 配置HADOOP_HOME</h5><p>在 /etc/profile 中加入</p>
-<p>export HBASE_HOME=/opt/hbase-1.2.11</p>
-<p>export PATH=$HBASE_HOME/bin:$PATH</p>
-<h5 id="2-hbase-site-xml"><a href="#2-hbase-site-xml" class="headerlink" title="2. hbase-site.xml"></a>2. hbase-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;!-- 端口要和Hadoop的fs.defaultFS端口一致--&gt;</span><br><span class="line">           &lt;!-- hbase存放数据目录 --&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　   &lt;name&gt;hbase.cluster.distributed&lt;&#x2F;name&gt; &lt;!-- 是否分布式部署 --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;false&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hbase.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;tmp&lt;&#x2F;value&gt;</span><br><span class="line">                &lt;description&gt;hbase临时文件目录&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.quorum&lt;&#x2F;name&gt; &lt;!-- list of  zookooper --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;localhost&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt; 　　　 </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.property.dataDir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;zookeeper&lt;&#x2F;value&gt;</span><br><span class="line">            &lt;description&gt;zookooper配置、日志等的存储位置&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="3-hbase-env-sh"><a href="#3-hbase-env-sh" class="headerlink" title="3. hbase-env.sh"></a>3. hbase-env.sh</h5><p>使用 HBase 自带的zookeeper</p>
-<p>export HBASE_MANAGES_ZK=true </p>
-<p>指定 JDK</p>
-<p>export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
-<h4 id="启动与停止Hbase"><a href="#启动与停止Hbase" class="headerlink" title="启动与停止Hbase"></a>启动与停止Hbase</h4><p>在Hadoop已经启动成功的基础上，输入 start-hbase.sh ，过几秒钟便启动完成。</p>
-<p>输入jps命令查看进程是否启动成功，若 机器 上出现 HMaster 即可。 (不知道为什么。我这里没有出现 HQuorumPeer，不知道是不是版本的原因)</p>
-<p>输入 hbase 可以看到支持的命令服务。 zkcli 是进入 HBase 自带的 zk 的命令</p>
-<p>输入 hbase shell 命令 进入 HBase 命令模式</p>
-<p>在浏览器中输入http://{ip}:16010 就可以在界面上看到 HBase 的配置了</p>
-<p>当要停止hbase时输入stop-hbase.sh，过几秒后hbase就会被停止了。</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>这只是简易版的。生产环境的要求肯定不止这些。参考者请注意。</p>
-<p>这里有个地方没弄懂。尝试过配置 HBase Master 的端口为 16000。 发现未生效。端口是随机的。。。<br>没想明白为什么。等看下源码找找原因。</p>
-<p>附上 HBase 端口设置参数</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">hbase-site.xml</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16010&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16201&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16301&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br></pre></td></tr></table></figure>
-
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/lzxlfly/p/7221890.html" target="_blank" rel="noopener">Hadoop2.7.3+Hbase-1.2.6完全分布式安装部署</a></li>
-<li><a href="https://www.cnblogs.com/jing1996/p/8038219.html" target="_blank" rel="noopener">Hadoop2.7.4安装配置</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Hadoop</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Hive 重新配置元数据库</title>
     <url>/2019/03/14/hive-memstore/</url>
     <content><![CDATA[<p>Hive 重新配置元数据库</p>
@@ -9366,6 +9304,66 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>Hive</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>HDFS 块故障</title>
+    <url>/2019/03/14/hdfs-block-fault/</url>
+    <content><![CDATA[<p>发现测试集群HDFS报丢失块的告警。 对块进行修复</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>发现测试集群HDFS报丢失块的告警。 </p>
+<p><img src="/images/blog/2019-03-14-4.png" alt></p>
+<p>如果块损坏过多，超过设置的百分比，NameNode 会进入安全模式。需要退出安全模式处理</p>
+<h4 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h4><p>解决方法：</p>
+<ul>
+<li>如果文件不重要，可以直接删除此文件；或删除后重新复制一份到集群中</li>
+<li>如果不能删除，需要从上面命令中找到发生在哪台机器上，然后到此机器上查看日志。</li>
+</ul>
+<p>先确认集群有没有datanode宕机</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo -u hdfs hdfs dfsadmin -report</span><br></pre></td></tr></table></figure>
+
+<p>查看丢失块的信息</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 需要hdfs权限权限操作。如果没有hdfs 账号，则在命令前加 sudo -u hdfs ，以hdfs权限运行该命令</span><br><span class="line"></span><br><span class="line"># 检查整个文件系统，检查哪些数据块丢失了</span><br><span class="line">hdfs fsck &#x2F;</span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息</span><br><span class="line">hdfs fsck -list-corruptfileblocks   </span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息  -locations位置信息  -blocks各个块的信息   -files显示文件信息，包括文件名称，大小，块数量和健康状况（是否有缺失的块）</span><br><span class="line">hdfs fsck &lt;path&gt; -locations -blocks -files</span><br></pre></td></tr></table></figure>
+<p><img src="/images/blog/2019-03-14-5.png" alt></p>
+<p><img src="/images/blog/2019-03-14-6.png" alt></p>
+<p>当然，这只是数据允许丢失的情况下可以使用的一种简单粗暴的方法<code>hdfs fsck / -delete</code>, 是删除所有损坏的块的数据文件，会导致数据彻底丢失</p>
+<p>生产上还是无法使用这种直接删数据的方法的</p>
+<p>那么生产上应该怎么处理这种情况呢？</p>
+<ol>
+<li>首先<code>hdfs fsck -list-corruptfileblocks</code>找到数据块的位置</li>
+<li><code>hdfs debug recoverLease [-path &lt;path&gt;] [-retries &lt;num-retries&gt;]</code>用这个命令恢复上面路径丢失的数据块，最后一个参数是重试次数</li>
+</ol>
+<blockquote>
+<p>自动修复<br>hdfs当然会自动修复损坏的数据块，当数据块损坏后，DN节点执⾏directoryscan（datanode进行内存和磁盘数据集块校验）操作之前，都不会发现损坏；也就是directoryscan操作校验是间隔6h<br>dfs.datanode.directoryscan.interval : 21600</p>
+<p>在DN向NN进⾏blockreport前，都不会恢复数据块;也就是blockreport操作是间隔6h<br>dfs.blockreport.intervalMsec : 21600000<br>最终当NN收到blockreport才会进⾏恢复操作<br>生产中倾向于使用手动修复的方法去修复损坏的数据块。</p>
+</blockquote>
+<p>具体的实操请转移这里阅读<a href="https://ruozedata.github.io/2019/06/06/%E7%94%9F%E4%BA%A7HDFS%20Block%E6%8D%9F%E5%9D%8F%E6%81%A2%E5%A4%8D%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5(%E5%90%AB%E6%80%9D%E8%80%83%E9%A2%98)/" target="_blank" rel="noopener">生产HDFS Block损坏恢复最佳实践(含思考题)</a>，注意地方：</p>
+<ul>
+<li>删除块和meta文件之后要重启HDFS，模拟损坏效果，不重启的话直接fsck检查看不到块损坏</li>
+</ul>
+<h4 id="HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法"><a href="#HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法" class="headerlink" title="HDFS block丢失过多进入安全模式（Safe mode）的解决方法"></a>HDFS block丢失过多进入安全模式（Safe mode）的解决方法</h4><p>前面介绍的是简单的块损坏。 后面遇到一次丢失块比例高达 13% 的测试环境。</p>
+<p>由于系统断电，内存不足等原因导致 DN 丢失超过设置的丢失百分比，系统自动进入安全模式。</p>
+<p>解决办法就是把宕机 DN 重启恢复回来，然后观察是否能够恢复。</p>
+<p>不然只能退出安全模式。清理损坏的块。</p>
+<p><strong>注意: 这种方式会出现数据丢失，损坏的block会被删掉</strong> 请慎重</p>
+<p>退出安全模式：</p>
+<p><img src="/images/blog/2019-03-14-7.png" alt></p>
+<p>离开安全模式后使用<code>hdfs dfsadmin -safemode get</code>查看，<code>Safe mode is OFF</code> 为安全模式关闭，<code>Safe mode is ON</code>为安全模式开启</p>
+<p>如果无法离开安全模式，那就强制离开<code>hdfs dfsadmin -safemode forceExit</code></p>
+<p>执行健康检查，删除损坏掉的block <code>hdfs fsck / -delete</code></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/mnasd/article/details/82143653" target="_blank" rel="noopener">查看修复HDFS中丢失的块 &amp;HDFS block丢失过多进入安全模式（safe mode）的解决方法</a></li>
+<li><a href="https://www.cnblogs.com/admln/p/5822004.html" target="_blank" rel="noopener">查看修复HDFS中丢失的块</a></li>
+</ul>
+<ul>
+<li><a href="https://blog.csdn.net/qq_32641659/article/details/88243255" target="_blank" rel="noopener">hadoop之hdfs生产数据块损坏修复方法</a></li>
+<li><a href="https://blog.csdn.net/eryehong/article/details/95167059" target="_blank" rel="noopener">【学习笔记】Hadoop之HDFS Block损坏恢复最佳实践(含思考题)</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>HDFS</category>
       </categories>
   </entry>
   <entry>
@@ -10033,6 +10031,40 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
+    <title>SpringBoot 企业邮箱发送邮件</title>
+    <url>/2019/02/20/springboot-sendEmail/</url>
+    <content><![CDATA[<p>以腾讯企业邮箱为例，讲解如何用 spring-boot 发送邮件</p>
+<hr>
+<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>因公司内部平台需要用公家的企业邮箱账号发送邮件给运维人员。<br>发邮件是一个很常见的功能，代码本身并不复杂，有坑的地方主要在于各家邮件厂家的设置。故此记录下来。<br>下面以腾讯企业邮箱为例，讲解如何用spring-boot发送邮件。</p>
+<h4 id="添加依赖项"><a href="#添加依赖项" class="headerlink" title="添加依赖项"></a>添加依赖项</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;!-- SpringBoot Mail --&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-mail&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="application-yml配置"><a href="#application-yml配置" class="headerlink" title="application.yml配置"></a>application.yml配置</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">spring:</span><br><span class="line">  mail:</span><br><span class="line">    host: smtp.exmail.qq.com  # 邮箱服务器地址</span><br><span class="line">    username: xxxx@puscene.com # 这里填写企业邮箱</span><br><span class="line">    password: **************** # 这里填写企业邮箱登录密码</span><br><span class="line">    properties:</span><br><span class="line">      mail:</span><br><span class="line">        smtp:</span><br><span class="line">          auth: true</span><br><span class="line">          socketFactory:</span><br><span class="line">            class: javax.net.ssl.SSLSocketFactory</span><br><span class="line">            fallback: false</span><br><span class="line">            port: 465</span><br></pre></td></tr></table></figure>
+<p>企业邮箱如果未开启安全登录，就不需要授权码了，直接填写登录密码即可。如果开启了安全登录，参考下图：</p>
+<p><img src="/images/blog/2019-02-20-1.png" alt></p>
+<p>则password这里，需要填写客户端专用密码</p>
+<h4 id="发送代码示例"><a href="#发送代码示例" class="headerlink" title="发送代码示例"></a>发送代码示例</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.mail.SimpleMailMessage;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.annotation.Async;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.mail.javamail.JavaMailSender;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> tu</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2019-02-20 15:47</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 企业邮箱发送邮件</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SendMailUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> JavaMailSender mailSender; <span class="comment">//框架自带的</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;spring.mail.username&#125;"</span>)  <span class="comment">//发送人的邮箱  比如155156641XX@163.com</span></span><br><span class="line">    <span class="keyword">private</span> String from;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span>  <span class="comment">//意思是异步调用这个方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMail</span><span class="params">(String title, String url, String email)</span> </span>&#123;</span><br><span class="line">        SimpleMailMessage message = <span class="keyword">new</span> SimpleMailMessage();</span><br><span class="line">        message.setFrom(from); <span class="comment">// 发送人的邮箱</span></span><br><span class="line">        message.setSubject(title); <span class="comment">//标题</span></span><br><span class="line">        message.setTo(email); <span class="comment">//发给谁  对方邮箱</span></span><br><span class="line">        message.setText(url); <span class="comment">//内容</span></span><br><span class="line">        System.out.println(<span class="string">"lihm"</span>);</span><br><span class="line">        mailSender.send(message); <span class="comment">//发送</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意: </p>
+<p>最开始我用单元测试的方式运行发送代码。邮箱未收到邮件。<br>后面运行 Application 之后再测试才收到邮件</p>
+<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>个人邮箱的发送可以参看<a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a> </p>
+<p>附上常见邮箱服务器地址:</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">smtp.163.com</span><br><span class="line">smtp.qq.com</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/yjmyzz/p/send-mail-using-spring-boot.html" target="_blank" rel="noopener">spring-boot 速成(10) -【个人邮箱/企业邮箱】发送邮件</a></li>
+<li><a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a></li>
+<li><a href="https://www.cnblogs.com/LUA123/p/5575134.html" target="_blank" rel="noopener">Java + 腾讯企业邮箱 + javamail + SSL 发送邮件</a></li>
+<li><a href="https://blog.csdn.net/mcb520wf/article/details/80196804" target="_blank" rel="noopener">Springboot实现发送邮箱</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>SpringBoot</category>
+      </categories>
+  </entry>
+  <entry>
     <title>HBase 表数据迁移</title>
     <url>/2019/02/20/hbase-copytable/</url>
     <content><![CDATA[<p>使用 CopyTable 同步 HBase 数据</p>
@@ -10074,40 +10106,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>SpringBoot 企业邮箱发送邮件</title>
-    <url>/2019/02/20/springboot-sendEmail/</url>
-    <content><![CDATA[<p>以腾讯企业邮箱为例，讲解如何用 spring-boot 发送邮件</p>
-<hr>
-<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>因公司内部平台需要用公家的企业邮箱账号发送邮件给运维人员。<br>发邮件是一个很常见的功能，代码本身并不复杂，有坑的地方主要在于各家邮件厂家的设置。故此记录下来。<br>下面以腾讯企业邮箱为例，讲解如何用spring-boot发送邮件。</p>
-<h4 id="添加依赖项"><a href="#添加依赖项" class="headerlink" title="添加依赖项"></a>添加依赖项</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;!-- SpringBoot Mail --&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-mail&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
-
-<h4 id="application-yml配置"><a href="#application-yml配置" class="headerlink" title="application.yml配置"></a>application.yml配置</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">spring:</span><br><span class="line">  mail:</span><br><span class="line">    host: smtp.exmail.qq.com  # 邮箱服务器地址</span><br><span class="line">    username: xxxx@puscene.com # 这里填写企业邮箱</span><br><span class="line">    password: **************** # 这里填写企业邮箱登录密码</span><br><span class="line">    properties:</span><br><span class="line">      mail:</span><br><span class="line">        smtp:</span><br><span class="line">          auth: true</span><br><span class="line">          socketFactory:</span><br><span class="line">            class: javax.net.ssl.SSLSocketFactory</span><br><span class="line">            fallback: false</span><br><span class="line">            port: 465</span><br></pre></td></tr></table></figure>
-<p>企业邮箱如果未开启安全登录，就不需要授权码了，直接填写登录密码即可。如果开启了安全登录，参考下图：</p>
-<p><img src="/images/blog/2019-02-20-1.png" alt></p>
-<p>则password这里，需要填写客户端专用密码</p>
-<h4 id="发送代码示例"><a href="#发送代码示例" class="headerlink" title="发送代码示例"></a>发送代码示例</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.mail.SimpleMailMessage;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.annotation.Async;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.mail.javamail.JavaMailSender;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> tu</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2019-02-20 15:47</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 企业邮箱发送邮件</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SendMailUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> JavaMailSender mailSender; <span class="comment">//框架自带的</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;spring.mail.username&#125;"</span>)  <span class="comment">//发送人的邮箱  比如155156641XX@163.com</span></span><br><span class="line">    <span class="keyword">private</span> String from;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span>  <span class="comment">//意思是异步调用这个方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMail</span><span class="params">(String title, String url, String email)</span> </span>&#123;</span><br><span class="line">        SimpleMailMessage message = <span class="keyword">new</span> SimpleMailMessage();</span><br><span class="line">        message.setFrom(from); <span class="comment">// 发送人的邮箱</span></span><br><span class="line">        message.setSubject(title); <span class="comment">//标题</span></span><br><span class="line">        message.setTo(email); <span class="comment">//发给谁  对方邮箱</span></span><br><span class="line">        message.setText(url); <span class="comment">//内容</span></span><br><span class="line">        System.out.println(<span class="string">"lihm"</span>);</span><br><span class="line">        mailSender.send(message); <span class="comment">//发送</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>注意: </p>
-<p>最开始我用单元测试的方式运行发送代码。邮箱未收到邮件。<br>后面运行 Application 之后再测试才收到邮件</p>
-<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>个人邮箱的发送可以参看<a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a> </p>
-<p>附上常见邮箱服务器地址:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">smtp.163.com</span><br><span class="line">smtp.qq.com</span><br></pre></td></tr></table></figure>
-
-
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/yjmyzz/p/send-mail-using-spring-boot.html" target="_blank" rel="noopener">spring-boot 速成(10) -【个人邮箱/企业邮箱】发送邮件</a></li>
-<li><a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a></li>
-<li><a href="https://www.cnblogs.com/LUA123/p/5575134.html" target="_blank" rel="noopener">Java + 腾讯企业邮箱 + javamail + SSL 发送邮件</a></li>
-<li><a href="https://blog.csdn.net/mcb520wf/article/details/80196804" target="_blank" rel="noopener">Springboot实现发送邮箱</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>SpringBoot</category>
       </categories>
   </entry>
   <entry>
