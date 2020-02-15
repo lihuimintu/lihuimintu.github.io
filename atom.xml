@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-02-07T13:52:51.547Z</updated>
+  <updated>2020-02-13T13:28:49.250Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Hive 查询表行数</title>
+    <link href="http://yoursite.com/2020/02/13/Hive-RowNums/"/>
+    <id>http://yoursite.com/2020/02/13/Hive-RowNums/</id>
+    <published>2020-02-12T16:00:00.000Z</published>
+    <updated>2020-02-13T13:28:49.250Z</updated>
+    
+    <content type="html"><![CDATA[<p>在 Hive 中比较快速地查到表的行数信息</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有时在大数据处理时需要查询 Hive 一些数据表的行数，使用关系型数据库久了会使用<code>select count(*) from &lt;table&gt;;</code>方式进行查，<br>但是这种方式执行时间比较长，Hive 本身就有记录数据行数，所以可以直接拿到数据行数</p><h4 id="方式"><a href="#方式" class="headerlink" title="方式"></a>方式</h4><h5 id="元数据表"><a href="#元数据表" class="headerlink" title="元数据表"></a>元数据表</h5><p>从元数据表中查询元数据</p><p>查询表的总条数</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">select a.TBL_ID, a.TBL_NAME, b.PARAM_KEY, b.PARAM_VALUE </span><br><span class="line">  from TBLS as a join TABLE_PARAMS as b </span><br><span class="line">  where a.TBL_ID &#x3D; b.TBL_ID and TBL_NAME&#x3D;&quot;call_center&quot; and PARAM_KEY&#x3D;&quot;numRows&quot;;</span><br><span class="line">+--------+-------------+-----------+-------------+</span><br><span class="line">| TBL_ID | TBL_NAME    | PARAM_KEY | PARAM_VALUE |</span><br><span class="line">+--------+-------------+-----------+-------------+</span><br><span class="line">|    134 | call_center | numRows   | 60          |</span><br><span class="line">+--------+-------------+-----------+-------------+</span><br></pre></td></tr></table></figure><h5 id="explain"><a href="#explain" class="headerlink" title="explain"></a>explain</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">explain select * from xxx limit 2;</span><br></pre></td></tr></table></figure><h5 id="HUE"><a href="#HUE" class="headerlink" title="HUE"></a>HUE</h5><p>从HUE上直接查看</p><p><img src="/images/blog/2020-02-13-1.png" alt></p><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/b46c8d1f13f1" target="_blank" rel="noopener">Hive查询表行数</a></li><li><a href="https://blog.csdn.net/name_szd/article/details/80618515" target="_blank" rel="noopener">hive查询数据库总条数</a></li><li><a href="https://www.cnblogs.com/qingyunzong/p/8710356.html#_label2_0" target="_blank" rel="noopener">Hive学习之路 （三）Hive元数据信息对应MySQL数据库表</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Hive 查询表行数
+    
+    </summary>
+    
+    
+      <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>Linux CPU、Memory、IO、Network 分析</title>
@@ -411,27 +432,6 @@
     
     
       <category term="Yarn" scheme="http://yoursite.com/categories/Yarn/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Spark spark.yarn.jars 使用说明</title>
-    <link href="http://yoursite.com/2020/01/06/Spark-yarn-jar/"/>
-    <id>http://yoursite.com/2020/01/06/Spark-yarn-jar/</id>
-    <published>2020-01-05T16:00:00.000Z</published>
-    <updated>2020-02-03T10:02:20.402Z</updated>
-    
-    <content type="html"><![CDATA[<p>spark 优化将依赖包传入HDFS 使用 spark.yarn.jar </p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>问题描述请转移 <a href="https://blog.csdn.net/weizhonggui/article/details/85240804" target="_blank" rel="noopener">十：WARN yarn.Client: Neither spark.yarn.jars nor spark.yarn.archive is set,解决案例</a></p><p>启动 Spark 任务时，在没有配置 spark.yarn.archive 或者 spark.yarn.jars 时， 会看到不停地上传jar，非常耗时</p><h4 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h4><p>如果使用了 spark.yarn.archive 配置将会替换 spark.yarn.jars 的配置，所以这里使用<br>spark.yarn.jars 可以大大地减少任务的启动时间，整个处理过程如下。</p><p>上传依赖jar包, <code>/user/spark/jars</code> 为 hfds 上的目录，如果没有自行新建；<br>spark/jars/* 为 spark 服务自带的 jar 包</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hadoop fs -put spark&#x2F;jars&#x2F;* &#x2F;user&#x2F;spark&#x2F;jars</span><br></pre></td></tr></table></figure><p>配置spark-defaut.conf，下方 <code>hdfs://reh</code> 为我这 HDFS nameserver 名字，你自行改成你自己的</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">spark.yarn.jars&#x3D;local:&#x2F;opt&#x2F;cloudera&#x2F;parcels&#x2F;CDH-6.3.1-1.cdh6.3.1.p0.1470567&#x2F;lib&#x2F;spark&#x2F;jars&#x2F;*,local:&#x2F;opt&#x2F;cloudera&#x2F;parcels&#x2F;CDH-6.3.1-1.cdh6.3.1.p0.1470567&#x2F;lib&#x2F;spark&#x2F;hive&#x2F;*,hdfs:&#x2F;&#x2F;reh&#x2F;user&#x2F;spark&#x2F;jars&#x2F;*.jar</span><br></pre></td></tr></table></figure><p>注：本地配置local,hdfs标记为hdfs目录即可</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/weizhonggui/article/details/85240804" target="_blank" rel="noopener">十：WARN yarn.Client: Neither spark.yarn.jars nor spark.yarn.archive is set,解决案例</a></li><li><a href="https://www.cnblogs.com/yyy-blog/p/11110388.html" target="_blank" rel="noopener">spark优化——依赖包传入HDFS_spark.yarn.jar和spark.yarn.archive的使用</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Spark spark.yarn.jars 使用说明
-    
-    </summary>
-    
-    
-      <category term="Spark" scheme="http://yoursite.com/categories/Spark/"/>
     
     
   </entry>
