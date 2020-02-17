@@ -58,7 +58,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-25-3.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-25-4.png">
 <meta property="article:published_time" content="2019-06-24T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:20.087Z">
+<meta property="article:modified_time" content="2020-02-15T15:29:54.681Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HBase">
 <meta property="article:tag" content=" Flush">
@@ -242,7 +242,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
+                <time title="修改时间：2020-02-15 23:29:54" itemprop="dateModified" datetime="2020-02-15T23:29:54+08:00">2020-02-15</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -262,7 +262,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.1k</span>
+              <span>2.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -288,12 +288,26 @@
 <p>根据 HBase 官方文档总结的刷写时机有6种:</p>
 <h5 id="1-MemStore-级别限"><a href="#1-MemStore-级别限" class="headerlink" title="1. MemStore 级别限"></a>1. MemStore 级别限</h5><p>当 Region 中任意一个 MemStore 的大小达到了上限(hbase.hregion.memstore.flush.size，默认128MB)，会触发 MemStore 刷新。</p>
 <h5 id="2-Region-级别限制"><a href="#2-Region-级别限制" class="headerlink" title="2. Region 级别限制"></a>2. Region 级别限制</h5><p>当 Region 中所有 MemStore 的大小总和达到了上限(hbase.hregion.memstore.block.multiplier * hbase.hregion.memstore.flush.size，默认 4 * 128M = 512M)，会触发 MemStore 刷新。</p>
-<h5 id="3-Region-Server-级别限制"><a href="#3-Region-Server-级别限制" class="headerlink" title="3. Region Server 级别限制"></a>3. Region Server 级别限制</h5><p>hbase_heapsize  由 JVM堆最大值参数 -Xmx 参数设置</p>
-<p>RS 全局 MemStore 内存上水位线由 hbase_heapsize * hbase.regionserver.global.memstore.size 得出，该参数默认 0.4</p>
-<p>下水位线由上水位线乘以 hbase.regionserver.global.memstore.size.lower.limit ，该参数默认 0.95</p>
-<p>总体来说，如果全局 MemStore 的总和达到了分配给 MemStore 最大内存的95%，就会导致全局刷写，默认有40%的内存会分给 MemStore。而当超过了 MemStore 的最大内存，也就是堆内存的40%就会触发刷写阻塞。</p>
-<p>如果有16G堆内存，默认情况下:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#达到该值会触发刷写</span><br><span class="line">16*0.4*0.95&#x3D;6.08</span><br><span class="line">#达到该值会触发刷写阻塞</span><br><span class="line">16*0.4&#x3D;6.4</span><br></pre></td></tr></table></figure>
+<h5 id="3-Region-Server-级别限制"><a href="#3-Region-Server-级别限制" class="headerlink" title="3. Region Server 级别限制"></a>3. Region Server 级别限制</h5><p>当 RegionServer 中 MemStore 的大小总和超过低水位阈值<code>hbase.regionserver.global.memstore.size.lower.limit</code> * <code>hbase.regionserver.global.memstore.size</code>，RegionServer开始强制执行 flush，先 flush MemStore 最大的Region，再 flush 次大的，依次执行。</p>
+<p>如果此时写入吞吐量依然很高，导致总 MemStore 大小超过高水位阈值<code>hbase.regionserver.global.memstore.size</code>，RegionServer 会阻塞更新并强制执行 flush，直至总 MemStore 大小下降到低水位阈值。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>hbase.regionserver.global.memstore.size</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>hbase.regionserver.global.memstore.size.lower.limit</td>
+<td>0.95</td>
+</tr>
+</tbody></table>
+<p>如果有 16G 堆内存，默认情况下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 达到该值会触发刷写</span><br><span class="line">16 * 0.4 * 0.95 &#x3D; 6.08</span><br><span class="line"># 达到该值会触发刷写阻塞</span><br><span class="line">16 * 0.4 &#x3D; 6.4</span><br></pre></td></tr></table></figure>
 
 <p>相信好多人会在网上看到 hbase.regionserver.global.memstore.upperLimit、hbase.regionserver.global.memstore.lowerLimit 这两个参数。</p>
 <p>这两个参数已经发生了改变了。对应的新参数如下:</p>
@@ -313,7 +327,9 @@
 <td>hbase.regionserver.global.memstore.lowerLimit</td>
 </tr>
 </tbody></table>
-<p>的确，当时我也看了老版本的 Region Server 级别限制:<br><code>当一个Region Server中所有Memstore的大小总和达到了上限（hbase.regionserver.global.memstore.upperLimit ＊ hbase_heapsize，默认 40%的JVM内存使用量），会触发部分Memstore刷新。Flush顺序是按照Memstore由大到小执行，先Flush Memstore最大的Region，再执行次大的，直至总体Memstore内存使用量低于阈值（hbase.regionserver.global.memstore.lowerLimit ＊ hbase_heapsize，默认 38%的JVM内存使用量）。</code></p>
+<blockquote>
+<p>的确，当时我也看了老版本的 Region Server 级别限制:<br>当一个Region Server中所有Memstore的大小总和达到了上限（hbase.regionserver.global.memstore.upperLimit ＊ hbase_heapsize，默认 40%的JVM内存使用量），会触发部分Memstore刷新。Flush顺序是按照Memstore由大到小执行，先Flush Memstore最大的Region，再执行次大的，直至总体Memstore内存使用量低于阈值（hbase.regionserver.global.memstore.lowerLimit ＊ hbase_heapsize，默认 38%的JVM内存使用量）。</p>
+</blockquote>
 <p>按照老版本来看，我发现新搭建的集群配置怎么不对，lowerLimit 怎么比 upperLimit 还高。一度让我弄混。</p>
 <p><img src="/images/blog/2019-06-25-1.png" alt></p>
 <p>直到我弄清楚 hbase.regionserver.global.memstore.size.lower.limit 是分配给 MemStore 最大内存的刷新的低水位线才明白。</p>
@@ -430,7 +446,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">180</span>
+          <span class="site-state-item-count">181</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -482,12 +498,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">446k</span>
+    <span title="站点总字数">448k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:45</span>
+    <span title="站点阅读时长">6:47</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
