@@ -54,7 +54,7 @@
 <meta property="og:site_name" content="lihuimintu">
 <meta property="og:description" content="缺页错误（Page Fault）">
 <meta property="article:published_time" content="2020-01-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-07T09:19:49.523Z">
+<meta property="article:modified_time" content="2020-02-24T03:05:19.008Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-07 17:19:49" itemprop="dateModified" datetime="2020-02-07T17:19:49+08:00">2020-02-07</time>
+                <time title="修改时间：2020-02-24 11:05:19" itemprop="dateModified" datetime="2020-02-24T11:05:19+08:00">2020-02-24</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -284,7 +284,7 @@
 <p>在内核处理缺页错误时，就有可能进行磁盘的读写操作。这样的操作，相对 CPU 的处理是非常缓慢的。因此，发生大量的缺页错误，势必会对程序的性能造成很大影响。因此，在对性能要求很高的环境下，应当尽可能避免这种情况。</p>
 <p>此篇介绍缺页错误本身，并结合一个实际示例作出一些实践分析。这里主要在 Linux 的场景下做讨论；其他现代操作系统，基本也是类似的。</p>
 <h4 id="内存页和缺页错误"><a href="#内存页和缺页错误" class="headerlink" title="内存页和缺页错误"></a>内存页和缺页错误</h4><p>现代 CPU 都支持分段和分页的内存寻址模式。在 Linux 当中，实际起作用的只有分页模式。</p>
-<p>具体来说，分页模式在逻辑上将虚拟内存和物理内存同时等分成固定大小的块。这些块在虚拟内存上称之为「页」，而在物理内存上称之为「页帧」，并交由 CPU 中的 MMU 模块来负责页帧和页之间的映射管理。</p>
+<p>具体来说，分页模式在逻辑上将虚拟内存和物理内存同时等分成固定大小的块。这些块在虚拟内存上称之为「页」，而在物理内存上称之为「页帧」，并交由 CPU 中的 MMU 模块(内存管理单元)来负责页帧和页之间的映射管理。</p>
 <p>引入分页模式的好处，可以大致概括为两个方面: </p>
 <ul>
 <li>允许虚存空间远大于实际物理内存大小的情况。这是因为，分页之后，操作系统读入磁盘的文件时，无需以文件为单位全部读入，而可以以内存页为单位，分片读入。同时，考虑到 CPU 不可能一次性需要使用整个内存中的数据，因此可以交由特定的算法，进行内存调度: 将长时间不用的页帧内的数据暂存到磁盘上。</li>
@@ -496,12 +496,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">448k</span>
+    <span title="站点总字数">449k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:47</span>
+    <span title="站点阅读时长">6:48</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
