@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-02-25T12:14:03.509Z</updated>
+  <updated>2020-02-27T08:22:44.996Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -17,13 +17,34 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>NameNode RPC 延迟</title>
+    <link href="http://yoursite.com/2020/02/27/NameNode-RPC-Latency/"/>
+    <id>http://yoursite.com/2020/02/27/NameNode-RPC-Latency/</id>
+    <published>2020-02-26T16:00:00.000Z</published>
+    <updated>2020-02-27T08:22:44.996Z</updated>
+    
+    <content type="html"><![CDATA[<p>NameNode RPC 延迟分析</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>CDH 有个 NameNode RPC 延迟测试，用于检查NameNode响应请求所花费的平均时间的移动平均值不超过某个值。 </p><p>此运行状况测试失败，可能表明 NameNode 配置错误，NameNode 写入其数据目录之一时遇到问题，或者可能表明容量规划问题。</p><h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>检查 NameNode <code>RpcQueueTime_avg_time</code> 是否异常，如果耗费时间较长，这表明大部分RPC延迟都花在了请求排队上，请尝试增加 NameNode NameNode Handler Count，即<code>dfs.namenode.handler.count</code></p><p>如果 NameNode <code>RpcProcessingTime_avg_time</code> 指示大部分 RPC 延迟是由于请求处理引起的，请检查以确保存储 HDFS 元数据的每个目录运行正常，比如权限异常、磁盘问题</p><p>在 CDH NameNode 图表面板上可以看到这两个监控项曲线</p><p><img src="/images/blog/2020-02-27-1.png" alt></p><p>当然更多时候是人员不规范使用 HDFS 造成的，这种更多需要借助 hdfs-audit 分析 rpc 画像，找到幕后真凶，请参考之前写的<a href="https://lihuimintu.github.io/2019/12/25/elk-hdfs/" target="_blank" rel="noopener">采集 hdfs-audit 分析 rpc 画像</a></p><h4 id="监控设置"><a href="#监控设置" class="headerlink" title="监控设置"></a>监控设置</h4><p>可以使用 NameNode RPC 延迟阈值 和 NameNode RPC 延迟监视窗口 来配置此监控</p><p><img src="/images/blog/2020-02-27-2.png" alt></p><hr><p>参考链接</p><ul><li><a href="https://docs.cloudera.com/documentation/enterprise/latest/topics/cm_ht_namenode.html#concept_kx8_nzn_yk" target="_blank" rel="noopener">NameNode RPC Latency</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      NameNode RPC 延迟分析
+    
+    </summary>
+    
+    
+      <category term="HDFS" scheme="http://yoursite.com/categories/HDFS/"/>
+    
+    
+  </entry>
+  
+  <entry>
     <title>IDEA 远程调试</title>
     <link href="http://yoursite.com/2020/02/25/IDEA-Remote/"/>
     <id>http://yoursite.com/2020/02/25/IDEA-Remote/</id>
     <published>2020-02-24T16:00:00.000Z</published>
-    <updated>2020-02-25T12:14:03.509Z</updated>
+    <updated>2020-02-27T08:19:15.174Z</updated>
     
-    <content type="html"><![CDATA[<p>使用IDEA进行远程调试</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>想远程调试下测试环境的代码，因此记录下使用过程</p><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p><strong>Edit Configurations</strong></p><p><img src="/images/blog/2020-02-25-1.png" alt></p><p><strong>Remote</strong></p><p><img src="/images/blog/2020-02-25-2.png" alt></p><p><strong>Config</strong></p><p><img src="/images/blog/2020-02-25-3.png" alt></p><h4 id="启动远程项目"><a href="#启动远程项目" class="headerlink" title="启动远程项目"></a>启动远程项目</h4><p>正常启动命令如下</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar ***.jar</span><br></pre></td></tr></table></figure><p>开启远程调试</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar -agentlib:jdwp&#x3D;transport&#x3D;dt_socket,server&#x3D;y,suspend&#x3D;n,address&#x3D;5005 **.jar</span><br></pre></td></tr></table></figure><blockquote><p>其中 <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</code> 是从上一步方框里拷贝出来的</p></blockquote><h4 id="设置断点，开始调试"><a href="#设置断点，开始调试" class="headerlink" title="设置断点，开始调试"></a>设置断点，开始调试</h4><p>远程 debug 模式已经开启，现在可以在需要调试的代码中打断点了</p><p><img src="/images/blog/2020-02-25-4.png" alt></p><p>如图中所示，如果断点内有√，则表示选取的断点正确</p><h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><p>要保证远程调试监听的端口没有被占用，其次防火墙对端口放行</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -anlp | grep 5005</span><br></pre></td></tr></table></figure><hr><p>参考链接</p><ul><li><a href="https://www.cnblogs.com/victorbu/p/10904732.html" target="_blank" rel="noopener">IDEA 远程调试</a></li><li><a href="https://www.jianshu.com/p/302dc10217c0" target="_blank" rel="noopener">使用IDEA进行远程调试</a></li></ul><hr><p>参考链接</p><ul><li><a href="https://mp.weixin.qq.com/s/NL7Jzh0lYoA395yzaGxBHw" target="_blank" rel="noopener">跟着动画学习TCP三次握手和四次挥手</a></li><li><a href="https://mp.weixin.qq.com/s/5XSM-yLwLc-HyoDdCCNyCA" target="_blank" rel="noopener">TCP连接的状态详解以及故障排查（上）</a></li><li><a href="https://mp.weixin.qq.com/s/Y4EELMzinGunW7MEAPjPgA" target="_blank" rel="noopener">TCP连接的状态详解以及故障排查（下）</a></li><li><a href="https://mp.weixin.qq.com/s/_UmaGl8yYLtajSgqMPjNYw" target="_blank" rel="noopener">校招面试必考的TCP</a></li><li><a href="https://www.jellythink.com/archives/478" target="_blank" rel="noopener">Linux tcpdump命令详解</a></li><li><a href="https://www.cnblogs.com/jason2013/articles/4346639.html" target="_blank" rel="noopener">TCP流模式和UDP数据报模式的区别</a></li><li><a href="https://mp.weixin.qq.com/s/Je5ZHyGPQe5p0ANV5B-gOQ" target="_blank" rel="noopener">TCP三次握手和四次挥手详解</a></li><li><a href="https://mp.weixin.qq.com/s/1eEBzkGp6WI5bp6697X3Gw" target="_blank" rel="noopener">搞了两周Socket通信，终于弄明白了！</a></li></ul>]]></content>
+    <content type="html"><![CDATA[<p>使用IDEA进行远程调试</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>想远程调试下测试环境的代码，因此记录下使用过程</p><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p><strong>Edit Configurations</strong></p><p><img src="/images/blog/2020-02-25-1.png" alt></p><p><strong>Remote</strong></p><p><img src="/images/blog/2020-02-25-2.png" alt></p><p><strong>Config</strong></p><p><img src="/images/blog/2020-02-25-3.png" alt></p><h4 id="启动远程项目"><a href="#启动远程项目" class="headerlink" title="启动远程项目"></a>启动远程项目</h4><p>正常启动命令如下</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar ***.jar</span><br></pre></td></tr></table></figure><p>开启远程调试</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar -agentlib:jdwp&#x3D;transport&#x3D;dt_socket,server&#x3D;y,suspend&#x3D;n,address&#x3D;5005 **.jar</span><br></pre></td></tr></table></figure><blockquote><p>其中 <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</code> 是从上一步方框里拷贝出来的</p></blockquote><h4 id="设置断点，开始调试"><a href="#设置断点，开始调试" class="headerlink" title="设置断点，开始调试"></a>设置断点，开始调试</h4><p>远程 debug 模式已经开启，现在可以在需要调试的代码中打断点了</p><p><img src="/images/blog/2020-02-25-4.png" alt></p><p>如图中所示，如果断点内有√，则表示选取的断点正确</p><h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><p>要保证远程调试监听的端口没有被占用，其次防火墙对端口放行</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -anlp | grep 5005</span><br></pre></td></tr></table></figure><hr><p>参考链接</p><ul><li><a href="https://www.cnblogs.com/victorbu/p/10904732.html" target="_blank" rel="noopener">IDEA 远程调试</a></li><li><a href="https://www.jianshu.com/p/302dc10217c0" target="_blank" rel="noopener">使用IDEA进行远程调试</a></li></ul>]]></content>
     
     <summary type="html">
     
@@ -189,9 +210,9 @@
     <link href="http://yoursite.com/2020/01/28/HDFS-small-file/"/>
     <id>http://yoursite.com/2020/01/28/HDFS-small-file/</id>
     <published>2020-01-27T16:00:00.000Z</published>
-    <updated>2020-02-25T09:29:21.915Z</updated>
+    <updated>2020-02-26T14:46:23.924Z</updated>
     
-    <content type="html"><![CDATA[<p>Hadoop 中处理小文件</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HDFS 随着使用时间会存在小文件现象，这里将网上调研的处理方法收集一下</p><p>解决此问题的方法主要为两个方面；一是从源头解决小文件问题，此方法需要业务方配合解决；二是合并平台上已有的小文件。因此更多工作是围绕第二种个方法来做的，有多种方法，比如HAR 归档啊，利用Hive针对parquet 文件格式合并、Ozone 小文件利器。HAR 把历史数据进行归档，读取它还多了一层索引查找，比较鸡肋，不怎么好用。Ozone 目前技术较新，对Hadoop 有版本要求，需要Hadoop 3.x 版本。因此平常更多是利用Hive来针对 parquet 文件格式合并</p><h4 id="处理方法"><a href="#处理方法" class="headerlink" title="处理方法"></a>处理方法</h4><p>什么是小文件？小文件是怎么来的？可以参阅<a href="https://mp.weixin.qq.com/s/QdaNFfq37bBlAQtNDGLmVw" target="_blank" rel="noopener">如何在Hadoop中处理小文件</a></p><p>利用 HAR 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/rlM3ZPmWz-ZT72w59lvrRw" target="_blank" rel="noopener">0508-如何使用Hadoop的Archive处理小文件</a></p><p>利用 Hive 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/xw6MjNvpI97m0aygyW1HaA" target="_blank" rel="noopener">如何在Hadoop中处理小文件-续</a>、<a href="https://mp.weixin.qq.com/s/ki2k9fBPco6PwMZEzff60A" target="_blank" rel="noopener">0704-5.16.2-如何使用Hive合并小文件</a></p><p>利用 Impala 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/BTBqUqfbczq08LKRCuC_Ig" target="_blank" rel="noopener">如何使用Impala合并小文件</a></p><p>利用 Ozone 来解决<a href="https://mp.weixin.qq.com/s/x_xCjSs5Aed8z6moxp_uYQ" target="_blank" rel="noopener">Hadoop小文件利器Ozone</a></p><p>在有赞使用 SparkSQL 中提到存在小文件现象，采用社区 <a href="https://issues.apache.org/jira/browse/SPARK-24940" target="_blank" rel="noopener">SPARK-24940</a>方式处理，借助 SQL hint 的方式合并小文件。参阅<a href="https://www.iteblog.com/archives/2501.html" target="_blank" rel="noopener">Spark SQL 查询中 Coalesce 和 Repartition 暗示（Hint）</a></p><p>利用 Spark 处理小文件跟 Spark SQL 也是差不多的，通过 Spark 的 coalesce() 方法和 repartition() 方法，设置并行个数可以通过输入文件的总大小和期望输出文件的大小进行预计算而得。</p><hr><p>参考链接</p><ul><li><a href="http://bigdatadecode.club/HDFS-little-file-action.html" target="_blank" rel="noopener">HDFS小文件合并实战</a></li><li><a href="https://juejin.im/post/5c3f2713f265da61285a5b75#heading-8" target="_blank" rel="noopener">SparkSQL 在有赞的实践</a></li><li><a href="https://blog.csdn.net/weixin_37944880/article/details/86694829" target="_blank" rel="noopener">Spark小文件合并</a></li></ul>]]></content>
+    <content type="html"><![CDATA[<p>Hadoop 中处理小文件</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HDFS 随着使用时间会存在小文件现象，这里将网上调研的处理方法收集一下</p><p>解决此问题的方法主要为两个方面</p><ol><li><p>从源头解决小文件问题，此方法需要业务方配合解决</p></li><li><p>合并平台上已有的小文件。因此更多工作是围绕第二种个方法来做的，有多种方法，比如HAR 归档啊，利用Hive针对parquet 文件格式合并、Ozone 小文件利器。</p></li></ol><p>HAR 把历史数据进行归档，读取它还多了一层索引查找，比较鸡肋，不怎么好用。Ozone 目前技术较新，对Hadoop 有版本要求，需要Hadoop 3.x 版本。因此平常更多是利用 Hive 来针对 parquet 文件格式合并</p><h4 id="处理方法"><a href="#处理方法" class="headerlink" title="处理方法"></a>处理方法</h4><p>什么是小文件？小文件是怎么来的？可以参阅<a href="https://mp.weixin.qq.com/s/QdaNFfq37bBlAQtNDGLmVw" target="_blank" rel="noopener">如何在Hadoop中处理小文件</a></p><p>利用 HAR 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/rlM3ZPmWz-ZT72w59lvrRw" target="_blank" rel="noopener">0508-如何使用Hadoop的Archive处理小文件</a></p><p>利用 Hive 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/xw6MjNvpI97m0aygyW1HaA" target="_blank" rel="noopener">如何在Hadoop中处理小文件-续</a>、<a href="https://mp.weixin.qq.com/s/ki2k9fBPco6PwMZEzff60A" target="_blank" rel="noopener">0704-5.16.2-如何使用Hive合并小文件</a></p><p>利用 Impala 方法处理小文件可以参阅<a href="https://mp.weixin.qq.com/s/BTBqUqfbczq08LKRCuC_Ig" target="_blank" rel="noopener">如何使用Impala合并小文件</a></p><p>利用 Ozone 来解决<a href="https://mp.weixin.qq.com/s/x_xCjSs5Aed8z6moxp_uYQ" target="_blank" rel="noopener">Hadoop小文件利器Ozone</a></p><p>在有赞使用 SparkSQL 中提到存在小文件现象，采用社区 <a href="https://issues.apache.org/jira/browse/SPARK-24940" target="_blank" rel="noopener">SPARK-24940</a>方式处理，借助 SQL hint 的方式合并小文件。参阅<a href="https://www.iteblog.com/archives/2501.html" target="_blank" rel="noopener">Spark SQL 查询中 Coalesce 和 Repartition 暗示（Hint）</a></p><p>利用 Spark 处理小文件跟 Spark SQL 也是差不多的，通过 Spark 的 coalesce() 方法和 repartition() 方法，设置并行个数可以通过输入文件的总大小和期望输出文件的大小进行预计算而得。</p><h4 id="小文件寻找"><a href="#小文件寻找" class="headerlink" title="小文件寻找"></a>小文件寻找</h4><p>知道处理方法后，问题就是如何寻找小文件，最先之前是利用<code>haddop fs -count &lt;path&gt;</code>人工肉眼寻找</p><p>高级操作还是得借用 HDFS 的元数据 FsImage 来分析，感兴趣可以自行参阅下方博客</p><ul><li><a href="https://mp.weixin.qq.com/s/TWGROH7TRgXRwl3TBlGLhw" target="_blank" rel="noopener">0464-如何离线分析HDFS的FsImage查找集群小文件</a></li><li><a href="https://mp.weixin.qq.com/s/RT8tCF_ZEvMYewjGgABSYQ" target="_blank" rel="noopener">hdfs如何通过解析fsimage来监控目录</a></li></ul><hr><p>参考链接</p><ul><li><a href="http://bigdatadecode.club/HDFS-little-file-action.html" target="_blank" rel="noopener">HDFS小文件合并实战</a></li><li><a href="https://juejin.im/post/5c3f2713f265da61285a5b75#heading-8" target="_blank" rel="noopener">SparkSQL 在有赞的实践</a></li><li><a href="https://blog.csdn.net/weixin_37944880/article/details/86694829" target="_blank" rel="noopener">Spark小文件合并</a></li></ul>]]></content>
     
     <summary type="html">
     
@@ -353,27 +374,6 @@
   </entry>
   
   <entry>
-    <title>记一次 HBase Master is initializing 问题处理</title>
-    <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
-    <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
-    <published>2020-01-17T16:00:00.000Z</published>
-    <updated>2020-02-03T10:02:20.419Z</updated>
-    
-    <content type="html"><![CDATA[<p>HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误处理</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>测试集群上做了jar包替换验证测试，测试完之后还原jar，重启出现进入 hbase shell 中执行命令遇到问题。</p><p><img src="/images/blog/2020-01-18-1.png" alt></p><p><code>org.apache.hadoop.hbase.PleaseHoldException: Master is initializing</code> 代表Master正在初始化中，出现这种错误的原因有很多</p><p>关键还是得看 Master 日志，盲目搜索效率不高</p><p>一开始只是搜索 ERROR 日志，并没有看到很关键的信息，后面看其他博客贴的日志片段是 WARN，进而<br>转换思路看 WARN，一看这个是 meta 表未分配到 RS 上啊，之前处理过，用 hbck2 解决即可</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARN org.apache.hadoop.hbase.master.HMaster: hbase:meta,,1.1588230740 is NOT online; state&#x3D;&#123;1588230740 state&#x3D;OPENING, </span><br><span class="line">ts&#x3D;1579334053311, server&#x3D;region-168-1-240,16020,1579334037426&#125;; ServerCrashProcedures&#x3D;true. Master startup cannot </span><br><span class="line">progress, in holding-pattern until region onlined.</span><br></pre></td></tr></table></figure><p>hbck2 配置参考<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a>即可</p><p>手动去 assign 一下 meta 表即可，hbase:meta 表的 encoded name 是一个时间戳，比如上面日志的 encoded name 就是 <code>1588230740</code> ，<br>具体命令参考下方</p><p><code>hbase org.apache.hbase.HBCK2 assigns -o 1588230740</code></p><p>查看 Master 日志，可以看到成功分配</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO org.apache.hadoop.hbase.master.procedure.MasterProcedureScheduler: Took xlock for pid&#x3D;7, state&#x3D;RUNNABLE:REGION_TRANSITION_QUEUE; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true</span><br><span class="line">INFO org.apache.hadoop.hbase.master.assignment.AssignProcedure: Assigned, not reassigning rit&#x3D;OPEN, location&#x3D;region-168-1-240,16020,1579334037426</span><br><span class="line">INFO org.apache.hadoop.hbase.procedure2.ProcedureExecutor: Finished pid&#x3D;6, state&#x3D;SUCCESS; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true in 160msec</span><br></pre></td></tr></table></figure><p>执行命令验证成功</p><p><img src="/images/blog/2020-01-18-2.png" alt></p><h4 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h4><p>之前听范老师说过: 运维三大法办- 监控、日志、源码。还是要细心</p><p>hbck2 的使用可以多看看官方文档说明，学习如何使用</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/zzf1510711060/article/details/80919660" target="_blank" rel="noopener">HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误解决方法</a></li><li><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      HBase Master is initializing 问题处理
-    
-    </summary>
-    
-    
-      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>HBase CMS GC 配置参考</title>
     <link href="http://yoursite.com/2020/01/18/HBase-CMS/"/>
     <id>http://yoursite.com/2020/01/18/HBase-CMS/</id>
@@ -385,6 +385,27 @@
     <summary type="html">
     
       HBase CMS GC 配置参考
+    
+    </summary>
+    
+    
+      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>记一次 HBase Master is initializing 问题处理</title>
+    <link href="http://yoursite.com/2020/01/18/HBase-Master-is-initializing/"/>
+    <id>http://yoursite.com/2020/01/18/HBase-Master-is-initializing/</id>
+    <published>2020-01-17T16:00:00.000Z</published>
+    <updated>2020-02-03T10:02:20.419Z</updated>
+    
+    <content type="html"><![CDATA[<p>HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误处理</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>测试集群上做了jar包替换验证测试，测试完之后还原jar，重启出现进入 hbase shell 中执行命令遇到问题。</p><p><img src="/images/blog/2020-01-18-1.png" alt></p><p><code>org.apache.hadoop.hbase.PleaseHoldException: Master is initializing</code> 代表Master正在初始化中，出现这种错误的原因有很多</p><p>关键还是得看 Master 日志，盲目搜索效率不高</p><p>一开始只是搜索 ERROR 日志，并没有看到很关键的信息，后面看其他博客贴的日志片段是 WARN，进而<br>转换思路看 WARN，一看这个是 meta 表未分配到 RS 上啊，之前处理过，用 hbck2 解决即可</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARN org.apache.hadoop.hbase.master.HMaster: hbase:meta,,1.1588230740 is NOT online; state&#x3D;&#123;1588230740 state&#x3D;OPENING, </span><br><span class="line">ts&#x3D;1579334053311, server&#x3D;region-168-1-240,16020,1579334037426&#125;; ServerCrashProcedures&#x3D;true. Master startup cannot </span><br><span class="line">progress, in holding-pattern until region onlined.</span><br></pre></td></tr></table></figure><p>hbck2 配置参考<a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a>即可</p><p>手动去 assign 一下 meta 表即可，hbase:meta 表的 encoded name 是一个时间戳，比如上面日志的 encoded name 就是 <code>1588230740</code> ，<br>具体命令参考下方</p><p><code>hbase org.apache.hbase.HBCK2 assigns -o 1588230740</code></p><p>查看 Master 日志，可以看到成功分配</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO org.apache.hadoop.hbase.master.procedure.MasterProcedureScheduler: Took xlock for pid&#x3D;7, state&#x3D;RUNNABLE:REGION_TRANSITION_QUEUE; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true</span><br><span class="line">INFO org.apache.hadoop.hbase.master.assignment.AssignProcedure: Assigned, not reassigning rit&#x3D;OPEN, location&#x3D;region-168-1-240,16020,1579334037426</span><br><span class="line">INFO org.apache.hadoop.hbase.procedure2.ProcedureExecutor: Finished pid&#x3D;6, state&#x3D;SUCCESS; AssignProcedure table&#x3D;hbase:meta, region&#x3D;1588230740, override&#x3D;true in 160msec</span><br></pre></td></tr></table></figure><p>执行命令验证成功</p><p><img src="/images/blog/2020-01-18-2.png" alt></p><h4 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h4><p>之前听范老师说过: 运维三大法办- 监控、日志、源码。还是要细心</p><p>hbck2 的使用可以多看看官方文档说明，学习如何使用</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/zzf1510711060/article/details/80919660" target="_blank" rel="noopener">HBase org.apache.hadoop.hbase.PleaseHoldException: Master is initializing 错误解决方法</a></li><li><a href="https://lihuimintu.github.io/2019/12/16/hbase-hbck2/" target="_blank" rel="noopener">CDH-HBase 使用 HBCK2 运维</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      HBase Master is initializing 问题处理
     
     </summary>
     
@@ -411,27 +432,6 @@
     
     
       <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>CDH 中使用 Hive on Spark</title>
-    <link href="http://yoursite.com/2020/01/15/Hive-On-Spark/"/>
-    <id>http://yoursite.com/2020/01/15/Hive-On-Spark/</id>
-    <published>2020-01-14T16:00:00.000Z</published>
-    <updated>2020-02-03T10:02:20.410Z</updated>
-    
-    <content type="html"><![CDATA[<p>Content here</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>使用 Hive insert SQL 后查看 Yarn 发现其跑的是 MR 方式</p><p><img src="/images/blog/2020-01-15-1.png" alt></p><p>这里想改用 Spark 引起来缩短 HiveQL 的响应时间</p><p>有两种方式</p><ul><li>SparkSQL</li><li>Hive on Spark</li></ul><p>两种方式都可以，看个人习惯</p><p>Hive on Spark 大体与 SparkSQL 结构类似，只是 SQL 引擎不同，但是计算引擎都是 Spark</p><p>本文主要介绍 Hive on Spark</p><h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>CDH Hive 配置中可以看到有官方的提示配置文档</p><p><img src="/images/blog/2020-01-15-2.png" alt></p><p>要将 Hive 配置为在 Spark 上运行，请执行以下两个步骤</p><ol><li>配置 Hive 依赖项为 Spark 服务</li><li>配置 Hive 客户端以使用 Spark 执行引擎</li></ol><p><strong>配置 Hive 依赖项为 Spark 服务</strong></p><p>按照官方文档操作即可</p><ol><li>在 Cloudera Manager 管理控制台中，转到 Hive 服务</li><li>单击配置选项卡</li><li>搜索 Spark On YARN 服务。要配置 Spark 服务，请选择 Spark 服务名称。要删除依赖项，请选择 none</li><li>点击保存更改。</li><li>进入Spark服务。</li><li>在 HiveServer2 所在的主机上添加 Spark 的 gateway 角色(即客户端)</li><li>重启 Hive、Spark 服务</li></ol><p><strong>配置 Hive 客户端以使用 Spark 执行引擎</strong></p><p>CDH 中的 Hive 支持两个执行引擎: MapReduce 和 Spark</p><p>要配置执行引擎，请执行以下步骤之一</p><p>beeline/hive: 运行 <code>set hive.execution.engine=engine</code> 命令，engine 选项要么wei <code>mr</code> 要么为 <code>spark</code>，<br>默认为 <code>mr</code></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">set hive.execution.engine&#x3D;spark;</span><br><span class="line"></span><br><span class="line"># 查看当前的设置执行引擎</span><br><span class="line">set hive.execution.engine;</span><br></pre></td></tr></table></figure><p>Cloudera Manager（影响所有查询，不推荐）:</p><ol><li>转到 Hive 服务</li><li>单击配置选项卡</li><li>搜索 “execution”</li><li>将”Default Execution Engine”属性设置为 MapReduce 或 Spark。默认值为 MapReduce</li><li>重启 Hive 服务</li></ol><h4 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h4><p>官方文档中提到性能</p><p><img src="/images/blog/2020-01-15-3.png" alt></p><p>暂未研究，有兴趣的可以自行看看</p><hr><p>参考链接</p><ul><li><a href="https://docs.cloudera.com/documentation/enterprise/latest/topics/admin_hos_oview.html" target="_blank" rel="noopener">在CDH中的Spark上运行Apache Hive</a></li><li><a href="https://docs.cloudera.com/documentation/enterprise/latest/topics/admin_hive_configure.html#concept_i3p_2lv_cv" target="_blank" rel="noopener">Hive执行引擎</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Hive on Spark 使用
-    
-    </summary>
-    
-    
-      <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
     
     
   </entry>

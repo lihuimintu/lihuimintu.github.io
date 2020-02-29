@@ -55,7 +55,7 @@
 <meta property="og:description" content="概念解释">
 <meta property="og:image" content="http://yoursite.com/images/blog/2020-01-30-1.png">
 <meta property="article:published_time" content="2019-04-21T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-07T10:08:23.304Z">
+<meta property="article:modified_time" content="2020-02-28T09:17:03.609Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="tools">
 <meta name="twitter:card" content="summary">
@@ -238,7 +238,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-07 18:08:23" itemprop="dateModified" datetime="2020-02-07T18:08:23+08:00">2020-02-07</time>
+                <time title="修改时间：2020-02-28 17:17:03" itemprop="dateModified" datetime="2020-02-28T17:17:03+08:00">2020-02-28</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,7 +258,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
+              <span>3.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -330,15 +330,16 @@
 <h4 id="OLAP、OLTP"><a href="#OLAP、OLTP" class="headerlink" title="OLAP、OLTP"></a>OLAP、OLTP</h4><p>OLAP:（Online Analytical Process），联机分析处理，以多维度的方式分析数据，一般带有主观的查询需求，多应用在数据仓库。<br>OLTP:（Online Transaction Process），联机事务处理，侧重于数据库的增删查改等常用业务操作。</p>
 <h4 id="at-most-once、at-least-once、exactly-once"><a href="#at-most-once、at-least-once、exactly-once" class="headerlink" title="at most once、at least once、exactly once"></a>at most once、at least once、exactly once</h4><p>At most once 的消息传输机制是每条消息传输零次或者一次，即消息可能会丢失<br>A t least once 意味着每条消息会进行多次传输尝试，至少一次成功，即消息传输可能重复但不会丢失<br>Exactly once 的消息传输机制是每条消息有且只有一次，即消息传输既不会丢失也不会重复</p>
 <h4 id="CPU-用户态、内核态"><a href="#CPU-用户态、内核态" class="headerlink" title="CPU 用户态、内核态"></a>CPU 用户态、内核态</h4><p><img src="/images/blog/2020-01-30-1.png" alt></p>
-<p>系统中既有操作系统的程序，也有普通用户程序。为了安全性和稳定性，操作系统的程序不能随便访问，这就是内核态。</p>
+<p>系统中既有操作系统的程序，也有普通用户程序。OS 的核心是内核，可以访问底层硬件设备，为了保证用户进程不能直接操作内核从而保证内核的安全，为了安全性和稳定性，需要切换到内核状态来访问底层硬件设备，这就是内核态。</p>
 <p>内核态: 控制计算机的硬件资源，并提供上层应用程序运行的环境，内核态可以使用计算机所有的硬件资源<br>用户态: 上层应用程序的活动空间，应用程序的执行必须依托于内核提供的资源<br>系统调用: 为了使上层应用能够访问到这些资源，内核为上层应用提供访问的接口</p>
 <p>从用户态到内核态的切换，一般存在以下三种情况</p>
 <ul>
-<li>系统调用</li>
+<li>系统调用: 用户态进程通过系统调用申请使用操作系统提供的服务程序完成工作，比如fork()实际上就是执行了一个创建新进程的系统调用。而系统调用的机制其核心还是使用了操作系统为用户特别开放的一个中断来实现，例如Linux的int 80h中断</li>
 <li>异常事件: 当CPU正在执行运行在用户态的程序时，突然发生某些预先不可知的异常事件，这个时候就会触发从当前用户态执行的进程转向内核态执行相关的异常事件，典型的如缺页异常</li>
 <li>外围设备的中断: 当外围设备完成用户的请求操作后，会像CPU发出中断信号，此时，CPU就会暂停执行下一条即将要执行的指令，转而去执行中断信号对应的处理程序，如果先前执行的指令是在用户态下，则自然就发生从用户态到内核态的转换</li>
 </ul>
-<p>系统调用的本质其实也是中断，相对于外围设备的硬中断，这种中断称为软中断</p>
+<p>其中系统调用可以认为是用户进程主动发起的，异常和外围设备中断则是被动的。所以系统调用的本质也是中断，相对于外围设备的硬中断，这种中断称为软中断</p>
+<blockquote>
 <ol>
 <li>计算机系统中有“操作系统程序”和“普通用户程序”。</li>
 <li>操作系统程序执行就是在“内核态”下执行的。</li>
@@ -347,6 +348,9 @@
 <li>为了安全和稳定性，操作系统程序是不能随便访问的</li>
 <li>引起“用户态切换到内核态”的本质就是“CPU实行了一次中断相应”</li>
 </ol>
+</blockquote>
+<h4 id="用户空间、内核空间"><a href="#用户空间、内核空间" class="headerlink" title="用户空间、内核空间"></a>用户空间、内核空间</h4><p>用户空间就是用户进程所在的内存区域，相对的，系统空间就是操作系统占据的内存区域。用户进程和系统进程的所有数据都在内存中    </p>
+<p>是谁来划分内存空间的呢？在电脑开机之前，内存就是一块原始的物理内存。什么也没有。开机加电，系统启动后，就对物理内存进行了划分。当然，这是系统的规定，物理内存条上并没有划分好的地址和空间范围。这些划分都是操作系统在逻辑上的划分。</p>
 <h4 id="软中断、硬中断"><a href="#软中断、硬中断" class="headerlink" title="软中断、硬中断"></a>软中断、硬中断</h4><p>中断(硬)是一种电信号，当设备有某种事情发生的时候，他就会产生中断，通过总线把电信号发送给中断控制器。如果中断的线是激活的，中断控制器就把电信号发送给处理器的某个特定引脚。处理器于是立即停止自己正在做的事，跳到中断处理程序的入口点，进行中断处理</p>
 <p>软中断: CPU内部中断，即执行软件中断指令INT或遇到软件陷阱而产生的中断，它们的中断类型号已由CPU规定好<br>硬中断: CPU以外的I/O设备产生的中断</p>
 <h4 id="P99、P999"><a href="#P99、P999" class="headerlink" title="P99、P999"></a>P99、P999</h4><p>称之为分位数，分位数是将总体的全部数据按从小到大顺序排列后，处于各等分位置的变量值。</p>
@@ -359,6 +363,7 @@
 <li><a href="https://blog.csdn.net/qq_18535263/article/details/79373878" target="_blank" rel="noopener">QPS和TPS的区别</a></li>
 <li><a href="https://blog.csdn.net/Rylan11/article/details/101458344" target="_blank" rel="noopener">metrics 指标分析——你不在意的p99和p999</a></li>
 <li><a href="https://blog.csdn.net/fmlfch/article/details/90673116" target="_blank" rel="noopener">linux 脏页</a></li>
+<li><a href="https://www.cnblogs.com/jswang/p/9049229.html" target="_blank" rel="noopener">内核态(内核空间)和用户态(用户空间)的区别和联系</a></li>
 </ul>
 
     </div>
@@ -379,8 +384,8 @@
       <i class="fa fa-chevron-left"></i> YARN 中用户日志的管理和使用
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/04/24/printstream-to-string/" rel="next" title="PrintStream 里的内容转为 String">
-      PrintStream 里的内容转为 String <i class="fa fa-chevron-right"></i>
+    <a href="/2019/04/24/uniformity/" rel="next" title="一致性模型">
+      一致性模型 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -442,7 +447,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#并发与并行"><span class="nav-number">2.</span> <span class="nav-text">并发与并行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式、高并发、多线程"><span class="nav-number">3.</span> <span class="nav-text">分布式、高并发、多线程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式、集群"><span class="nav-number">4.</span> <span class="nav-text">分布式、集群</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#两阶段加锁-2PL-协议、两阶段提交-2PC-协议"><span class="nav-number">5.</span> <span class="nav-text">两阶段加锁(2PL)协议、两阶段提交(2PC)协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#QPS、TPS"><span class="nav-number">6.</span> <span class="nav-text">QPS、TPS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据仓库"><span class="nav-number">7.</span> <span class="nav-text">数据仓库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#OLAP、OLTP"><span class="nav-number">8.</span> <span class="nav-text">OLAP、OLTP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#at-most-once、at-least-once、exactly-once"><span class="nav-number">9.</span> <span class="nav-text">at most once、at least once、exactly once</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CPU-用户态、内核态"><span class="nav-number">10.</span> <span class="nav-text">CPU 用户态、内核态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#软中断、硬中断"><span class="nav-number">11.</span> <span class="nav-text">软中断、硬中断</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#P99、P999"><span class="nav-number">12.</span> <span class="nav-text">P99、P999</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#脏页"><span class="nav-number">13.</span> <span class="nav-text">脏页</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#并发与并行"><span class="nav-number">2.</span> <span class="nav-text">并发与并行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式、高并发、多线程"><span class="nav-number">3.</span> <span class="nav-text">分布式、高并发、多线程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式、集群"><span class="nav-number">4.</span> <span class="nav-text">分布式、集群</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#两阶段加锁-2PL-协议、两阶段提交-2PC-协议"><span class="nav-number">5.</span> <span class="nav-text">两阶段加锁(2PL)协议、两阶段提交(2PC)协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#QPS、TPS"><span class="nav-number">6.</span> <span class="nav-text">QPS、TPS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据仓库"><span class="nav-number">7.</span> <span class="nav-text">数据仓库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#OLAP、OLTP"><span class="nav-number">8.</span> <span class="nav-text">OLAP、OLTP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#at-most-once、at-least-once、exactly-once"><span class="nav-number">9.</span> <span class="nav-text">at most once、at least once、exactly once</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CPU-用户态、内核态"><span class="nav-number">10.</span> <span class="nav-text">CPU 用户态、内核态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用户空间、内核空间"><span class="nav-number">11.</span> <span class="nav-text">用户空间、内核空间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#软中断、硬中断"><span class="nav-number">12.</span> <span class="nav-text">软中断、硬中断</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#P99、P999"><span class="nav-number">13.</span> <span class="nav-text">P99、P999</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#脏页"><span class="nav-number">14.</span> <span class="nav-text">脏页</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -458,7 +463,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">182</span>
+          <span class="site-state-item-count">183</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -510,12 +515,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">450k</span>
+    <span title="站点总字数">451k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:49</span>
+    <span title="站点阅读时长">6:50</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
