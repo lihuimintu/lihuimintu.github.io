@@ -47,19 +47,19 @@
   };
 </script>
 
-  <meta name="description" content="Linux 内存">
+  <meta name="description" content="ZooKeeper 监控指标">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux 内存">
-<meta property="og:url" content="http://yoursite.com/2019/08/28/Linux-Memory/index.html">
+<meta property="og:title" content="ZooKeeper 监控指标">
+<meta property="og:url" content="http://yoursite.com/2020/03/07/Zookeeper-Monitor/index.html">
 <meta property="og:site_name" content="lihuimintu">
-<meta property="og:description" content="Linux 内存">
-<meta property="article:published_time" content="2019-08-27T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:20.218Z">
+<meta property="og:description" content="ZooKeeper 监控指标">
+<meta property="article:published_time" content="2020-03-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-03-07T04:05:57.845Z">
 <meta property="article:author" content="图">
-<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="ZooKeeper">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2019/08/28/Linux-Memory/">
+<link rel="canonical" href="http://yoursite.com/2020/03/07/Zookeeper-Monitor/">
 
 
 <script id="page-configurations">
@@ -71,7 +71,7 @@
   };
 </script>
 
-  <title>Linux 内存 | lihuimintu</title>
+  <title>ZooKeeper 监控指标 | lihuimintu</title>
   
 
 
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/28/Linux-Memory/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/07/Zookeeper-Monitor/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/zzh.jpg">
@@ -219,7 +219,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Linux 内存
+          ZooKeeper 监控指标
         </h1>
 
         <div class="post-meta">
@@ -228,24 +228,18 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2019-08-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-28T00:00:00+08:00">2019-08-28</time>
+              <time title="创建时间：2020-03-07 00:00:00 / 修改时间：12:05:57" itemprop="dateCreated datePublished" datetime="2020-03-07T00:00:00+08:00">2020-03-07</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index">
-                    <span itemprop="name">Linux</span>
+                  <a href="/categories/Zookeeper/" itemprop="url" rel="index">
+                    <span itemprop="name">Zookeeper</span>
                   </a>
                 </span>
             </span>
@@ -256,7 +250,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.4k</span>
+              <span>2.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -265,7 +259,7 @@
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
               <span>2 分钟</span>
             </span>
-            <div class="post-description">Linux 内存</div>
+            <div class="post-description">ZooKeeper 监控指标</div>
 
         </div>
       </header>
@@ -276,47 +270,102 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。阅读<a href="https://www.jellythink.com/archives/462" target="_blank" rel="noopener">Linux性能监测：内存篇</a></p>
-<h4 id="物理内存和虚拟内存"><a href="#物理内存和虚拟内存" class="headerlink" title="物理内存和虚拟内存"></a>物理内存和虚拟内存</h4><p>说到内存，我们都会说到物理内存和虚拟内存的</p>
-<p>物理内存就是真实的硬件设备，也就是咱们的内存条</p>
-<p>虚拟内存（Virtual Memory）是把计算机的内存空间扩展到硬盘，物理内存（RAM）和硬盘的一部分空间（SWAP）组合在一起作为虚拟内存为计算机提供了一个连贯的虚拟内存空间</p>
-<p>好处是我们拥有的内存“变多了”，可以运行更多、更大的程序，坏处是把部分硬盘当内存用整体性能受到影响，硬盘读写速度要比内存慢几个数量级，并且RAM和SWAP之间的交换增加了系统的负担</p>
-<p>需要记住的一点是Linux会在物理内存不足时，使用交换分区的虚拟内存</p>
-<p>关于虚拟内存更多跳转<a href="https://www.cnblogs.com/yitianyouyitian/p/9603390.html" target="_blank" rel="noopener">内存参数</a></p>
-<p>关于物理内存和虚拟内存的释放参阅<a href="https://www.cnblogs.com/bymo/p/7569281.html" target="_blank" rel="noopener">Linux 释放物理内存和虚拟内存</a></p>
-<p>物理内存释放有坑。。。。 <a href="http://www.51niux.com/?id=76" target="_blank" rel="noopener">Linux 清除内存中的cache</a> 内核2.6的版本执行上述的操作都没问题的，但是到了内核3系列，就不能执行echo 0 &gt;/proc/sys/vm/drop_caches的操作了，这是一个坑，重启才能改回去</p>
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>请跳转阅读<a href="https://www.cnblogs.com/operationhome/p/10362776.html" target="_blank" rel="noopener">centos6 free 和 centos 7的free 的差异与对比</a></p>
-<p>free命令可以显示Linux系统中空闲的、已用的物理内存及swap内存，及被内核使用的buffer</p>
-<p>free命令习惯上有以下几种形式</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">free -k # 以KB为单位显示内存使用情况</span><br><span class="line">free -m # 以MB为单位显示内存使用情况</span><br><span class="line">free -g # 以GB为单位显示内存使用情况</span><br><span class="line">free -h # 以人类友好的方式显示内存使用情况</span><br></pre></td></tr></table></figure>
+        <hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>ZooKeeper 是一个开放源码的分布式应用程序协调服务，很多分布式应用程序可以基于它实现同步服务，如 HDFS、HBase、Kafka</p>
+<h4 id="状态"><a href="#状态" class="headerlink" title="状态"></a>状态</h4><p>ZooKeeper 提供了四字命令(The Four Letter Words)，用来获取 ZooKeeper 服务的当前状态及相关信息</p>
+<p><strong>有哪些命令可以使用？</strong></p>
+<table>
+<thead>
+<tr>
+<th>四字命令</th>
+<th>功能描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>conf</td>
+<td>打印配置</td>
+</tr>
+<tr>
+<td>cons</td>
+<td>列出所有连接到这台服务器的客户端全部连接/会话详细信息。包括”接受/发送”的包数量、会话id、操作延迟、最后的操作执行等等信息</td>
+</tr>
+<tr>
+<td>crst</td>
+<td>重置所有连接的连接和会话统计信息</td>
+</tr>
+<tr>
+<td>dump</td>
+<td>列出那些比较重要的会话和临时节点。这个命令只能在leader节点上有用</td>
+</tr>
+<tr>
+<td>envi</td>
+<td>打印出服务环境的详细信息</td>
+</tr>
+<tr>
+<td>reqs</td>
+<td>列出未经处理的请求</td>
+</tr>
+<tr>
+<td>ruok</td>
+<td>即”Are you ok”，测试服务是否处于正确状态。如果确实如此，那么服务返回”imok”，否则不做任何相应</td>
+</tr>
+<tr>
+<td>stat</td>
+<td>输出关于性能和连接的客户端的列表</td>
+</tr>
+<tr>
+<td>srst</td>
+<td>重置服务器的统计</td>
+</tr>
+<tr>
+<td>srvr</td>
+<td>列出连接服务器的详细信息</td>
+</tr>
+<tr>
+<td>wchs</td>
+<td>列出服务器watch的详细信息</td>
+</tr>
+<tr>
+<td>wchc</td>
+<td>通过session列出服务器watch的详细信息，它的输出是一个与watch相关的会话的列表</td>
+</tr>
+<tr>
+<td>wchp</td>
+<td>通过路径列出服务器watch的详细信息。它输出一个与session相关的路径</td>
+</tr>
+<tr>
+<td>mntr</td>
+<td>输出可用于检测集群健康状态的变量列表</td>
+</tr>
+</tbody></table>
+<p>通过下列命令来获取这些监控信息 <code>echo commands  |  nc ip port</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ echo mntr | nc 192.168.1.229 2181</span><br><span class="line">zk_version      3.4.5-cdh6.3.1--1, built on 09&#x2F;26&#x2F;2019 09:28 GMT    # 版本</span><br><span class="line">zk_avg_latency  0                                                   # 平均延时</span><br><span class="line">zk_max_latency  51                                                  # 最大延时</span><br><span class="line">zk_min_latency  0                                                   # 最小延时</span><br><span class="line">zk_packets_received     825166                                      # 收包数</span><br><span class="line">zk_packets_sent 844514                                              # 发包数</span><br><span class="line">zk_num_alive_connections        10                                  # 连接数</span><br><span class="line">zk_outstanding_requests 0                                           # 堆积请求数</span><br><span class="line">zk_server_state leader                                              # 状态</span><br><span class="line">zk_znode_count  399                                                 # znode 数量</span><br><span class="line">zk_watch_count  74                                                  # watch 数量</span><br><span class="line">zk_ephemerals_count     9                                           # 临时节点(znode)</span><br><span class="line">zk_approximate_data_size        28043                               # 数据大小</span><br><span class="line">zk_open_file_descriptor_count   59                                  # 打开的文件描述符数量</span><br><span class="line">zk_max_file_descriptor_count    32768                               # 最大文件描述符数量</span><br><span class="line">zk_fsync_threshold_exceed_count 0</span><br><span class="line">zk_followers    2                                                   # follower 数量，leader角色才会有这个输出</span><br><span class="line">zk_synced_followers     2                                           # 同步的 follower 数量</span><br><span class="line">zk_pending_syncs        0                                           # 准备同步数，leader角色才会有这个输出</span><br><span class="line">zk_last_proposal_size   32                                          # 最近一次 Proposal 消息大小</span><br><span class="line">zk_max_proposal_size    1337                                        # 最大 Proposal 消息大小</span><br><span class="line">zk_min_proposal_size    32                                          # 最小 Proposal 消息大小</span><br></pre></td></tr></table></figure>
 
-<p>输入free -m时，系统就会输出以下内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# free -g</span><br><span class="line">             total       used       free     shared    buffers     cached</span><br><span class="line">Mem:            61         19         41          0          0         10</span><br><span class="line">-&#x2F;+ buffers&#x2F;cache:          8         52</span><br><span class="line">Swap:            4          0          4</span><br></pre></td></tr></table></figure>
-
-<p>输出解释<br>total: 内存总数，物理内存总数<br>used: 已经使用的内存数<br>free: 空闲的内存数<br>shared: 多个进程共享的内存总额<br>buffers: 缓冲内存数<br>cached: 缓存内存数<br>- buffers/cached: 应用使用内存数<br>+ buffers/cached: 应用可用内存数<br>Swap: 交换分区，虚拟内存  </p>
-<p>通过free命令查看机器空闲内存时，会发现free的值很小。<br>这主要是因为，在Linux系统中有这么一种思想，内存不用白不用，因此它尽可能的cache和buffer一些数据，以方便下次使用。<br>但实际上这些内存也是可以立刻拿来使用</p>
-<p>在使用free命令时，都是需要重点关注 <code>- buffers/cached</code>和 + <code>buffers/cached</code>。</p>
-<p>- buffers/cached，即used - buffers/cached，表示应用程序实际使用的内存<br>+ buffers/cached，即free + buffers/cached，表示理论上都可以被使用的内存    </p>
-<p>可见-buffers/cache反映的是被程序实实在在吃掉的内存，而+buffers/cache反映的是可以挪用的内存总数。</p>
-<h4 id="cache、buffer"><a href="#cache、buffer" class="headerlink" title="cache、buffer"></a>cache、buffer</h4><p>buffer和cache是两个在计算机技术中被用滥的名词，放在不通语境下会有不同的意义</p>
-<p>在Linux的内存管理中，这里的buffer指Linux内存的：Buffer cache。这里的cache指Linux内存中的：Page cache。翻译成中文可以叫做缓冲区缓存和页面缓存</p>
-<p><strong>cached</strong></p>
-<p>当程序启动的时候，Linux内核首先检查CPU的缓存和物理内存，如果数据已经在内存里就忽略，如果数据不在内存里就引起一个缺页中断（Page Fault），然后从硬盘读取缺页，并把缺页缓存到物理内存里。</p>
-<p>缺页中断可分为主缺页中断（Major Page Fault）和次缺页中断（Minor Page Fault），要从磁盘读取数据而产生的中断是主缺页中断；数据已经被读入内存并被缓存起来，但是没有向MMU注册的情况，操作系统只需要在MMU中注册相关页对应的物理地址即可，从内存缓存区中而不是直接从硬盘中读取数据而产生的中断是次缺页中断。</p>
-<p>内存缓存区起到了预读硬盘的作用，内核先在物理内存里寻找缺页，没有的话产生次缺页中断从内存缓存里找，如果还没有发现的话就从硬盘读取。</p>
-<p>这里说的内存缓存区即为cached，主要用于提升读取相关页面的效率，内核会将经常访问的页面放到cached中，这样就提高了页面的命中率，cached越大，命中率就越高，就减少了I/O读请求</p>
-<p>如果 cache 的值很大，说明cache住的文件数很多。如果频繁访问到的文件都能被cache住，那么磁盘的读IO 必会非常小</p>
-<p>所以cached是用来给文件做缓冲。cached直接用来记忆我们打开的文件</p>
-<p><strong>buffers</strong></p>
-<p>Buffer cache则主要是设计用来在系统对块设备进行读写的时候，对块进行数据缓存的系统来使用</p>
-<p>buffers 主要用于I/O写，将应用程序的多次零碎写事件，集中到一个缓冲区(即buffers)，然后再一次性写入磁盘中，这样就提高了写磁盘的效率</p>
+<p>还有很多信息可以获取，更多可以自行搜索。</p>
+<h4 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h4><p>监控平台的话目前业界已经比较成熟的阿里开源 ZooKeeper 监控框架 <a href="https://github.com/alibaba/taokeeper" target="_blank" rel="noopener">TaoKeeper</a></p>
+<p>TaoKeeper 同作原理通过SSH连接到ZooKeeper部署的机器上，再在上面执行 ZooKeeper 的四字命令来得到统计信息，再分析保存到 MySQL 数据库中。</p>
+<p>当然也可以使用四字命令+nc写脚本去做告警也行，针对以下几个维度去</p>
+<p>open_connections  单机打开连接连接数，建议超过平常的两倍就报警，这样就能知道比平常连接数激增</p>
+<p>latency  响应一个客户端请求的时间，建议这个时间大于10个TickTime就报警</p>
 <blockquote>
-<p>来自马哥Linux运维对Buffer和Cache解读</p>
-<p>Cache（缓存）位于CPU与内存之间的临时存储器，缓存容量比内存小的多但交换速度比内存要快得多。Cache通过缓存文件数据块，解决CPU运算速度与内存读写速度不匹配的矛盾，提高CPU和内存之间的数据交换速度。Cache缓存越大，CPU处理速度越快。</p>
-<p>Buffer（缓冲）高速缓冲存储器，通过缓存磁盘（I/O设备）数据块，加快对磁盘上数据的访问，减少I/O，提高内存和硬盘（或其他I/O设备）之间的数据交换速度。Buffer是即将要被写入磁盘的，而Cache是被从磁盘中读出来的。</p>
+<p>tickTime 这个时间是作为 Zookeeper 服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个 tickTime 时间就会发送一个心跳。默认是 2000 毫秒</p>
 </blockquote>
+<p>outstanding_requests   排队请求的数量，当ZooKeeper超过了它的处理能力时，这个值会增大，建议设置报警阀值为10</p>
+<blockquote>
+<p>zookeeper globalOutstandingLimit 配置指定了等待处理的最大请求数量的限制</p>
+</blockquote>
+<p>open_file_descriptor_count   打开文件数量，当这个值大于允许值”zk_max_file_descriptor_count” 85% 时报警</p>
+<p>Java Heap Size  JVM 堆栈内存使用情况大于分配的最大内存 80% 时报警</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/xinfang520/p/10721770.html" target="_blank" rel="noopener">Hadoop记录- zookeeper 监控指标</a></li>
+<li><a href="https://www.cnblogs.com/allenhaozi/p/11416817.html" target="_blank" rel="noopener">zookeeper globalOutstandingLimit</a></li>
+<li><a href="https://www.cnblogs.com/linuxbug/p/4840506.html" target="_blank" rel="noopener">zookeeper监控告警</a></li>
+<li><a href="https://blog.csdn.net/hackerwin7/article/details/43985049" target="_blank" rel="noopener">Zookeeper 监控原型开发</a></li>
+<li><a href="https://www.jianshu.com/p/4f11d7bfc9ce" target="_blank" rel="noopener">ZooKeeper监控工具(六)</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-zookeeper/index.html" target="_blank" rel="noopener">分布式服务框架 Zookeeper — 管理分布式环境中的数据</a></li>
+</ul>
 
     </div>
 
@@ -332,13 +381,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/08/28/Linux-IO/" rel="prev" title="Linux IO">
-      <i class="fa fa-chevron-left"></i> Linux IO
+    <a href="/2020/03/05/HBase-read-optimization/" rel="prev" title="HBase 读取性能优化">
+      <i class="fa fa-chevron-left"></i> HBase 读取性能优化
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2019/08/28/Linux-Network/" rel="next" title="Linux 网络">
-      Linux 网络 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -399,7 +445,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#物理内存和虚拟内存"><span class="nav-number">2.</span> <span class="nav-text">物理内存和虚拟内存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实操"><span class="nav-number">3.</span> <span class="nav-text">实操</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cache、buffer"><span class="nav-number">4.</span> <span class="nav-text">cache、buffer</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#状态"><span class="nav-number">2.</span> <span class="nav-text">状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#监控"><span class="nav-number">3.</span> <span class="nav-text">监控</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -548,7 +594,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo: 'lihuimintu.github.io',
       owner: 'lihuimintu',
       admin: ['lihuimintu'],
-      id: '861b495cb7a50bcc65c976bfb1687ec9',
+      id: '0ebaa29df460305187149cc0b91a1c25',
         language: 'zh-CN',
       distractionFreeMode: false
     });
