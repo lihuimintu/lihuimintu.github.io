@@ -47,19 +47,21 @@
   };
 </script>
 
-  <meta name="description" content="Kafka server 配置参数">
+  <meta name="description" content="HBase 写优化套路">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Kafka server 配置参数">
-<meta property="og:url" content="http://yoursite.com/2019/08/19/Kafka-config/index.html">
+<meta property="og:title" content="HBase 写入性能优化">
+<meta property="og:url" content="http://yoursite.com/2020/03/11/HBase-write-optimization/index.html">
 <meta property="og:site_name" content="lihuimintu">
-<meta property="og:description" content="Kafka server 配置参数">
-<meta property="article:published_time" content="2019-08-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:20.201Z">
+<meta property="og:description" content="HBase 写优化套路">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-03-11-1.png">
+<meta property="article:published_time" content="2020-03-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-03-11T04:07:00.601Z">
 <meta property="article:author" content="图">
-<meta property="article:tag" content="Kafka">
+<meta property="article:tag" content="HBase">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2020-03-11-1.png">
 
-<link rel="canonical" href="http://yoursite.com/2019/08/19/Kafka-config/">
+<link rel="canonical" href="http://yoursite.com/2020/03/11/HBase-write-optimization/">
 
 
 <script id="page-configurations">
@@ -71,7 +73,7 @@
   };
 </script>
 
-  <title>Kafka server 配置参数 | lihuimintu</title>
+  <title>HBase 写入性能优化 | lihuimintu</title>
   
 
 
@@ -206,7 +208,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/19/Kafka-config/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/11/HBase-write-optimization/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/zzh.jpg">
@@ -219,7 +221,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Kafka server 配置参数
+          HBase 写入性能优化
         </h1>
 
         <div class="post-meta">
@@ -228,24 +230,18 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2019-08-19 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-19T00:00:00+08:00">2019-08-19</time>
+              <time title="创建时间：2020-03-11 00:00:00 / 修改时间：12:07:00" itemprop="dateCreated datePublished" datetime="2020-03-11T00:00:00+08:00">2020-03-11</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Kafka/" itemprop="url" rel="index">
-                    <span itemprop="name">Kafka</span>
+                  <a href="/categories/HBase/" itemprop="url" rel="index">
+                    <span itemprop="name">HBase</span>
                   </a>
                 </span>
             </span>
@@ -256,16 +252,16 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.4k</span>
+              <span>2.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
-            <div class="post-description">Kafka server 配置参数</div>
+            <div class="post-description">HBase 写优化套路</div>
 
         </div>
       </header>
@@ -276,16 +272,52 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>Kafka server 配置参数</p>
+        <p>HBase 写入性能优化</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Kafka 在不修改 server 配置参数的情况下，可以以默认的参数配置启动</p>
-<p>但是在生产环境下需要修改部分参数以更好的提供服务</p>
-<h4 id="properties"><a href="#properties" class="headerlink" title="properties"></a>properties</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"># broker的名字</span><br><span class="line">broker.id&#x3D;1</span><br><span class="line">num.network.threads&#x3D;3</span><br><span class="line">num.io.threads&#x3D;8</span><br><span class="line"># kafka存放数据的路径</span><br><span class="line">log.dirs&#x3D;&#x2F;data&#x2F;kafka&#x2F;kafka-logs</span><br><span class="line"># Zookeeper 连接</span><br><span class="line">zookeeper.connect&#x3D;</span><br><span class="line">host.name&#x3D;</span><br><span class="line">advertised.host.name&#x3D;</span><br><span class="line">listeners&#x3D;PLAINTEXT:&#x2F;&#x2F;:9092</span><br><span class="line"># 客户端连接的端口</span><br><span class="line">port&#x3D;9092</span><br><span class="line"># 可以接收的消息最大尺寸</span><br><span class="line">message.max.bytes&#x3D;10240000</span><br><span class="line">socket.send.buffer.bytes&#x3D;20480000</span><br><span class="line">socket.receive.buffer.bytes&#x3D;20480000</span><br><span class="line">socket.request.max.bytes&#x3D;1048576000</span><br><span class="line">num.partitions&#x3D;3</span><br><span class="line">num.recovery.threads.per.data.dir&#x3D;1</span><br><span class="line">log.retention.hours&#x3D;168</span><br><span class="line">log.segment.bytes&#x3D;1073741824</span><br><span class="line">log.flush.interval.messages&#x3D;10000</span><br><span class="line">log.flush.interval.ms&#x3D;60000</span><br><span class="line">log.retention.check.interval.ms&#x3D;300000</span><br><span class="line">log.cleaner.enable&#x3D;true</span><br><span class="line">log.cleanup.policy&#x3D;delete</span><br><span class="line">zookeeper.connection.timeout.ms&#x3D;6000</span><br><span class="line">auto.create.topics.enable&#x3D;false</span><br><span class="line">delete.topic.enable&#x3D;true</span><br><span class="line"># server用来处理网络请求的网络线程数目</span><br><span class="line">num.network.threads&#x3D;32</span><br><span class="line"># server用来处理请求的I&#x2F;O线程的数目</span><br><span class="line">num.io.threads&#x3D;64</span><br><span class="line">num.replica.fetchers&#x3D;8</span><br><span class="line">auto.leader.rebalance.enable&#x3D;true</span><br><span class="line"># 在网络线程停止读取新请求之前，可以排队等待I&#x2F;O线程处理的最大请求个数</span><br><span class="line">queued.max.requests&#x3D;5000</span><br><span class="line">replica.fetch.max.bytes&#x3D;10240000</span><br><span class="line">controller.socket.timeout.ms&#x3D;30000</span><br><span class="line">controlled.shutdown.enable&#x3D;true</span><br></pre></td></tr></table></figure>
-
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>本文主要借阅于《HBase原理与实践》这本书，可以自行查阅 13.6 章</p>
+<p>可以从HBase服务器端和业务客户端两个角度分析，确认是否还有提高的空间</p>
+<h4 id="客户端优化"><a href="#客户端优化" class="headerlink" title="客户端优化"></a>客户端优化</h4><h5 id="是否可以使用-Bulkload-方案写入？"><a href="#是否可以使用-Bulkload-方案写入？" class="headerlink" title="是否可以使用 Bulkload 方案写入？"></a>是否可以使用 Bulkload 方案写入？</h5><p>Bulkload 是一个 MapReduce 程序（当然，也可以自行改成 Spark 程序）运行在Hadoop集群。程序的输入是指定数据源，输出是 HFile 文件。HFile 文件生成之后再通过 LoadIncrementalHFiles 工具将 HFile 中相关元数据加载到 HBase 中。</p>
+<p>Bulkload 方案适合将已经存在于 HDFS 上的数据批量导入 HBase 集群。相比调用API的写入方案，Bulkload 方案可以更加高效、快速地导入数据，而且对 HBase 集群几乎不产生任何影响。</p>
+<p>关于 Bulkload 可以阅读《HBase原理与实践》6.2 章</p>
+<h5 id="是否需要写-WAL-WAL-是否需要同步写入？"><a href="#是否需要写-WAL-WAL-是否需要同步写入？" class="headerlink" title="是否需要写 WAL? WAL 是否需要同步写入？"></a>是否需要写 WAL? WAL 是否需要同步写入？</h5><p>优化原理: 数据写入流程可以理解为一次顺序写WAL+一次写缓存，通常情况下写缓存延迟很低，因此提升写性能只能从WAL入手。HBase中可以通过设置WAL的持久化等级决定是否开启WAL机制以及HLog的落盘方式。WAL的持久化分为四个等级：SKIP_WAL，ASYNC_WAL，SYNC_WAL以及FSYNC_WAL。如果用户没有指定持久化等级，HBase默认使用SYNC_WAL等级持久化数据。</p>
+<p>在实际生产线环境中，部分业务可能并不特别关心异常情况下少量数据的丢失，而更关心数据写入吞吐量。比如某些推荐业务，这类业务即使丢失一部分用户行为数据可能对推荐结果也不会构成很大影响，但是对于写入吞吐量要求很高，不能造成队列阻塞。这种场景下可以考虑关闭WAL写入。退而求其次，有些业务必须写WAL，但可以接受WAL异步写入，这是可以考虑优化的，通常也会带来一定的性能提升。</p>
+<p>优化推荐: 根据业务关注点在WAL机制与写入吞吐量之间做出选择，用户可以通过客户端设置WAL持久化等级。</p>
+<h5 id="Put-是否可以同步批量提交？"><a href="#Put-是否可以同步批量提交？" class="headerlink" title="Put 是否可以同步批量提交？"></a>Put 是否可以同步批量提交？</h5><p>优化原理: HBase分别提供了单条put以及批量put的API接口，使用批量put接口可以减少客户端到RegionServer之间的RPC连接数，提高写入吞吐量。另外需要注意的是，批量put请求要么全部成功返回，要么抛出异常。</p>
+<p>优化建议: 使用批量put写入请求。</p>
+<h5 id="Put-是否可以异步批量提交？"><a href="#Put-是否可以异步批量提交？" class="headerlink" title="Put 是否可以异步批量提交？"></a>Put 是否可以异步批量提交？</h5><p>优化原理: 如果业务可以接受异常情况下少量数据丢失，可以使用异步批量提交的方式提交请求。提交分两阶段执行：用户提交写请求，数据写入客户端缓存，并返回用户写入成功；当客户端缓存达到阈值（默认2M）后批量提交给RegionServer。需要注意的是，在某些客户端异常的情况下，缓存数据有可能丢失。</p>
+<p>优化建议: 在业务可以接受的情况下开启异步批量提交，用户可以设置setAutoFlush (false)</p>
+<h6 id="写入-KeyValue-数据是否太大？"><a href="#写入-KeyValue-数据是否太大？" class="headerlink" title="写入 KeyValue 数据是否太大？"></a>写入 KeyValue 数据是否太大？</h6><p>KeyValue大小对写入性能的影响巨大。一旦遇到写入性能比较差的情况，需要分析写入性能下降是否因为写入KeyValue的数据太大。</p>
+<p>KeyValue大小对写入性能影响曲线如下</p>
+<p><img src="/images/blog/2020-03-11-1.png" alt></p>
+<p>横坐标是写入的一行数据（每行数据10列）大小，左纵坐标是写入吞吐量，右纵坐标是写入平均延迟（ms）。可以看出，随着单行数据不断变大，写入吞吐量急剧下降，写入延迟在100K之后急剧增大。</p>
+<h4 id="服务端优化"><a href="#服务端优化" class="headerlink" title="服务端优化"></a>服务端优化</h4><h5 id="Region-是否太少？"><a href="#Region-是否太少？" class="headerlink" title="Region 是否太少？"></a>Region 是否太少？</h5><p>优化原理: 当前集群中表的Region个数如果小于RegionServer个数，即Num (Region of Table)&lt; Num (RegionServer)，可以考虑切分Region并尽可能分布到不同的RegionServer上以提高系统请求并发度。</p>
+<h5 id="写入请求是否均衡？"><a href="#写入请求是否均衡？" class="headerlink" title="写入请求是否均衡？"></a>写入请求是否均衡？</h5><p>优化原理: 写入请求如果不均衡，会导致系统并发度较低，还有可能造成部分节点负载很高，进而影响其他业务。分布式系统中特别需要注意单个节点负载很高的情况，单个节点负载很高可能会拖慢整个集群，这是因为很多业务会使用Mutli批量提交读写请求，一旦其中一部分请求落到慢节点无法得到及时响应，会导致整个批量请求超时。</p>
+<p>优化建议: 检查Rowkey设计以及预分区策略，保证写入请求均衡。</p>
+<h5 id="Utilize-Flash-storage-for-WAL"><a href="#Utilize-Flash-storage-for-WAL" class="headerlink" title="Utilize Flash storage for WAL"></a>Utilize Flash storage for WAL</h5><p>该特性会将WAL文件写到SSD上，对于写性能会有非常大的提升。需要注意的是，该特性建立在HDFS 2.6.0+以及HBase 1.1.0+版本基础上，以前的版本并不支持该特性。</p>
+<p>使用该特性需要两个配置步骤:</p>
+<p>1) 使用HDFS Archival Storage机制，在确保物理机有SSD硬盘的前提下配置HDFS的部分文件目录为SSD介质<br>2) 在hbase-site.xml中添加如下配置<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">  &lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.wal.storage.policy&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;ONE_SSD&lt;&#x2F;value&gt;</span><br><span class="line">  &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure><br>   hbase.wal.storage.policy默认为none，用户可以指定ONE_SSD或者ALL_SSD</p>
+<ul>
+<li>ONE_SSD: WAL在HDFS上的一个副本文件写入SSD介质，另两个副本写入默认存储介质</li>
+<li>ALL_SSD: WAL的三个副本文件全部写入SSD介质</li>
+</ul>
+<h4 id="写入问题"><a href="#写入问题" class="headerlink" title="写入问题"></a>写入问题</h4><ul>
+<li>写阻塞<ul>
+<li>MemStore 占用内存超过 RegionServer 级别高水位阈值导致阻塞 (hbase.regionserver.global.memstore.size)</li>
+<li>RegionServer Active Handler 资源被耗尽  (可能跟KeyValue太大有关)</li>
+<li>Store 中 HFile 文件数量达到阈值就会阻塞写入 (hbase.hstore.blockingStoreFiles)</li>
+</ul>
+</li>
+<li>写延迟<ul>
+<li>WAL 写入延迟，IO 资源是否争抢 (Utilize Flash storage for WAL)</li>
+<li>JVM young gc (CCSMap)</li>
+</ul>
+</li>
+</ul>
 <hr>
 <p>参考链接</p>
 <ul>
-<li><a href="https://www.cnblogs.com/gxc2015/p/9835837.html" target="_blank" rel="noopener">kafka配置参数详解</a></li>
+<li><a href="https://mp.weixin.qq.com/s/RBXctAm9YGMPCQHR1NN8TQ" target="_blank" rel="noopener">Apache HBase 问题排查思路</a></li>
+<li><a href="https://mp.weixin.qq.com/s/ippW4kRsdbO45JqQPfbMOw" target="_blank" rel="noopener">从原理到参数解析，HBase 刷写与合并机制介绍</a></li>
 </ul>
 
     </div>
@@ -302,13 +334,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/08/18/Kafka-offset/" rel="prev" title="kafka offset 机制">
-      <i class="fa fa-chevron-left"></i> kafka offset 机制
+    <a href="/2020/03/07/Zookeeper-Monitor/" rel="prev" title="ZooKeeper 监控指标">
+      <i class="fa fa-chevron-left"></i> ZooKeeper 监控指标
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2019/08/20/Flink-Problem/" rel="next" title="使用 Flink 时遇到的问题">
-      使用 Flink 时遇到的问题 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -369,7 +398,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#properties"><span class="nav-number">2.</span> <span class="nav-text">properties</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端优化"><span class="nav-number">2.</span> <span class="nav-text">客户端优化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#是否可以使用-Bulkload-方案写入？"><span class="nav-number">2.1.</span> <span class="nav-text">是否可以使用 Bulkload 方案写入？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#是否需要写-WAL-WAL-是否需要同步写入？"><span class="nav-number">2.2.</span> <span class="nav-text">是否需要写 WAL? WAL 是否需要同步写入？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Put-是否可以同步批量提交？"><span class="nav-number">2.3.</span> <span class="nav-text">Put 是否可以同步批量提交？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Put-是否可以异步批量提交？"><span class="nav-number">2.4.</span> <span class="nav-text">Put 是否可以异步批量提交？</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#写入-KeyValue-数据是否太大？"><span class="nav-number">2.4.1.</span> <span class="nav-text">写入 KeyValue 数据是否太大？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务端优化"><span class="nav-number">3.</span> <span class="nav-text">服务端优化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Region-是否太少？"><span class="nav-number">3.1.</span> <span class="nav-text">Region 是否太少？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#写入请求是否均衡？"><span class="nav-number">3.2.</span> <span class="nav-text">写入请求是否均衡？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Utilize-Flash-storage-for-WAL"><span class="nav-number">3.3.</span> <span class="nav-text">Utilize Flash storage for WAL</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写入问题"><span class="nav-number">4.</span> <span class="nav-text">写入问题</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -518,7 +547,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo: 'lihuimintu.github.io',
       owner: 'lihuimintu',
       admin: ['lihuimintu'],
-      id: 'fc4481594ce3325b676195fd57eba6f9',
+      id: '2d3cebb13719e52e3be461ca79a7f2cf',
         language: 'zh-CN',
       distractionFreeMode: false
     });

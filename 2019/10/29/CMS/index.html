@@ -59,7 +59,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-06-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-11-06-2.png">
 <meta property="article:published_time" content="2019-10-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-17T13:32:38.497Z">
+<meta property="article:modified_time" content="2020-03-10T02:44:08.800Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="CMS">
 <meta property="article:tag" content=" JVM">
@@ -243,7 +243,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-17 21:32:38" itemprop="dateModified" datetime="2020-02-17T21:32:38+08:00">2020-02-17</time>
+                <time title="修改时间：2020-03-10 10:44:08" itemprop="dateModified" datetime="2020-03-10T10:44:08+08:00">2020-03-10</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -365,7 +365,7 @@
 <li>是基于历史统计数据，比如统计数据显示历史上平均每次晋升对象的大小是av_promo，而当前老年代的空间并不足以存放av_promo大小的对象，则GC线程认为实际晋升的过程中可能会发生失败，晚失败不如早点失败，于是GC线程告诉堆发生了一次GC失败事件便终止了这次回收动作。</li>
 <li>是历史统计数据显示这次老年代有足够的空间来支持对象晋升，但是 Minor GC 后，幸存空间容纳不了剩余对象（超过动态年龄的对象），将剩余对象要放入老年代，老年代有碎片或者不能容纳这些对象，所以对象晋升失败，于是GC线程同样会告诉堆发生了一次垃圾回收失败事件</li>
 </ul>
-<p>发生 promotion failed 会有什么后果？就是紧接着触发concurrent mode failure</p>
+<p>发生 promotion failed 会有什么后果？就是紧接着触发concurrent mode failure，其意思为并发模式失败</p>
 <p><code>concurrent mode failure</code>在执行 CMS GC 的过程中预留的内存空间不足以保存对象，这会导致 Concurrent Mode Failure 失败，这时会启用 Serial Old 收集器来重新进行老年代的收集。为什么CMS GC会有对象进入老年代？<br>因为存在可能业务线程会将大对象放入老年代，而此时老年代空间不足；或者 promotion failed 导致的对象晋升，而此时老年代空间不足或老年代空间足够，但存在大量碎片。 </p>
 <p>当出现<code>concurrent mode failure</code>的现象时，就意味着此时JVM将继续采用 Stop-The-World 的方式来进行 Full GC，Full GC 会启用 Serial Old 收集器， Serial Old 收集器是单线程收集器，这样就会导致 STW 更长</p>
 <p><code>concurrent mode interrupted</code> 是由于外部因素触发了 full gc，比如执行了System.gc()</p>
@@ -415,8 +415,8 @@
       <i class="fa fa-chevron-left"></i> Java内存分析工具 jmap
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/11/04/yum-upgrade-update/" rel="next" title="yum update操作导致系统版本升级">
-      yum update操作导致系统版本升级 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/11/04/Java-heap/" rel="next" title="JVM 堆内存 heap 详解">
+      JVM 堆内存 heap 详解 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -494,7 +494,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-count">189</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -546,12 +546,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">462k</span>
+    <span title="站点总字数">464k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:01</span>
+    <span title="站点阅读时长">7:02</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
