@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-03-11T04:07:00.601Z</updated>
+  <updated>2020-03-23T06:53:37.520Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>SQL 中的 NULL</title>
+    <link href="http://yoursite.com/2020/03/23/SQL-NULL/"/>
+    <id>http://yoursite.com/2020/03/23/SQL-NULL/</id>
+    <published>2020-03-22T16:00:00.000Z</published>
+    <updated>2020-03-23T06:53:37.520Z</updated>
+    
+    <content type="html"><![CDATA[<p>NULL 就是 NULL，是「未知」  </p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有幸阅读到 Inotime 的文章<a href="https://blog.csdn.net/lnotime/article/details/104847946" target="_blank" rel="noopener">SQL 中的 NULL 你真的懂了吗？【数据库｜SQL】</a></p><p><strong>NULL 就是 NULL，是「未知」</strong></p><p>关于 NULL 的理解比以前更清晰。其文章译自 <a href="https://mitchum.blog/null-values-in-sql-queries/" target="_blank" rel="noopener">NULL Values in SQL Queries</a></p>]]></content>
+    
+    <summary type="html">
+    
+      SQL 中的 NULL
+    
+    </summary>
+    
+    
+      <category term="SQL" scheme="http://yoursite.com/categories/SQL/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>HBase 写入性能优化</title>
@@ -411,27 +432,6 @@
     
     
       <category term="Hive" scheme="http://yoursite.com/categories/Hive/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Kafka 零拷贝原理</title>
-    <link href="http://yoursite.com/2020/01/24/Kafka-Zero-Copy/"/>
-    <id>http://yoursite.com/2020/01/24/Kafka-Zero-Copy/</id>
-    <published>2020-01-23T16:00:00.000Z</published>
-    <updated>2020-02-05T13:37:24.348Z</updated>
-    
-    <content type="html"><![CDATA[<p>从字面意思理解就是数据不需要来回的拷贝，大大提升了系统的性能</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>“零拷贝”是指计算机操作的过程中，CPU 不需要为数据在内存之间的拷贝消耗资源。而它通常是指计算机在网络上发送文件时，不需要将文件内容拷贝到用户空间（User Space）而直接在内核空间（Kernel Space）中传输到网络的方式。</p><p>零拷贝并不是不需要拷贝，而是减少不必要的拷贝次数。通常是说在 IO 读写过程中</p><h4 id="缓冲区"><a href="#缓冲区" class="headerlink" title="缓冲区"></a>缓冲区</h4><p>缓冲区是所有 I/O 的基础，I/O 讲的无非就是把数据移进或移出缓冲区</p><p>进程执行I/O操作，就是向操作系统发出请求，让它要么把缓冲区的数据排干(写)，要么填充缓冲区(读)</p><p>下面看一个 Java 进程发起读请求加载数据大致的流程图</p><p><img src="/images/blog/2020-01-24-1.png" alt></p><ol><li><p>进程发起读请求之后，内核接收到读请求之后，会先检查内核空间中是否已经存在进程所需要的数据，<br>如果已经存在，则直接把数据拷贝给进程的缓冲区</p></li><li><p>如果内核缓冲区没有命中随即向磁盘控制器发出命令，要求从磁盘读取数据，磁盘控制器把数据直接写入内核read缓冲区，这一步通过DMA完成</p></li><li><p>接下来内核将数据拷贝到进程的缓冲区</p></li></ol><p>DMA 是一种硬件和软件之间的数据传输的技术，且 DMA 进行数据传输的过程中几乎不需要 CPU 参与</p><h4 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h4><p>所有现代操作系统都使用虚拟内存，使用虚拟的地址取代物理地址，这样有两个好处:</p><ol><li>一个以上的虚拟地址可以指向同一个物理内存地址</li><li>虚拟内存空间可大于实际可用的物理地址</li></ol><p>利用第一条特性可以把内核空间地址和用户空间的虚拟地址映射到同一个物理地址，<br>这样DMA就可以填充对内核和用户空间进程同时可见的缓冲区了，大致如下图所示:</p><p><img src="/images/blog/2020-01-24-3.png" alt></p><h4 id="零拷贝技术"><a href="#零拷贝技术" class="headerlink" title="零拷贝技术"></a>零拷贝技术</h4><p>本人水平有限，零拷贝技术可以阅读下方链接</p><ul><li><a href="https://www.jianshu.com/p/497e7640b57c" target="_blank" rel="noopener">零拷贝的原理及Java实现</a></li><li><a href="https://blog.csdn.net/lzb348110175/article/details/100853071" target="_blank" rel="noopener">Kafka 的零拷贝技术</a></li><li><a href="https://mp.weixin.qq.com/s/otuUvACiVDafGgDl6xNd2A" target="_blank" rel="noopener">面试被问到“零拷贝”！你真的理解吗？</a></li><li><a href="https://mp.weixin.qq.com/s/vaKRVvfUnFjhHzfkwZDbKQ" target="_blank" rel="noopener">图解Kafka的零拷贝技术到底有多牛？</a></li><li><a href="https://blog.csdn.net/ljheee/article/details/99652448" target="_blank" rel="noopener">Kafka零拷贝</a></li></ul><p>Kafka 通过 sendfile 实现的零拷贝 I/O，理想状态下的零拷贝I/O需要接触 DMA 完成。</p>]]></content>
-    
-    <summary type="html">
-    
-      Kafka 零拷贝原理
-    
-    </summary>
-    
-    
-      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
     
     
   </entry>
