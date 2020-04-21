@@ -53,12 +53,16 @@
 <meta property="og:url" content="http://yoursite.com/2019/08/29/Linux-CPU/index.html">
 <meta property="og:site_name" content="lihuimintu">
 <meta property="og:description" content="Linux CPU">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-04-18-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-04-18-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-04-18-3.png">
 <meta property="article:published_time" content="2019-08-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-07T09:23:06.085Z">
+<meta property="article:modified_time" content="2020-04-18T10:28:28.276Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content=" CPU">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2020-04-18-1.png">
 
 <link rel="canonical" href="http://yoursite.com/2019/08/29/Linux-CPU/">
 
@@ -237,7 +241,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-07 17:23:06" itemprop="dateModified" datetime="2020-02-07T17:23:06+08:00">2020-02-07</time>
+                <time title="修改时间：2020-04-18 18:28:28" itemprop="dateModified" datetime="2020-04-18T18:28:28+08:00">2020-04-18</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -257,14 +261,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>816</span>
+              <span>3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>3 分钟</span>
             </span>
             <div class="post-description">Linux CPU</div>
 
@@ -279,13 +283,18 @@
       
         <p>CPU是用来运行各种程序，做各种计算的，一旦CPU处于高负荷状态，容易引起服务响应速度变慢</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>CPU 说简单点，就是我们编写的程序，经过编译后，最终都会变成一条条的指令，由CPU来进行最终的执行。</p>
-<p>CPU是用来运行各种程序，做各种计算的，一旦CPU处于高负荷状态，容易引起服务响应速度变慢，进而导致整个服务不可用，特别是在业务高峰期可能导致雪崩效应，最终整个系统出现瘫痪。</p>
-<h4 id="特殊名词"><a href="#特殊名词" class="headerlink" title="特殊名词"></a>特殊名词</h4><p><strong>物理CPU</strong></p>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>CPU（Central Processing Unit）是计算机系统的运算和控制核心，是信息处理、程序运行的最终执行单元，相当于系统的“大脑”。当 CPU 过于繁忙，就像“人脑”并发处理过多的事情，会降低做事的效率，严重时甚至会导致崩溃“宕机”。因此，理解 CPU 的工作原理，合理控制负载，是保障系统稳定持续运行的重要手段。</p>
+<h4 id="CPU-的物理核与逻辑核"><a href="#CPU-的物理核与逻辑核" class="headerlink" title="CPU 的物理核与逻辑核"></a>CPU 的物理核与逻辑核</h4><p>一台机器可能包含多块 CPU 芯片，多个 CPU 之间通过系统总线通信。</p>
+<p>一块 CPU 芯片可能包含多个物理核，每个物理核都是一个实打实的运算核心（包括运算器、存储器等）。</p>
+<p>超线程（Hyper-Threading）技术可以让一个物理核在单位时间内同时处理两个线程，变成两个逻辑核。但它不会拥有传统单核 2 倍的处理能力，也不可能提供完整的并行处理能力。</p>
+<p><img src="/images/blog/2020-04-18-1.png" alt></p>
+<h4 id="查询-CPU-信息"><a href="#查询-CPU-信息" class="headerlink" title="查询 CPU 信息"></a>查询 CPU 信息</h4><p>在 Linux 系统下，可以从 /proc/cpuinfo 文件中读取 CPU 信息</p>
+<p><img src="/images/blog/2020-04-18-2.png" alt></p>
+<p><strong>查看 CPU 个数</strong></p>
 <p><code>grep &#39;physical id&#39; /proc/cpuinfo | sort -u | wc -l</code></p>
-<p><strong>CPU核数</strong></p>
+<p><strong>查看 CPU 物理核数</strong></p>
 <p><code>grep &#39;core id&#39; /proc/cpuinfo | sort -u | wc -l</code></p>
-<p><strong>逻辑CPU</strong></p>
+<p><strong>查看 CPU 逻辑核数</strong></p>
 <p><code>grep &#39;processor&#39; /proc/cpuinfo | sort -u | wc -l</code></p>
 <p>逻辑CPU=物理CPU个数×每颗核数</p>
 <h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><ul>
@@ -293,15 +302,58 @@
 <li><a href="https://www.jellythink.com/archives/421" target="_blank" rel="noopener">Linux top命令详解</a></li>
 <li><a href="https://www.jellythink.com/archives/419" target="_blank" rel="noopener">Linux vmstat命令详解</a></li>
 </ul>
-<p><strong>load average</strong></p>
-<p>第一行的 load average 是系统平均负载， 后面的三个数分别是1分钟、5分钟、15分钟的负载情况</p>
-<p>load average 是平均活跃进程数，平均活跃进程数 = 正在运行的进程 + 准备好等待运行的进程</p>
-<p>如果平均负载值大于0.7 * CPU内核数，就需要引起关注。至于为什么可以阅读<a href="https://blog.csdn.net/zwldx/article/details/82812704" target="_blank" rel="noopener">Linux系统平均负载3个数字的含义</a></p>
-<p><strong>load average与cpu使用率的区别</strong></p>
-<p>CPU使用率: 单位时间内cpu繁忙情况的统计</p>
-<p>CPU密集型进程，CPU使用率和平均负载基本一致</p>
-<p>IO密集型进程，平均负载升高，CPU使用率不一定升高</p>
-<p>大量等待CPU的进程调度，平均负载升高，CPU使用率也升高</p>
+<p><strong>CPU 使用率</strong></p>
+<p>CPU 使用率就是 CPU 非空闲态运行的时间占比，它反映了 CPU 的繁忙程度。比如，单核 CPU 1s 内非空闲态运行时间为 0.8s，那么它的 CPU 使用率就是 80%；双核 CPU 1s 内非空闲态运行时间分别为 0.4s 和 0.6s，那么，总体 CPU 使用率就是 (0.4s + 0.6s) / (1s * 2) = 50%，其中 2 表示 CPU 核数，多核 CPU 同理。</p>
+<p>在 Linux 系统下，使用 top 命令查看 CPU 使用情况，可以得到如下信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cpu(s): 0.2%us, 0.1%sy, 0.0%ni, 77.5%id, 2.1%wa, 0.0%hi, 0.0%si, 20.0%st</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>us(user)：表示 CPU 在用户态运行的时间百分比，通常用户态 CPU 高表示有应用程序比较繁忙。典型的用户态程序包括：数据库、Web 服务器等。</li>
+<li>sy(sys)：表示 CPU 在内核态运行的时间百分比（不包括中断），通常内核态 CPU 越低越好，否则表示系统存在某些瓶颈。</li>
+<li>ni(nice)：表示用 nice 修正进程优先级的用户态进程执行的 CPU 时间。nice 是一个进程优先级的修正值，如果进程通过它修改了优先级，则会单独统计 CPU 开销。</li>
+<li>id(idle)：表示 CPU 处于空闲态的时间占比，此时，CPU 会执行一个特定的虚拟进程，名为 System Idle Process。</li>
+<li>wa(iowait)：表示 CPU 在等待 I/O 操作完成所花费的时间，通常该指标越低越好，否则表示 I/O 存在瓶颈，可以用 iostat 等命令做进一步分析。</li>
+<li>hi(hardirq)：表示 CPU 处理硬中断所花费的时间。硬中断是由外设硬件（如键盘控制器、硬件传感器等）发出的，需要有中断控制器参与，特点是快速执行。</li>
+<li>si(softirq)：表示 CPU 处理软中断所花费的时间。软中断是由软件程序（如网络收发、定时调度等）发出的中断信号，特点是延迟执行。</li>
+<li>st(steal)：表示 CPU 被其他虚拟机占用的时间，仅出现在多虚拟机场景。如果该指标过高，可以检查下宿主机或其他虚拟机是否异常。</li>
+</ul>
+<p>由于 CPU 有多种非空闲态，因此，CPU 使用率计算公式可以总结为：CPU 使用率 = (1 - 空闲态运行时间/总运行时间) * 100%。</p>
+<p>根据经验法则， 建议生产系统的 CPU 总使用率不要超过 70%。</p>
+<p><strong>平均负载（Load Average）</strong></p>
+<p>平均负载（Load Average）是指单位时间内，系统处于可运行状态（Running / Runnable） 和 不可中断态 的平均进程数，也就是 平均活跃进程数。</p>
+<p>可运行态进程包括正在使用 CPU 或者等待 CPU 的进程；</p>
+<p>不可中断态进程是指处于内核态关键流程中的进程，并且该流程不可被打断。比如当进程向磁盘写数据时，如果被打断，就可能出现磁盘数据与进程数据不一致。不可中断态，本质上是系统对进程和硬件设备的一种保护机制。</p>
+<p>在 Linux 系统下，使用 top 命令查看平均负载，可以得到如下信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">load average: 1.09, 1.12, 1.52</span><br></pre></td></tr></table></figure>
+
+<p>这 3 个数字分别表示 1分钟、5分钟、15分钟内系统的平均负载。该值越小，表示系统工作量越少，负荷越低；反之负荷越高。</p>
+<p>根据经验法则，平均负载值大于CPU内核数*0.7，就需要引起关注。至于为什么可以阅读<a href="https://blog.csdn.net/zwldx/article/details/82812704" target="_blank" rel="noopener">Linux系统平均负载3个数字的含义</a></p>
+<blockquote>
+<p>平均负载为多少更合理？  </p>
+<p>理想情况下，每个 CPU 应该满负荷工作，并且没有等待进程，此时，平均负载 = CPU 逻辑核数。</p>
+<p>但是，在实际生产系统中，不建议系统满负荷运行。通用的经验法则是：平均负载 = 0.7 * CPU 逻辑核数。</p>
+<ul>
+<li>当平均负载持续大于 0.7 * CPU 逻辑核数，就需要开始调查原因，防止系统恶化；</li>
+<li>当平均负载持续大于 1.0 * CPU 逻辑核数，必须寻找解决办法，降低平均负载；</li>
+<li>当平均负载持续大于 5.0 * CPU 逻辑核数，表明系统已出现严重问题，长时间未响应，或者接近死机。</li>
+</ul>
+<p>除了关注平均负载值本身，我们也应关注平均负载的变化趋势，这包含两层含义。<br>一是 load1、load5、load15 之间的变化趋势；二是历史的变化趋势。</p>
+<ul>
+<li>当 load1、load5、load15 三个值非常接近，表明短期内系统负载比较平稳。此时，应该将其与昨天或上周同时段的历史负载进行比对，观察是否有显著上升。</li>
+<li>当 load1 远小于 load5 或 load15 时，表明系统最近 1 分钟的负载在降低，而过去 5 分钟或 15 分钟的平均负载却很高。</li>
+<li>当 load1 远大于 load5 或 load15 时，表明系统负载在急剧升高，如果不是临时性抖动，而是持续升高，特别是当 load5 都已超过 0.7 * CPU 逻辑核数 时，应调查原因，降低系统负载。</li>
+</ul>
+</blockquote>
+<p><strong>平均负载与CPU使用率的关系与区别</strong></p>
+<p>CPU 使用率是单位时间内 CPU 繁忙程度的统计。而平均负载不仅包括正在使用 CPU 的进程，还包括等待 CPU 或 I/O 的进程。</p>
+<p>因此，两者不能等同，有两种常见的场景如下所述: </p>
+<ul>
+<li>CPU 密集型应用，大量进程在等待或使用 CPU，此时 CPU 使用率与平均负载呈正相关状态。</li>
+<li>I/O 密集型应用，大量进程在等待 I/O，此时平均负载会升高，但 CPU 使用率不一定很高</li>
+</ul>
+<p>为了更深入的理解 CPU 使用率与平均负载的关系，举一个例子：假设现在有一个电话亭，有 4 个人在等待打电话，电话亭同一时刻只能容纳 1 个人打电话，只有拿起电话筒才算是真正使用。</p>
+<p>那么 CPU 使用率就是拿起电话筒的时间占比，它只取决于在电话亭里的人的行为，与平均负载没有非常直接的关系。而平均负载是指在电话亭里的人加上排队的总人数，如下图所示：</p>
+<p><img src="/images/blog/2020-04-18-3.png" alt></p>
 <p><strong>CPU使用率超过100%</strong></p>
 <p>有时候使用top命令发现CPU占用率竟超过100%。</p>
 <p>这跟 CPU 数量有关，top命令是按CPU总使用率来显示的，4核理论上最高可达400%</p>
@@ -310,6 +362,7 @@
 <ul>
 <li><a href="https://blog.csdn.net/guotao15285007494/article/details/84135713" target="_blank" rel="noopener">Linux CPU使用率超过100%的原因</a></li>
 <li><a href="https://www.cnblogs.com/shengs/p/5148284.html" target="_blank" rel="noopener">性能分析Linux服务器CPU利用率</a></li>
+<li><a href="https://mp.weixin.qq.com/s/3I5kkNIGKkjQFazwvS4GIQ" target="_blank" rel="noopener">如何正确理解 CPU 使用率和平均负载的关系？看完你就知道了</a></li>
 </ul>
 
     </div>
@@ -326,12 +379,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/08/28/Linux-IO/" rel="prev" title="Linux IO">
-      <i class="fa fa-chevron-left"></i> Linux IO
+    <a href="/2019/08/28/Linux-Memory/" rel="prev" title="Linux 内存">
+      <i class="fa fa-chevron-left"></i> Linux 内存
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/09/01/Flink-Kafka-Connector/" rel="next" title="Flink kafka connector">
-      Flink kafka connector <i class="fa fa-chevron-right"></i>
+    <a href="/2019/09/01/Flink-Connector/" rel="next" title="Flink connector">
+      Flink connector <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -393,7 +446,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#特殊名词"><span class="nav-number">2.</span> <span class="nav-text">特殊名词</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实操"><span class="nav-number">3.</span> <span class="nav-text">实操</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CPU-的物理核与逻辑核"><span class="nav-number">2.</span> <span class="nav-text">CPU 的物理核与逻辑核</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#查询-CPU-信息"><span class="nav-number">3.</span> <span class="nav-text">查询 CPU 信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实操"><span class="nav-number">4.</span> <span class="nav-text">实操</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -409,7 +462,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-count">192</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -461,12 +514,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">466k</span>
+    <span title="站点总字数">470k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:04</span>
+    <span title="站点阅读时长">7:07</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
