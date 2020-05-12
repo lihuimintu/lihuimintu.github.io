@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="使用官方的 GitLab 存储库安装 GitLab Runner">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安装 GitLab Runner">
+<meta property="og:url" content="http://yoursite.com/2020/05/12/gitlab-runner/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="使用官方的 GitLab 存储库安装 GitLab Runner">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-05-12-4.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-05-12-3.png">
+<meta property="article:published_time" content="2020-05-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-05-12T10:15:57.607Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2020-05-12-4.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/05/12/gitlab-runner/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>安装 GitLab Runner | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/12/gitlab-runner/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          安装 GitLab Runner
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-05-12 00:00:00 / 修改时间：18:15:57" itemprop="dateCreated datePublished" datetime="2020-05-12T00:00:00+08:00">2020-05-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Tools/" itemprop="url" rel="index">
+                    <span itemprop="name">Tools</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">使用官方的 GitLab 存储库安装 GitLab Runner</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>使用官方的 GitLab 存储库安装 GitLab Runner</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>需要为项目实现基于 Gitlab 的 CI/CD。gitlab-runner 是具体执行 CI/CD 的核心。因此需要搭建一个 GitLab Runner</p>
+<p>文中大部分参考于官方的文档<a href="https://docs.gitlab.com/runner/install/linux-repository.html" target="_blank" rel="noopener">《Install GitLab Runner using the official GitLab repositories》</a></p>
+<h4 id="环境介绍"><a href="#环境介绍" class="headerlink" title="环境介绍"></a>环境介绍</h4><ul>
+<li>Linux 环境 Debian</li>
+<li>Docker 作为执行器</li>
+</ul>
+<h4 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h4><p>这边 Runner 需要支持 Docker 系列的执行器，也就是构建需要在容器里执行，那么需要先安装 Docker 环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -sSL https:&#x2F;&#x2F;get.docker.com&#x2F; | sh</span><br><span class="line">&#x2F;etc&#x2F;init.d&#x2F;docker status</span><br><span class="line">[ ok ] Docker is running.</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装-Runner"><a href="#安装-Runner" class="headerlink" title="安装 Runner"></a>安装 Runner</h4><p>GitLab Runner 支持多平台、多方式安装，包括GNU/Linux, macOS, FreeBSD 和Windows平台的安装，以及支持基于docker的自动扩展式安装</p>
+<p>下面使用官方的 GitLab 存储库在 Debian 平台安装GitLab Runner</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 添加GitLab的官方存储库</span><br><span class="line"># For Debian&#x2F;Ubuntu&#x2F;Mint</span><br><span class="line">$ curl -L https:&#x2F;&#x2F;packages.gitlab.com&#x2F;install&#x2F;repositories&#x2F;runner&#x2F;gitlab-runner&#x2F;script.deb.sh | sudo bash</span><br><span class="line"></span><br><span class="line"># 安装特定版本的 GitLab Runner</span><br><span class="line"># for DEB based systems</span><br><span class="line">$ apt-cache madison gitlab-runner</span><br><span class="line">$ apt-get install gitlab-runner&#x3D;11.11.4</span><br><span class="line"></span><br><span class="line"># 确认安装成功</span><br><span class="line">$ gitlab-runner --version</span><br><span class="line">Version:      11.11.4</span><br><span class="line">Git revision: e828d3bc</span><br><span class="line">Git branch:</span><br><span class="line">GO version:   go1.8.7</span><br><span class="line">Built:        2019-07-07T00:29:25+0000</span><br><span class="line">OS&#x2F;Arch:      linux&#x2F;amd64</span><br></pre></td></tr></table></figure>
+
+<h4 id="注册-Runner"><a href="#注册-Runner" class="headerlink" title="注册 Runner"></a>注册 Runner</h4><p>注册 Runner 是将 Runner 与 GitLab 实例绑定的过程</p>
+<p>注册 Specific Runnersr 到 GitLab 之前，需要在 Settings 中拿到 Gitlab 实例 URL 和注册 token</p>
+<p>Settings-&gt;CI/CD-&gt;Runners-&gt;Specific Runners</p>
+<p><img src="/images/blog/2020-05-12-4.png" alt></p>
+<p>接着执行下方命令会进入一个交互式的配置流程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"># 运行以下命令注册Runner</span><br><span class="line">$ gitlab-runner register</span><br><span class="line"></span><br><span class="line"># 输入GitLab实例URL</span><br><span class="line">Please enter the gitlab-ci coordinator URL (e.g. https:&#x2F;&#x2F;gitlab.com )</span><br><span class="line">https:&#x2F;&#x2F;git-sa.nie.netease.com&#x2F;</span><br><span class="line"></span><br><span class="line"># 输入token来注册</span><br><span class="line">Please enter the gitlab-ci token for this runner</span><br><span class="line">xxx</span><br><span class="line"></span><br><span class="line"># 输入Runner的描述，稍后可以在GitLab的UI中进行更改</span><br><span class="line">Please enter the gitlab-ci description for this runner</span><br><span class="line">alpha-runner</span><br><span class="line"></span><br><span class="line"># 输入与Runner关联的标签，稍后可以在GitLab的UI中进行更改（在.gitlab-ci.yml中使用tags来指定相关标签的runner运行）</span><br><span class="line">Please enter the gitlab-ci tags for this runner (comma separated):</span><br><span class="line">alpha</span><br><span class="line"></span><br><span class="line"># 输入Runner执行者（需要使用docker来部署服务，因此这里选择Docker作为执行程序）</span><br><span class="line">Please enter the executor: ssh, docker+machine, docker-ssh+machine, kubernetes, docker, parallels, virtualbox, docker-ssh, shell:</span><br><span class="line">docker</span><br><span class="line"></span><br><span class="line"># 如果选择Docker作为执行程序，则会要求定义默认映像，用于在.gitlab-ci.yml中未指定镜像使用默认镜像</span><br><span class="line">Please enter the Docker image (eg. ruby:2.6):</span><br><span class="line">dockerhub.nie.netease.com&#x2F;library&#x2F;debian_ci</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-Docker"><a href="#配置-Docker" class="headerlink" title="配置 Docker"></a>配置 Docker</h4><p>注册一个 Docker 类型的 Runner 后，如果要在该 Runner 中使用 Docker 进行构建等任务，则需要增加以下配置，以支持 docker in docker</p>
+<blockquote>
+<p>安装好runner后，即会生成一份runner的配置文件，不同系统平台配置文件路径为：<br>  以root用户安装的，且为 *nix 类系统（如Debian）配置文件路径为/etc/gitlab-runner/config.toml<br>  以非root用户安装的，且为 *nix 类系统（如Debian）配置文件路径为~/.gitlab-runner/config.toml<br>  其他系统 ./config.toml</p>
+</blockquote>
+<p>挂载宿主docker.sock到容器内，挂载镜像registry的认证文件到容器内（如果要拉取私有镜像，则需要在容器内部署认证配置，或者在宿主配置，然后挂入容器内），修改 Docker 为 host 网络</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 修改对应runner的volumes配置</span><br><span class="line">volumes &#x3D; [&quot;&#x2F;cache&quot;, &quot;&#x2F;var&#x2F;run&#x2F;docker.sock:&#x2F;var&#x2F;run&#x2F;docker.sock&quot;, &quot;&#x2F;root&#x2F;.docker&#x2F;config.json:&#x2F;root&#x2F;.docker&#x2F;config.json&quot;]</span><br><span class="line"># 在volums下添加如下一行</span><br><span class="line">network_mode &#x3D; &quot;host&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2020-05-12-3.png" alt></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/12/Linux-Exercise/" rel="prev" title="Linux 知识练习">
+      <i class="fa fa-chevron-left"></i> Linux 知识练习
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#环境介绍"><span class="nav-number">2.</span> <span class="nav-text">环境介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装-Docker"><span class="nav-number">3.</span> <span class="nav-text">安装 Docker</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装-Runner"><span class="nav-number">4.</span> <span class="nav-text">安装 Runner</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注册-Runner"><span class="nav-number">5.</span> <span class="nav-text">注册 Runner</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置-Docker"><span class="nav-number">6.</span> <span class="nav-text">配置 Docker</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">194</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/lihuimintu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lihuimintu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lihuimintu@gmail.com" title="E-Mail → mailto:lihuimintu@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">500k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:35</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'a1b3edb0f102189b6fa2a4c2874613be',
+        language: 'zh-CN',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <!-- 代码块复制功能 -->
+  <script type="text/javascript" src="/js/clipboard.min.js"></script>	
+<script type="text/javascript" src="/js/custom.js"></script>
+
+</body>
+</html>
