@@ -5,8 +5,6 @@
     <url>/2020/05/12/Linux-Exercise/</url>
     <content><![CDATA[<p>Linux 运维知识练习</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在同一台计算机，进程之间可以这样通信，如果是不同的计算机呢？网络上不同的计算机，也可以通信，有学传输层协议TCP、UDP，它们就是用来在不同计算机之间通行的协议，但它们毕竟只是协议，看不见摸不着，那怎们通过TCP、和UDP进行实际传输呢？</p>
-<p>答案是使用网络套接字（Socket）</p>
 <h2 id="Linux基础"><a href="#Linux基础" class="headerlink" title="Linux基础"></a>Linux基础</h2><h3 id="理论部分"><a href="#理论部分" class="headerlink" title="理论部分"></a>理论部分</h3><h4 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h4><h5 id="进程和线程有什么区别"><a href="#进程和线程有什么区别" class="headerlink" title="进程和线程有什么区别"></a>进程和线程有什么区别</h5><p>线程是CPU调度的基本单位，而进程则是资源拥有的基本单位</p>
 <h5 id="进程有哪些状态"><a href="#进程有哪些状态" class="headerlink" title="进程有哪些状态"></a>进程有哪些状态</h5><p><img src="/images/blog/2020-05-12-1.png" alt></p>
 <p>1.创建状态<br>进程由创建而产生。创建进程是一个非常复杂的过程，一般需要通过多个步骤才能完成：如首先由进程申请一个空白的进程控制块(PCB)，并向PCB中填写用于控制和管理进程的信息；然后为该进程分配运行时所必须的资源；最后，把该进程转入就绪状态并插入到就绪队列中。</p>
@@ -93,7 +91,7 @@
 </blockquote>
 <h5 id="如何在bash脚本中处理用户的Ctrl-C"><a href="#如何在bash脚本中处理用户的Ctrl-C" class="headerlink" title="如何在bash脚本中处理用户的Ctrl-C"></a>如何在bash脚本中处理用户的Ctrl-C</h5><p>可以使用Bash提供的<code>trap</code>命令捕获中断信号</p>
 <p><code>trap</code>的用法如下:</p>
-<figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="selector-tag">trap</span> <span class="selector-attr">[-lp]</span> <span class="selector-attr">[[arg]</span> <span class="selector-tag">signal_spec</span> ...]</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">trap [-lp] [[arg] signal_spec ...]</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><code>-l</code>: 列出所有信号的序号及名称</li>
@@ -4959,6 +4957,54 @@
       </categories>
   </entry>
   <entry>
+    <title>Flink connector</title>
+    <url>/2019/09/01/Flink-Connector/</url>
+    <content><![CDATA[<p>Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Flink 是新一代流批统一的计算引擎，它需要从不同的第三方存储引擎中把数据读过来，进行处理，然后再写出到另外的存储引擎中。Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
+<p>Flink 里有以下几种方式，当然也不限于这几种方式可以跟外界进行数据交换</p>
+<ul>
+<li>Flink 里面预定义了一些 source 和 sink</li>
+<li>Flink 内部也提供了一些 Boundled connectors</li>
+<li>使用第三方 Apache Bahir 项目中提供的连接器</li>
+<li>通过异步 IO 方式</li>
+</ul>
+<h4 id="预定义的-source-和-sink"><a href="#预定义的-source-和-sink" class="headerlink" title="预定义的 source 和 sink"></a>预定义的 source 和 sink</h4><p>Flink 里预定义了一部分 source 和 sink。</p>
+<p><img src="/images/blog/2019-09-01-1.png" alt></p>
+<p><strong>基于文件的 source 和 sink</strong></p>
+<p>如果要从文本文件中读取数据，可以直接使用</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readTextFile(path)</span><br></pre></td></tr></table></figure>
+
+<p>就可以以文本的形式读取该文件中的内容。当然也可以使用</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readFile(fileInputFormat, path)</span><br></pre></td></tr></table></figure>
+
+<p>根据指定的 fileInputFormat 格式读取文件中的内容</p>
+<p>如果数据在 Flink 内进行了一系列的计算，想把结果写出到文件里，也可以直接使用内部预定义的一些 sink，<br>比如将结果已文本或 csv 格式写出到文件中，可以使用 DataStream 的 writeAsText(path) 和<br>writeAsCsv(path)</p>
+<p><strong>基于 Socket 的 Source 和 Sink</strong></p>
+<p>提供 Socket 的 host name 及 port，可以直接用 StreamExecutionEnvironment 预定的接口<br>socketTextStream 创建基于 Socket 的 source，从该 socket 中以文本的形式读取数据。<br>当然如果想把结果写出到另外一个 Socket，也可以直接调用 DataStream writeToSocket。</p>
+<p><strong>基于内存 Collections、Iterators 的 Source</strong></p>
+<p>可以直接基于内存中的集合或者迭代器，调用 StreamExecutionEnvironment fromCollection、fromElements 构建相应的 source。结果数据也可以直接 print、printToError 的方式写出到标准输出或标准错误。</p>
+<p>详细也可以参考 Flink 源码中提供的一些相对应的 Examples 来查看异常预定义 source 和 sink 的使用方法，例如 WordCount、SocketWindowWordCount。</p>
+<h4 id="Bundled-Connectors"><a href="#Bundled-Connectors" class="headerlink" title="Bundled Connectors"></a>Bundled Connectors</h4><p>Flink 里已经提供了一些绑定的 Connector，例如 kafka source 和 sink，Es sink等。读写 kafka、es、rabbitMQ 时可以直接使用相应 connector 的 api 即可。第二部分会详细介绍生产环境中最常用的 kafka connector。</p>
+<p>虽然该部分是 Flink 项目源代码里的一部分，但是真正意义上不算作 Flink 引擎相关逻辑，并且该部分没有打包在二进制的发布包里面。所以在提交 Job 时候需要注意， job 代码 jar 包中一定要将相应的 connetor 相关类打包进去，否则在提交作业时就会失败，提示找不到相应的类，或初始化某些类异常。</p>
+<p><img src="/images/blog/2019-09-01-2.png" alt></p>
+<h4 id="Apache-Bahir-中的连接器"><a href="#Apache-Bahir-中的连接器" class="headerlink" title="Apache Bahir 中的连接器"></a>Apache Bahir 中的连接器</h4><p>Apache Bahir 最初是从 Apache Spark 中独立出来项目提供，以提供不限于 Spark 相关的扩展/插件、连接器和其他可插入组件的实现。通过提供多样化的流连接器（streaming connectors）和 SQL 数据源扩展分析平台的覆盖面。如有需要写到 flume、redis 的需求的话，可以使用该项目提供的 connector。</p>
+<p><img src="/images/blog/2019-09-01-3.png" alt></p>
+<h4 id="Async-I-O"><a href="#Async-I-O" class="headerlink" title="Async I/O"></a>Async I/O</h4><p>流计算中经常需要与外部存储系统交互，比如需要关联 MySQL 中的某个表。一般来说，如果用同步 I/O 的方式，会造成系统中出现大的等待时间，影响吞吐和延迟。为了解决这个问题，异步 I/O 可以并发处理多个请求，提高吞吐，减少延迟。</p>
+<p>Async 的原理可参考<a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/dev/stream/asyncio.html" target="_blank" rel="noopener">官方文档</a></p>
+<p><img src="/images/blog/2019-09-01-4.png" alt></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/p-YKnKnEnLbRfW7dfKxrcw" target="_blank" rel="noopener">如何正确使用 Flink Connector？</a></li>
+<li><a href="https://github.com/flink-china/flink-training-course" target="_blank" rel="noopener">Flink 中文视频课程</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Flink</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Flink kafka connector</title>
     <url>/2019/09/01/Flink-Kafka-Connector/</url>
     <content><![CDATA[<p>生产环境中最常用到的 Flink kafka connector</p>
@@ -5012,54 +5058,6 @@
 <li><a href="https://github.com/flink-china/flink-training-course" target="_blank" rel="noopener">Flink 中文视频课程</a></li>
 <li><a href="https://www.jianshu.com/p/f9d447a3c48f" target="_blank" rel="noopener">Flink Kafka Connector 详解</a></li>
 <li><a href="https://cloud.tencent.com/developer/article/1406134" target="_blank" rel="noopener">Apache-Flink深度解析-DataStream-Connectors之Kafka</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Flink</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Flink connector</title>
-    <url>/2019/09/01/Flink-Connector/</url>
-    <content><![CDATA[<p>Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Flink 是新一代流批统一的计算引擎，它需要从不同的第三方存储引擎中把数据读过来，进行处理，然后再写出到另外的存储引擎中。Connector 的作用就相当于一个连接器，连接 Flink 计算引擎跟外界存储系统。</p>
-<p>Flink 里有以下几种方式，当然也不限于这几种方式可以跟外界进行数据交换</p>
-<ul>
-<li>Flink 里面预定义了一些 source 和 sink</li>
-<li>Flink 内部也提供了一些 Boundled connectors</li>
-<li>使用第三方 Apache Bahir 项目中提供的连接器</li>
-<li>通过异步 IO 方式</li>
-</ul>
-<h4 id="预定义的-source-和-sink"><a href="#预定义的-source-和-sink" class="headerlink" title="预定义的 source 和 sink"></a>预定义的 source 和 sink</h4><p>Flink 里预定义了一部分 source 和 sink。</p>
-<p><img src="/images/blog/2019-09-01-1.png" alt></p>
-<p><strong>基于文件的 source 和 sink</strong></p>
-<p>如果要从文本文件中读取数据，可以直接使用</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readTextFile(path)</span><br></pre></td></tr></table></figure>
-
-<p>就可以以文本的形式读取该文件中的内容。当然也可以使用</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">env.readFile(fileInputFormat, path)</span><br></pre></td></tr></table></figure>
-
-<p>根据指定的 fileInputFormat 格式读取文件中的内容</p>
-<p>如果数据在 Flink 内进行了一系列的计算，想把结果写出到文件里，也可以直接使用内部预定义的一些 sink，<br>比如将结果已文本或 csv 格式写出到文件中，可以使用 DataStream 的 writeAsText(path) 和<br>writeAsCsv(path)</p>
-<p><strong>基于 Socket 的 Source 和 Sink</strong></p>
-<p>提供 Socket 的 host name 及 port，可以直接用 StreamExecutionEnvironment 预定的接口<br>socketTextStream 创建基于 Socket 的 source，从该 socket 中以文本的形式读取数据。<br>当然如果想把结果写出到另外一个 Socket，也可以直接调用 DataStream writeToSocket。</p>
-<p><strong>基于内存 Collections、Iterators 的 Source</strong></p>
-<p>可以直接基于内存中的集合或者迭代器，调用 StreamExecutionEnvironment fromCollection、fromElements 构建相应的 source。结果数据也可以直接 print、printToError 的方式写出到标准输出或标准错误。</p>
-<p>详细也可以参考 Flink 源码中提供的一些相对应的 Examples 来查看异常预定义 source 和 sink 的使用方法，例如 WordCount、SocketWindowWordCount。</p>
-<h4 id="Bundled-Connectors"><a href="#Bundled-Connectors" class="headerlink" title="Bundled Connectors"></a>Bundled Connectors</h4><p>Flink 里已经提供了一些绑定的 Connector，例如 kafka source 和 sink，Es sink等。读写 kafka、es、rabbitMQ 时可以直接使用相应 connector 的 api 即可。第二部分会详细介绍生产环境中最常用的 kafka connector。</p>
-<p>虽然该部分是 Flink 项目源代码里的一部分，但是真正意义上不算作 Flink 引擎相关逻辑，并且该部分没有打包在二进制的发布包里面。所以在提交 Job 时候需要注意， job 代码 jar 包中一定要将相应的 connetor 相关类打包进去，否则在提交作业时就会失败，提示找不到相应的类，或初始化某些类异常。</p>
-<p><img src="/images/blog/2019-09-01-2.png" alt></p>
-<h4 id="Apache-Bahir-中的连接器"><a href="#Apache-Bahir-中的连接器" class="headerlink" title="Apache Bahir 中的连接器"></a>Apache Bahir 中的连接器</h4><p>Apache Bahir 最初是从 Apache Spark 中独立出来项目提供，以提供不限于 Spark 相关的扩展/插件、连接器和其他可插入组件的实现。通过提供多样化的流连接器（streaming connectors）和 SQL 数据源扩展分析平台的覆盖面。如有需要写到 flume、redis 的需求的话，可以使用该项目提供的 connector。</p>
-<p><img src="/images/blog/2019-09-01-3.png" alt></p>
-<h4 id="Async-I-O"><a href="#Async-I-O" class="headerlink" title="Async I/O"></a>Async I/O</h4><p>流计算中经常需要与外部存储系统交互，比如需要关联 MySQL 中的某个表。一般来说，如果用同步 I/O 的方式，会造成系统中出现大的等待时间，影响吞吐和延迟。为了解决这个问题，异步 I/O 可以并发处理多个请求，提高吞吐，减少延迟。</p>
-<p>Async 的原理可参考<a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/dev/stream/asyncio.html" target="_blank" rel="noopener">官方文档</a></p>
-<p><img src="/images/blog/2019-09-01-4.png" alt></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://mp.weixin.qq.com/s/p-YKnKnEnLbRfW7dfKxrcw" target="_blank" rel="noopener">如何正确使用 Flink Connector？</a></li>
-<li><a href="https://github.com/flink-china/flink-training-course" target="_blank" rel="noopener">Flink 中文视频课程</a></li>
 </ul>
 ]]></content>
       <categories>
@@ -5158,42 +5156,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Linux IO</title>
-    <url>/2019/08/28/Linux-IO/</url>
-    <content><![CDATA[<p>I/O相关的应用通常用来处理大量数据，需要大量内存和存储，频繁I/O操作读、写数据</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>IO 是运维过程中比较关注的点。阅读<a href="https://www.jellythink.com/archives/451" target="_blank" rel="noopener">Linux性能监测：IO篇</a></p>
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>说到实际的，那就要说说实际运维工作中，如何发现IO性能瓶颈</p>
-<p>iostat。通过这个神器，就可以监视具体的磁盘性能了。</p>
-<p><code>iostat -x 1 20</code> 每一秒显示一次详细信息，共显示20次。   -x 显示详细信息 / -d 显示磁盘使用情况</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[user1@Test_Server ~]$ iostat -x</span><br><span class="line">Linux 3.10.0-693.2.2.el7.x86_64 (jellythink)    01&#x2F;05&#x2F;2019      _x86_64_        (1 CPU)</span><br><span class="line"></span><br><span class="line">avg-cpu:  %user   %nice %system %iowait  %steal   %idle</span><br><span class="line">           1.83    0.00    0.31    0.09    0.00   97.77</span><br><span class="line"></span><br><span class="line">Device:         rrqm&#x2F;s   wrqm&#x2F;s     r&#x2F;s     w&#x2F;s    rkB&#x2F;s    wkB&#x2F;s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util</span><br><span class="line">vda               0.03     0.78    0.24    1.38    12.64    20.67    41.01     0.02   10.98   55.50    3.17   0.71   0.12</span><br></pre></td></tr></table></figure>
-
-<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/438" target="_blank" rel="noopener">Linux iostat命令详解</a></p>
-<p>关注性能监控指标</p>
-<ul>
-<li>%iowait: 如果该值较高，表示磁盘存在I/O瓶颈</li>
-<li>await: 一般地，系统I/O响应时间应该低于5ms，如果大于10ms就比较大了。另一方面如果 svctm 比较接近 await，说明 I/O 几乎没有等待时间；如果 await 远大于 svctm，说明I/O 队列太长，io响应太慢，则需要进行必要优化。</li>
-<li>%util: 一秒中有百分之多少的时间用于I/O操作，即被IO消耗的CPU百分比，一般地，如果该参数是100%表示设备已经接近满负荷运行了</li>
-<li>avgqu-sz: 如果avgqu-sz比较大，也表示有当量io在等待。如果单块磁盘的队列长度持续超过2，一般认为该磁盘存在I/O性能问题。</li>
-</ul>
-<p>但是，在实际运维工作中，都希望找到是哪个进程消耗了IO，所以终极目的是找到这个进程ID。可是通过 iostat 都没法达到目的。<br>所以，神器pidstat命令就登场了，通过这个命令，就可以知道是谁在后台偷用IO了。</p>
-<p>pidstat 是 sysstat 工具的一个命令，如果服务器上没有现成的，不要着急。CentOS 使用<code>yum install sysstat</code> 安装</p>
-<p>使用 -d 选项，可以查看进程IO的统计信息</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# pidstat -d 1</span><br><span class="line">Linux 2.6.32-431.el6.x86_64 (massive-dataset-new-002)   08&#x2F;28&#x2F;2019      _x86_64_        (8 CPU)</span><br><span class="line"></span><br><span class="line">03:28:50 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:51 PM       438      0.00      3.96      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:51 PM     21406      0.00    126.73      0.00  mysqld</span><br><span class="line"></span><br><span class="line">03:28:51 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:52 PM       438      0.00      4.00      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:52 PM       969      0.00      4.00      0.00  flush-253:1</span><br><span class="line">03:28:52 PM     14200      0.00      4.00      0.00  java</span><br><span class="line">03:28:52 PM     21406      0.00      8.00      0.00  mysqld</span><br><span class="line">03:28:52 PM     24608      0.00      8.00      0.00  java</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">kB_rd&#x2F;s: 每秒进程从磁盘读取的数据量(以kB为单位)</span><br><span class="line">kB_wr&#x2F;s: 每秒进程向磁盘写的数据量(以kB为单位)</span><br><span class="line">Command: 拉起进程对应的命令</span><br></pre></td></tr></table></figure>
-
-<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/444" target="_blank" rel="noopener">Linux pidstat命令详解</a></p>
-<p>现在定位到进程级别了，很多时候，需要知道这个进程到底打开了哪些文件，这个进程到底和哪些进程关联，这个时候就不得不提到lsof命令了。</p>
-<p><code>lsof -p 20711</code> 列出指定进程打开的文件列表</p>
-<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/449" target="_blank" rel="noopener">Linux lsof命令详解</a></p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>排查问题所使用的工具大而全的知识一时半会记不全。要多练习多思考</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Linux 内存</title>
     <url>/2019/08/28/Linux-Memory/</url>
     <content><![CDATA[<p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。</p>
@@ -5237,6 +5199,42 @@
 <p>Cache（缓存）位于CPU与内存之间的临时存储器，缓存容量比内存小的多但交换速度比内存要快得多。Cache通过缓存文件数据块，解决CPU运算速度与内存读写速度不匹配的矛盾，提高CPU和内存之间的数据交换速度。Cache缓存越大，CPU处理速度越快。</p>
 <p>Buffer（缓冲）高速缓冲存储器，通过缓存磁盘（I/O设备）数据块，加快对磁盘上数据的访问，减少I/O，提高内存和硬盘（或其他I/O设备）之间的数据交换速度。Buffer是即将要被写入磁盘的，而Cache是被从磁盘中读出来的。</p>
 </blockquote>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Linux IO</title>
+    <url>/2019/08/28/Linux-IO/</url>
+    <content><![CDATA[<p>I/O相关的应用通常用来处理大量数据，需要大量内存和存储，频繁I/O操作读、写数据</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>IO 是运维过程中比较关注的点。阅读<a href="https://www.jellythink.com/archives/451" target="_blank" rel="noopener">Linux性能监测：IO篇</a></p>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>说到实际的，那就要说说实际运维工作中，如何发现IO性能瓶颈</p>
+<p>iostat。通过这个神器，就可以监视具体的磁盘性能了。</p>
+<p><code>iostat -x 1 20</code> 每一秒显示一次详细信息，共显示20次。   -x 显示详细信息 / -d 显示磁盘使用情况</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[user1@Test_Server ~]$ iostat -x</span><br><span class="line">Linux 3.10.0-693.2.2.el7.x86_64 (jellythink)    01&#x2F;05&#x2F;2019      _x86_64_        (1 CPU)</span><br><span class="line"></span><br><span class="line">avg-cpu:  %user   %nice %system %iowait  %steal   %idle</span><br><span class="line">           1.83    0.00    0.31    0.09    0.00   97.77</span><br><span class="line"></span><br><span class="line">Device:         rrqm&#x2F;s   wrqm&#x2F;s     r&#x2F;s     w&#x2F;s    rkB&#x2F;s    wkB&#x2F;s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util</span><br><span class="line">vda               0.03     0.78    0.24    1.38    12.64    20.67    41.01     0.02   10.98   55.50    3.17   0.71   0.12</span><br></pre></td></tr></table></figure>
+
+<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/438" target="_blank" rel="noopener">Linux iostat命令详解</a></p>
+<p>关注性能监控指标</p>
+<ul>
+<li>%iowait: 如果该值较高，表示磁盘存在I/O瓶颈</li>
+<li>await: 一般地，系统I/O响应时间应该低于5ms，如果大于10ms就比较大了。另一方面如果 svctm 比较接近 await，说明 I/O 几乎没有等待时间；如果 await 远大于 svctm，说明I/O 队列太长，io响应太慢，则需要进行必要优化。</li>
+<li>%util: 一秒中有百分之多少的时间用于I/O操作，即被IO消耗的CPU百分比，一般地，如果该参数是100%表示设备已经接近满负荷运行了</li>
+<li>avgqu-sz: 如果avgqu-sz比较大，也表示有当量io在等待。如果单块磁盘的队列长度持续超过2，一般认为该磁盘存在I/O性能问题。</li>
+</ul>
+<p>但是，在实际运维工作中，都希望找到是哪个进程消耗了IO，所以终极目的是找到这个进程ID。可是通过 iostat 都没法达到目的。<br>所以，神器pidstat命令就登场了，通过这个命令，就可以知道是谁在后台偷用IO了。</p>
+<p>pidstat 是 sysstat 工具的一个命令，如果服务器上没有现成的，不要着急。CentOS 使用<code>yum install sysstat</code> 安装</p>
+<p>使用 -d 选项，可以查看进程IO的统计信息</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# pidstat -d 1</span><br><span class="line">Linux 2.6.32-431.el6.x86_64 (massive-dataset-new-002)   08&#x2F;28&#x2F;2019      _x86_64_        (8 CPU)</span><br><span class="line"></span><br><span class="line">03:28:50 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:51 PM       438      0.00      3.96      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:51 PM     21406      0.00    126.73      0.00  mysqld</span><br><span class="line"></span><br><span class="line">03:28:51 PM       PID   kB_rd&#x2F;s   kB_wr&#x2F;s kB_ccwr&#x2F;s  Command</span><br><span class="line">03:28:52 PM       438      0.00      4.00      0.00  jbd2&#x2F;dm-1-8</span><br><span class="line">03:28:52 PM       969      0.00      4.00      0.00  flush-253:1</span><br><span class="line">03:28:52 PM     14200      0.00      4.00      0.00  java</span><br><span class="line">03:28:52 PM     21406      0.00      8.00      0.00  mysqld</span><br><span class="line">03:28:52 PM     24608      0.00      8.00      0.00  java</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">kB_rd&#x2F;s: 每秒进程从磁盘读取的数据量(以kB为单位)</span><br><span class="line">kB_wr&#x2F;s: 每秒进程向磁盘写的数据量(以kB为单位)</span><br><span class="line">Command: 拉起进程对应的命令</span><br></pre></td></tr></table></figure>
+
+<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/444" target="_blank" rel="noopener">Linux pidstat命令详解</a></p>
+<p>现在定位到进程级别了，很多时候，需要知道这个进程到底打开了哪些文件，这个进程到底和哪些进程关联，这个时候就不得不提到lsof命令了。</p>
+<p><code>lsof -p 20711</code> 列出指定进程打开的文件列表</p>
+<p>具体解释详细请阅读<a href="https://www.jellythink.com/archives/449" target="_blank" rel="noopener">Linux lsof命令详解</a></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>排查问题所使用的工具大而全的知识一时半会记不全。要多练习多思考</p>
 ]]></content>
       <categories>
         <category>Linux</category>
@@ -5329,27 +5327,6 @@
       </categories>
   </entry>
   <entry>
-    <title>使用 Flink 时遇到的问题</title>
-    <url>/2019/08/20/Flink-Problem/</url>
-    <content><![CDATA[<p>使用Flink时遇到的问题（不断更新中）</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>作为公司第一个吃 Flink 这支螃蟹的人肯定免不了踩坑，因此通过文字记录的方式记录踩坑经历</p>
-<h4 id="Could-not-build-the-program-from-JAR-file"><a href="#Could-not-build-the-program-from-JAR-file" class="headerlink" title="Could not build the program from JAR file."></a>Could not build the program from JAR file.</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报错</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Could not build the program from JAR file.</span><br><span class="line"></span><br><span class="line">Use the help option (-h or --help) to get help on the command.</span><br></pre></td></tr></table></figure>
-
-<p>这是需要配置 Hadoop Classpaths。 <a href="https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/hadoop.html#configuring-flink-with-hadoop-classpaths" target="_blank" rel="noopener">Configuring Flink with Hadoop Classpaths</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export HADOOP_CLASSPATH&#x3D;&#96;hadoop classpath&#96;</span><br></pre></td></tr></table></figure>
-
-<h4 id="UnsupportedClassVersionError"><a href="#UnsupportedClassVersionError" class="headerlink" title="UnsupportedClassVersionError"></a>UnsupportedClassVersionError</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报 UnsupportedClassVersionError 错误</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.UnsupportedClassVersionError: org&#x2F;apache&#x2F;flink&#x2F;client&#x2F;cli&#x2F;CliFrontend : Unsupported major.minor version 52.0</span><br><span class="line">        at java.lang.ClassLoader.defineClass1(Native Method)</span><br><span class="line">        at java.lang.ClassLoader.defineClass(ClassLoader.java:800)</span><br><span class="line">        at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)</span><br><span class="line">        at java.net.URLClassLoader.defineClass(URLClassLoader.java:449)</span><br><span class="line">        at java.net.URLClassLoader.access$100(URLClassLoader.java:71)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:361)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:355)</span><br><span class="line">        at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:354)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:425)</span><br><span class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:308)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)</span><br><span class="line">        at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:482)</span><br></pre></td></tr></table></figure>
-
-<p>Java 版本不对, Flink1.8 需要 JDK1.8 以上。修改环境变量 JAVA_HOME</p>
-]]></content>
-      <categories>
-        <category>Flink</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HBase Region 数量&amp;大小</title>
     <url>/2019/08/20/HBase-Region-Number/</url>
     <content><![CDATA[<p>HBase Region 数量&amp;大小</p>
@@ -5389,6 +5366,27 @@
 ]]></content>
       <categories>
         <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>使用 Flink 时遇到的问题</title>
+    <url>/2019/08/20/Flink-Problem/</url>
+    <content><![CDATA[<p>使用Flink时遇到的问题（不断更新中）</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>作为公司第一个吃 Flink 这支螃蟹的人肯定免不了踩坑，因此通过文字记录的方式记录踩坑经历</p>
+<h4 id="Could-not-build-the-program-from-JAR-file"><a href="#Could-not-build-the-program-from-JAR-file" class="headerlink" title="Could not build the program from JAR file."></a>Could not build the program from JAR file.</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报错</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Could not build the program from JAR file.</span><br><span class="line"></span><br><span class="line">Use the help option (-h or --help) to get help on the command.</span><br></pre></td></tr></table></figure>
+
+<p>这是需要配置 Hadoop Classpaths。 <a href="https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/hadoop.html#configuring-flink-with-hadoop-classpaths" target="_blank" rel="noopener">Configuring Flink with Hadoop Classpaths</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export HADOOP_CLASSPATH&#x3D;&#96;hadoop classpath&#96;</span><br></pre></td></tr></table></figure>
+
+<h4 id="UnsupportedClassVersionError"><a href="#UnsupportedClassVersionError" class="headerlink" title="UnsupportedClassVersionError"></a>UnsupportedClassVersionError</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报 UnsupportedClassVersionError 错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.UnsupportedClassVersionError: org&#x2F;apache&#x2F;flink&#x2F;client&#x2F;cli&#x2F;CliFrontend : Unsupported major.minor version 52.0</span><br><span class="line">        at java.lang.ClassLoader.defineClass1(Native Method)</span><br><span class="line">        at java.lang.ClassLoader.defineClass(ClassLoader.java:800)</span><br><span class="line">        at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)</span><br><span class="line">        at java.net.URLClassLoader.defineClass(URLClassLoader.java:449)</span><br><span class="line">        at java.net.URLClassLoader.access$100(URLClassLoader.java:71)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:361)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:355)</span><br><span class="line">        at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:354)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:425)</span><br><span class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:308)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)</span><br><span class="line">        at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:482)</span><br></pre></td></tr></table></figure>
+
+<p>Java 版本不对, Flink1.8 需要 JDK1.8 以上。修改环境变量 JAVA_HOME</p>
+]]></content>
+      <categories>
+        <category>Flink</category>
       </categories>
   </entry>
   <entry>
@@ -5441,6 +5439,33 @@
       </categories>
   </entry>
   <entry>
+    <title>ulimit 未生效</title>
+    <url>/2019/08/16/ulimit-Invalid/</url>
+    <content><![CDATA[<p>ulimit 未生效</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在安装启动 elasticsearch 时遇些问题。</p>
+<p><code>max file descriptors [65535] for elasticsearch process is too low, increase to at least [65536]</code></p>
+<p>根据搜索到的资料<a href="https://www.jianshu.com/p/2285f1f8ec21" target="_blank" rel="noopener">elasticsearch启动常见的几个报错</a>，我尝试切换到root用户，编辑limits.conf添加如下内容</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
+
+<p>然后又切回普通账号来启动ES，发现还是报错。。(ES6.x之后为了安全只能普通账号启动)</p>
+<p>Orz，又开启了排查问题之路</p>
+<h4 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h4><p>在 root 账号下执行 <code>ulimit -n</code> 输出 128000</p>
+<p>但是我在 普通账号下执行 <code>ulimit -n</code> 输出 65535</p>
+<p>额。说明普通账号未生效，百思不解。</p>
+<p>尝试依靠搜索引擎寻求帮助，找到<a href="https://blog.csdn.net/weixin_34331102/article/details/92789331" target="_blank" rel="noopener">limits.conf不生效问题</a>也没解决问题</p>
+<p>寻求 Sa 同学帮忙之后了解到这个<code>/etc/security/limits.d/90-nofile.conf</code>文件设置会覆盖全局设置。</p>
+<p>将该文件进行修改</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.d&#x2F;90-nofile.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
+
+<p><code>ulimit -n</code> 再查看发现已修改</p>
+<p>完结、撒花</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Flink-Kafka 内置 Schemas</title>
     <url>/2019/08/16/Flink-Kafka-deserialization/</url>
     <content><![CDATA[<p>Apache Flink 内部提供了内置的常用消息格式的 Schemas</p>
@@ -5483,33 +5508,6 @@
 ]]></content>
       <categories>
         <category>Flink</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>ulimit 未生效</title>
-    <url>/2019/08/16/ulimit-Invalid/</url>
-    <content><![CDATA[<p>ulimit 未生效</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在安装启动 elasticsearch 时遇些问题。</p>
-<p><code>max file descriptors [65535] for elasticsearch process is too low, increase to at least [65536]</code></p>
-<p>根据搜索到的资料<a href="https://www.jianshu.com/p/2285f1f8ec21" target="_blank" rel="noopener">elasticsearch启动常见的几个报错</a>，我尝试切换到root用户，编辑limits.conf添加如下内容</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
-
-<p>然后又切回普通账号来启动ES，发现还是报错。。(ES6.x之后为了安全只能普通账号启动)</p>
-<p>Orz，又开启了排查问题之路</p>
-<h4 id="排查"><a href="#排查" class="headerlink" title="排查"></a>排查</h4><p>在 root 账号下执行 <code>ulimit -n</code> 输出 128000</p>
-<p>但是我在 普通账号下执行 <code>ulimit -n</code> 输出 65535</p>
-<p>额。说明普通账号未生效，百思不解。</p>
-<p>尝试依靠搜索引擎寻求帮助，找到<a href="https://blog.csdn.net/weixin_34331102/article/details/92789331" target="_blank" rel="noopener">limits.conf不生效问题</a>也没解决问题</p>
-<p>寻求 Sa 同学帮忙之后了解到这个<code>/etc/security/limits.d/90-nofile.conf</code>文件设置会覆盖全局设置。</p>
-<p>将该文件进行修改</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;security&#x2F;limits.d&#x2F;90-nofile.conf</span><br><span class="line">* soft nofile 128000</span><br><span class="line">* hard nofile 128000</span><br></pre></td></tr></table></figure>
-
-<p><code>ulimit -n</code> 再查看发现已修改</p>
-<p>完结、撒花</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
       </categories>
   </entry>
   <entry>
@@ -6300,6 +6298,55 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
       </categories>
   </entry>
   <entry>
+    <title>Impala 操作 Kudu 表报错影响使用</title>
+    <url>/2019/07/24/Impala-Kudu-FATAL_UNAUTHORIZED/</url>
+    <content><![CDATA[<p>Impala 操作 Kudu 表报 Not authorized: unencrypted connections from publicly routable IPs are prohibited.</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>又到晚饭点时间。一如以往的在去吃晚饭的路上，此时企业微信弹窗闪了一下。</p>
+<p>数据平台部的同事说他们内部的 CDH 集群 Impala 操作 Kudu 表报错了，寻求解决帮助。</p>
+<p>那还能说，吃饭的速度都快了很多，就为了早点回来解决。</p>
+<h4 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h4><p>问题现场，执行 SQL 复现报错。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">WARNINGS: TransmitData() to 100.106.38.12:27000 failed: Not authorized: Client connection negotiation failed: client connection to 100.106.38.12:27000: FATAL_UNAUTHORIZED: Not authorized: unencrypted connections from publicly routable IPs are prohibited. See --trusted_subnets flag for more information.: 100.106.40.23:32811</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-07-24-2.png" alt> </p>
+<p>定眼一看，这种报错没见过，翻译过来就是<code>致命的未授权：未授权：禁止来自公共可路由IP的未加密连接。</code></p>
+<p>没见过这种报错信息。看来只能寻求搜索引擎了。某度搜索没有找到想要的，还是谷歌给力，直接找到 cloudera 问题帖子。</p>
+<p><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener">KUDU trusted subnets does not work </a></p>
+<p>问题相似度极高。而且还是已经解决的帖子。看来有成功的希望啊。</p>
+<p><img src="/images/blog/2019-07-24-3.png" alt> </p>
+<p>翻译过来就是 <code>Impala已经从5.15开始将krpc用于transmitdata（）rpc。因此，您也需要在IMPALA配置中以相同的方式配置“trusted_subnets”标志（它不会从kudu配置中获取）。</code></p>
+<p>这套集群是 CHD 6.1.0 的，看来很可能符合这个问题，且也说了是不会从 Kudu 配置中获取 trusted_subnets 标志。</p>
+<p>这里就有个问题了。trusted_subnets 是啥？ 碰巧的是原提问者也在问题中说到这个</p>
+<p><img src="/images/blog/2019-07-24-8.png" alt> </p>
+<p>我也不是很清楚，但是感觉这个很关键，去 Impala 配置和 Kudu 配置搜索了下这个关键字。</p>
+<p>只在 Kudu 中搜索到了，Impala 未找到这个，也符合原文说过 IMPALA 需要以相同的方式配置 </p>
+<p><img src="/images/blog/2019-07-24-4.png" alt> </p>
+<p>这时候脑海中有个困惑，trusted_subnets 在 Impala 中怎么配置呢？</p>
+<p>我对比了下 Kudu 的配置位置，Kudu 是在代码段位置配置，我猜测 Impala 应该也是在这配置。</p>
+<p>在 Impala 配置中搜索<code>代码块</code>出现好几个地方可以添加。</p>
+<p>这时候我只能凭经验猜测 <code>Impala 命令行参数高级配置代码段</code>和<code>Impala 服务环境高级配置代码段</code>可能性大，不太可能是其他服务。</p>
+<p>抱着试一试心态在这两个地方添加下方配置。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">--trusted_subnets&#x3D;0.0.0.0&#x2F;0</span><br><span class="line">--rpc-authentication&#x3D;disabled</span><br><span class="line">--rpc-encryption&#x3D;disabled</span><br></pre></td></tr></table></figure>
+
+<p>保存时CM报<code>Impala 服务环境高级配置代码段</code>配置错误</p>
+<p><img src="/images/blog/2019-07-24-6.png" alt> </p>
+<p>看来只能先去掉，去掉后没有报错。</p>
+<p><img src="/images/blog/2019-07-24-5.png" alt> </p>
+<p>重启 Impala 后再执行发现问题解决。</p>
+<p><img src="/images/blog/2019-07-24-7.png" alt> </p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>谷歌大法好啊，感谢前人栽树，后人乘凉，没有他们的，我也不能把问题解决。</p>
+<p>这里中的为什么，我就没过多研究了，因为本人对 Kudu 了解不多，暂时放着。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener"> KUDU trusted subnets does not work </a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Impala</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Flink 部署模式</title>
     <url>/2019/07/24/Flink-Deployment-Patterns/</url>
     <content><![CDATA[<p>大数据计算引擎 Flink 部署模式</p>
@@ -6409,55 +6456,6 @@ file /usr/lib/systemd/system/supervisord.service from install of cloudera-manage
 ]]></content>
       <categories>
         <category>Flink</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Impala 操作 Kudu 表报错影响使用</title>
-    <url>/2019/07/24/Impala-Kudu-FATAL_UNAUTHORIZED/</url>
-    <content><![CDATA[<p>Impala 操作 Kudu 表报 Not authorized: unencrypted connections from publicly routable IPs are prohibited.</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>又到晚饭点时间。一如以往的在去吃晚饭的路上，此时企业微信弹窗闪了一下。</p>
-<p>数据平台部的同事说他们内部的 CDH 集群 Impala 操作 Kudu 表报错了，寻求解决帮助。</p>
-<p>那还能说，吃饭的速度都快了很多，就为了早点回来解决。</p>
-<h4 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h4><p>问题现场，执行 SQL 复现报错。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">WARNINGS: TransmitData() to 100.106.38.12:27000 failed: Not authorized: Client connection negotiation failed: client connection to 100.106.38.12:27000: FATAL_UNAUTHORIZED: Not authorized: unencrypted connections from publicly routable IPs are prohibited. See --trusted_subnets flag for more information.: 100.106.40.23:32811</span><br></pre></td></tr></table></figure>
-
-<p><img src="/images/blog/2019-07-24-2.png" alt> </p>
-<p>定眼一看，这种报错没见过，翻译过来就是<code>致命的未授权：未授权：禁止来自公共可路由IP的未加密连接。</code></p>
-<p>没见过这种报错信息。看来只能寻求搜索引擎了。某度搜索没有找到想要的，还是谷歌给力，直接找到 cloudera 问题帖子。</p>
-<p><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener">KUDU trusted subnets does not work </a></p>
-<p>问题相似度极高。而且还是已经解决的帖子。看来有成功的希望啊。</p>
-<p><img src="/images/blog/2019-07-24-3.png" alt> </p>
-<p>翻译过来就是 <code>Impala已经从5.15开始将krpc用于transmitdata（）rpc。因此，您也需要在IMPALA配置中以相同的方式配置“trusted_subnets”标志（它不会从kudu配置中获取）。</code></p>
-<p>这套集群是 CHD 6.1.0 的，看来很可能符合这个问题，且也说了是不会从 Kudu 配置中获取 trusted_subnets 标志。</p>
-<p>这里就有个问题了。trusted_subnets 是啥？ 碰巧的是原提问者也在问题中说到这个</p>
-<p><img src="/images/blog/2019-07-24-8.png" alt> </p>
-<p>我也不是很清楚，但是感觉这个很关键，去 Impala 配置和 Kudu 配置搜索了下这个关键字。</p>
-<p>只在 Kudu 中搜索到了，Impala 未找到这个，也符合原文说过 IMPALA 需要以相同的方式配置 </p>
-<p><img src="/images/blog/2019-07-24-4.png" alt> </p>
-<p>这时候脑海中有个困惑，trusted_subnets 在 Impala 中怎么配置呢？</p>
-<p>我对比了下 Kudu 的配置位置，Kudu 是在代码段位置配置，我猜测 Impala 应该也是在这配置。</p>
-<p>在 Impala 配置中搜索<code>代码块</code>出现好几个地方可以添加。</p>
-<p>这时候我只能凭经验猜测 <code>Impala 命令行参数高级配置代码段</code>和<code>Impala 服务环境高级配置代码段</code>可能性大，不太可能是其他服务。</p>
-<p>抱着试一试心态在这两个地方添加下方配置。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">--trusted_subnets&#x3D;0.0.0.0&#x2F;0</span><br><span class="line">--rpc-authentication&#x3D;disabled</span><br><span class="line">--rpc-encryption&#x3D;disabled</span><br></pre></td></tr></table></figure>
-
-<p>保存时CM报<code>Impala 服务环境高级配置代码段</code>配置错误</p>
-<p><img src="/images/blog/2019-07-24-6.png" alt> </p>
-<p>看来只能先去掉，去掉后没有报错。</p>
-<p><img src="/images/blog/2019-07-24-5.png" alt> </p>
-<p>重启 Impala 后再执行发现问题解决。</p>
-<p><img src="/images/blog/2019-07-24-7.png" alt> </p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>谷歌大法好啊，感谢前人栽树，后人乘凉，没有他们的，我也不能把问题解决。</p>
-<p>这里中的为什么，我就没过多研究了，因为本人对 Kudu 了解不多，暂时放着。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://community.cloudera.com/t5/Interactive-Short-cycle-SQL/KUDU-trusted-subnets-does-not-work/td-p/69176" target="_blank" rel="noopener"> KUDU trusted subnets does not work </a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Impala</category>
       </categories>
   </entry>
   <entry>
@@ -7346,6 +7344,33 @@ HBase 在 HDFS 上存储 region 的路径就是 region encoded。</code></p>
       </categories>
   </entry>
   <entry>
+    <title>GC 日志详解</title>
+    <url>/2019/06/24/GC-Log-Detailed/</url>
+    <content><![CDATA[<p>Java GC 日志详解</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>GC日志是一个很重要的工具，它准确记录了每一次的GC的执行时间和执行结果，通过分析GC日志可以调优堆设置和GC设置，或者改进应用程序的对象分配模式</p>
+<p>开启的JVM启动参数参考<a href="https://lihuimintu.github.io/2019/02/19/gcLog/" target="_blank" rel="noopener">JVM 配置GC日志</a></p>
+<h4 id="图解"><a href="#图解" class="headerlink" title="图解"></a>图解</h4><p>以 ParallelGC 为例</p>
+<p>YoungGC 日志解释如下（图片源地址：<a href="http://ww4.sinaimg.cn/large/6c8effc1tw1dmbux7knpoj.jpg" target="_blank" rel="noopener">这里</a>）</p>
+<p><img src="/images/blog/2019-06-24-2.png" alt="YoungGC"></p>
+<p>FullGC（图片源地址：<a href="http://ww1.sinaimg.cn/large/6c8effc1tw1dmc55axrbsj.jpg" target="_blank" rel="noopener">这里</a>）:</p>
+<p><img src="/images/blog/2019-06-24-3.png" alt="FullGC"></p>
+<p>图来源于网络，侵删。</p>
+<h4 id="图解2"><a href="#图解2" class="headerlink" title="图解2"></a>图解2</h4><p>常见的Young GC、Full GC日志含义如下</p>
+<p><img src="/images/blog/2019-09-29-2.png" alt></p>
+<p><img src="/images/blog/2019-09-29-3.png" alt></p>
+<p>免费的GC日志图形分析工具推荐 <a href="https://gceasy.io" target="_blank" rel="noopener">gceasy</a> </p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/ade514d7c56b" target="_blank" rel="noopener">Java GC 日志详解（一图读懂）</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>JVM</category>
+      </categories>
+  </entry>
+  <entry>
     <title>记一次 RegionServer 宕机排查过程</title>
     <url>/2019/06/24/HBase-RS-shutdown/</url>
     <content><![CDATA[<p>记一次 RegionServer 宕机排查过程</p>
@@ -7391,33 +7416,6 @@ HBase 在 HDFS 上存储 region 的路径就是 region encoded。</code></p>
 ]]></content>
       <categories>
         <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>GC 日志详解</title>
-    <url>/2019/06/24/GC-Log-Detailed/</url>
-    <content><![CDATA[<p>Java GC 日志详解</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>GC日志是一个很重要的工具，它准确记录了每一次的GC的执行时间和执行结果，通过分析GC日志可以调优堆设置和GC设置，或者改进应用程序的对象分配模式</p>
-<p>开启的JVM启动参数参考<a href="https://lihuimintu.github.io/2019/02/19/gcLog/" target="_blank" rel="noopener">JVM 配置GC日志</a></p>
-<h4 id="图解"><a href="#图解" class="headerlink" title="图解"></a>图解</h4><p>以 ParallelGC 为例</p>
-<p>YoungGC 日志解释如下（图片源地址：<a href="http://ww4.sinaimg.cn/large/6c8effc1tw1dmbux7knpoj.jpg" target="_blank" rel="noopener">这里</a>）</p>
-<p><img src="/images/blog/2019-06-24-2.png" alt="YoungGC"></p>
-<p>FullGC（图片源地址：<a href="http://ww1.sinaimg.cn/large/6c8effc1tw1dmc55axrbsj.jpg" target="_blank" rel="noopener">这里</a>）:</p>
-<p><img src="/images/blog/2019-06-24-3.png" alt="FullGC"></p>
-<p>图来源于网络，侵删。</p>
-<h4 id="图解2"><a href="#图解2" class="headerlink" title="图解2"></a>图解2</h4><p>常见的Young GC、Full GC日志含义如下</p>
-<p><img src="/images/blog/2019-09-29-2.png" alt></p>
-<p><img src="/images/blog/2019-09-29-3.png" alt></p>
-<p>免费的GC日志图形分析工具推荐 <a href="https://gceasy.io" target="_blank" rel="noopener">gceasy</a> </p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.jianshu.com/p/ade514d7c56b" target="_blank" rel="noopener">Java GC 日志详解（一图读懂）</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>JVM</category>
       </categories>
   </entry>
   <entry>
@@ -9967,32 +9965,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>PostMan 的基本使用汇总</title>
-    <url>/2019/04/10/postman-post-put/</url>
-    <content><![CDATA[<p>PostMan 发送 JSON 格式的 POST/PUT 请求</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>用 POSTMAN 发送 JSON 格式的 POST/PUT 请求</p>
-<h4 id="设置Header"><a href="#设置Header" class="headerlink" title="设置Header"></a>设置Header</h4><p>Content-Type  application/json</p>
-<p><img src="/images/blog/2019-04-10-5.png" alt></p>
-<h4 id="设置Body"><a href="#设置Body" class="headerlink" title="设置Body"></a>设置Body</h4><p>选择 raw</p>
-<p><img src="/images/blog/2019-04-10-6.png" alt></p>
-<h4 id="PUT-请求"><a href="#PUT-请求" class="headerlink" title="PUT 请求"></a>PUT 请求</h4><p>把请求方式改为 PUT即可</p>
-<p><img src="/images/blog/2019-04-10-7.png" alt></p>
-<h4 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h4><p>GET 请求选择是 Params 面板填写参数</p>
-<p><img src="/images/blog/2019-04-10-8.png" alt></p>
-<h4 id="登录鉴权"><a href="#登录鉴权" class="headerlink" title="登录鉴权"></a>登录鉴权</h4><p>有时候需要登陆鉴权的需求。 这里不重复写了。移步 落落殿下的 <a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://blog.csdn.net/rziqq/article/details/77715085#commentBox" target="_blank" rel="noopener">用POSTMAN发送JSON格式的POST请求</a></li>
-<li><a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Tools</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Curl 模拟 GET\POST 请求</title>
     <url>/2019/04/10/linux-curl/</url>
     <content><![CDATA[<p>Curl 模拟 GET\POST 请求，以及 curl post 上传文件</p>
@@ -10040,6 +10012,32 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
+    <title>PostMan 的基本使用汇总</title>
+    <url>/2019/04/10/postman-post-put/</url>
+    <content><![CDATA[<p>PostMan 发送 JSON 格式的 POST/PUT 请求</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>用 POSTMAN 发送 JSON 格式的 POST/PUT 请求</p>
+<h4 id="设置Header"><a href="#设置Header" class="headerlink" title="设置Header"></a>设置Header</h4><p>Content-Type  application/json</p>
+<p><img src="/images/blog/2019-04-10-5.png" alt></p>
+<h4 id="设置Body"><a href="#设置Body" class="headerlink" title="设置Body"></a>设置Body</h4><p>选择 raw</p>
+<p><img src="/images/blog/2019-04-10-6.png" alt></p>
+<h4 id="PUT-请求"><a href="#PUT-请求" class="headerlink" title="PUT 请求"></a>PUT 请求</h4><p>把请求方式改为 PUT即可</p>
+<p><img src="/images/blog/2019-04-10-7.png" alt></p>
+<h4 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h4><p>GET 请求选择是 Params 面板填写参数</p>
+<p><img src="/images/blog/2019-04-10-8.png" alt></p>
+<h4 id="登录鉴权"><a href="#登录鉴权" class="headerlink" title="登录鉴权"></a>登录鉴权</h4><p>有时候需要登陆鉴权的需求。 这里不重复写了。移步 落落殿下的 <a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/rziqq/article/details/77715085#commentBox" target="_blank" rel="noopener">用POSTMAN发送JSON格式的POST请求</a></li>
+<li><a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Tools</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Google 三驾马车</title>
     <url>/2019/04/05/google-paper/</url>
     <content><![CDATA[<p>Google 三驾马车</p>
@@ -10050,27 +10048,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>Hadoop</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>SpringBoot 启动方式</title>
-    <url>/2019/04/04/springboot-start/</url>
-    <content><![CDATA[<p>SpringBoot 启动方式</p>
-<hr>
-<h4 id="IDEA"><a href="#IDEA" class="headerlink" title="IDEA"></a>IDEA</h4><p>启动类必须包含 @SpringBootApplication 这个注解</p>
-<p>其他类目录要么跟Application同级，要么在其下级目录</p>
-<p><img src="/images/blog/2019-04-04-1.png" alt></p>
-<h4 id="MAVEN"><a href="#MAVEN" class="headerlink" title="MAVEN"></a>MAVEN</h4><p>进入到项目的pom.xml 层级，输入图中命令即可</p>
-<p><img src="/images/blog/2019-04-04-2.png" alt></p>
-<h4 id="JAR"><a href="#JAR" class="headerlink" title="JAR"></a>JAR</h4><p>maven 打包</p>
-<p><img src="/images/blog/2019-04-04-3.png" alt></p>
-<p>编译成功后进入target 目录下可以看到有个jar包</p>
-<p><img src="/images/blog/2019-04-04-4.png" alt></p>
-<p>jar 命令启动jar包</p>
-<p><img src="/images/blog/2019-04-04-5.png" alt></p>
-]]></content>
-      <categories>
-        <category>SpringBoot</category>
       </categories>
   </entry>
   <entry>
@@ -10131,6 +10108,27 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>SpringBoot 启动方式</title>
+    <url>/2019/04/04/springboot-start/</url>
+    <content><![CDATA[<p>SpringBoot 启动方式</p>
+<hr>
+<h4 id="IDEA"><a href="#IDEA" class="headerlink" title="IDEA"></a>IDEA</h4><p>启动类必须包含 @SpringBootApplication 这个注解</p>
+<p>其他类目录要么跟Application同级，要么在其下级目录</p>
+<p><img src="/images/blog/2019-04-04-1.png" alt></p>
+<h4 id="MAVEN"><a href="#MAVEN" class="headerlink" title="MAVEN"></a>MAVEN</h4><p>进入到项目的pom.xml 层级，输入图中命令即可</p>
+<p><img src="/images/blog/2019-04-04-2.png" alt></p>
+<h4 id="JAR"><a href="#JAR" class="headerlink" title="JAR"></a>JAR</h4><p>maven 打包</p>
+<p><img src="/images/blog/2019-04-04-3.png" alt></p>
+<p>编译成功后进入target 目录下可以看到有个jar包</p>
+<p><img src="/images/blog/2019-04-04-4.png" alt></p>
+<p>jar 命令启动jar包</p>
+<p><img src="/images/blog/2019-04-04-5.png" alt></p>
+]]></content>
+      <categories>
+        <category>SpringBoot</category>
       </categories>
   </entry>
   <entry>
@@ -10287,25 +10285,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>Linux 实现文件的去重</title>
-    <url>/2019/03/21/linux-remove-duplication/</url>
-    <content><![CDATA[<p>Linux 实现文件的去重</p>
-<hr>
-<h4 id="转载出处"><a href="#转载出处" class="headerlink" title="转载出处"></a>转载出处</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">作者：大数据技术宅</span><br><span class="line">链接：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;followees&#x2F;p&#x2F;7845575.html</span><br><span class="line">来源：博客园</span><br></pre></td></tr></table></figure>
-
-<h4 id="实现文件的去重"><a href="#实现文件的去重" class="headerlink" title="实现文件的去重"></a>实现文件的去重</h4><h5 id="1-两个文件的交集，并集"><a href="#1-两个文件的交集，并集" class="headerlink" title="1. 两个文件的交集，并集"></a>1. 两个文件的交集，并集</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 取出两个文件的并集(重复的行只保留一份)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq &gt; file3</span><br><span class="line"></span><br><span class="line"># 取出两个文件的交集(只留下同时存在于两个文件中的文件)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -d &gt; file3</span><br><span class="line"></span><br><span class="line"># 删除交集，留下其他的行</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -u &gt; file3</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-两个文件合并"><a href="#2-两个文件合并" class="headerlink" title="2. 两个文件合并"></a>2. 两个文件合并</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 一个文件在上，一个文件在下</span><br><span class="line"></span><br><span class="line">cat file1 file2 &gt; file3</span><br><span class="line"></span><br><span class="line"># 一个文件在左，一个文件在右</span><br><span class="line"></span><br><span class="line">paste file1 file2 &gt; file3</span><br></pre></td></tr></table></figure>
-
-<h5 id="3-一个文件去掉重复的行"><a href="#3-一个文件去掉重复的行" class="headerlink" title="3. 一个文件去掉重复的行"></a>3. 一个文件去掉重复的行</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sort file | uniq &gt; file1</span><br><span class="line"></span><br><span class="line">注意：重复的多行记为一行，也就是说这些重复的行还在，只是全部省略为一行！</span><br><span class="line"></span><br><span class="line">sort file | uniq –u &gt; file1</span><br><span class="line"></span><br><span class="line">上面的命令可以把重复的行全部去掉，也就是文件中的非重复行！</span><br></pre></td></tr></table></figure>
-
-
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HBase 编译</title>
     <url>/2019/03/21/hbase-patch-maven/</url>
     <content><![CDATA[<p>HBase 源码调试后编译</p>
@@ -10340,6 +10319,64 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 <li><a href="https://blog.csdn.net/rkjava/article/details/48789571" target="_blank" rel="noopener">HBase1.1.2编译</a></li>
 <li><a href="https://blog.csdn.net/xuguokun1986/article/details/50755269" target="_blank" rel="noopener">hbase编译打包</a></li>
 <li><a href="https://www.cnblogs.com/bigfanofcpp/archive/2012/05/03/2871855.htm" target="_blank" rel="noopener">Hbase测试&amp;打补丁（HBASE-5415.patch）</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Linux 实现文件的去重</title>
+    <url>/2019/03/21/linux-remove-duplication/</url>
+    <content><![CDATA[<p>Linux 实现文件的去重</p>
+<hr>
+<h4 id="转载出处"><a href="#转载出处" class="headerlink" title="转载出处"></a>转载出处</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">作者：大数据技术宅</span><br><span class="line">链接：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;followees&#x2F;p&#x2F;7845575.html</span><br><span class="line">来源：博客园</span><br></pre></td></tr></table></figure>
+
+<h4 id="实现文件的去重"><a href="#实现文件的去重" class="headerlink" title="实现文件的去重"></a>实现文件的去重</h4><h5 id="1-两个文件的交集，并集"><a href="#1-两个文件的交集，并集" class="headerlink" title="1. 两个文件的交集，并集"></a>1. 两个文件的交集，并集</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 取出两个文件的并集(重复的行只保留一份)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq &gt; file3</span><br><span class="line"></span><br><span class="line"># 取出两个文件的交集(只留下同时存在于两个文件中的文件)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -d &gt; file3</span><br><span class="line"></span><br><span class="line"># 删除交集，留下其他的行</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -u &gt; file3</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-两个文件合并"><a href="#2-两个文件合并" class="headerlink" title="2. 两个文件合并"></a>2. 两个文件合并</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 一个文件在上，一个文件在下</span><br><span class="line"></span><br><span class="line">cat file1 file2 &gt; file3</span><br><span class="line"></span><br><span class="line"># 一个文件在左，一个文件在右</span><br><span class="line"></span><br><span class="line">paste file1 file2 &gt; file3</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-一个文件去掉重复的行"><a href="#3-一个文件去掉重复的行" class="headerlink" title="3. 一个文件去掉重复的行"></a>3. 一个文件去掉重复的行</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sort file | uniq &gt; file1</span><br><span class="line"></span><br><span class="line">注意：重复的多行记为一行，也就是说这些重复的行还在，只是全部省略为一行！</span><br><span class="line"></span><br><span class="line">sort file | uniq –u &gt; file1</span><br><span class="line"></span><br><span class="line">上面的命令可以把重复的行全部去掉，也就是文件中的非重复行！</span><br></pre></td></tr></table></figure>
+
+
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>HBase Shell</title>
+    <url>/2019/03/19/hbase-shell-client/</url>
+    <content><![CDATA[<p>介绍最基本的HBase Shell的使用命令。</p>
+<hr>
+<h4 id="使用-HBase-Shell-访问"><a href="#使用-HBase-Shell-访问" class="headerlink" title="使用 HBase Shell 访问"></a>使用 HBase Shell 访问</h4><p>如果在 HBase 本身的机器上的话，找到 HBase bin 目录下启动 bin/hbase shell 即可</p>
+<p>在本地搭建访问 HBase 集群的 Shell 客户端的话，需要配置一下 hbase-site.xml</p>
+<p>官网下载二进制包即可。</p>
+<p><img src="/images/blog/2019-03-19-1.png" alt></p>
+<p>wget <a href="http://mirrors.tuna.tsinghua.edu.cn/apache/hbase/hbase-1.2.11/hbase-1.2.11-bin.tar.gz" target="_blank" rel="noopener">http://mirrors.tuna.tsinghua.edu.cn/apache/hbase/hbase-1.2.11/hbase-1.2.11-bin.tar.gz</a> </p>
+<p>修改 conf/hbase-site.xml 文件，添加集群的 ZK 地址。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.zookeeper.quorum<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>100.73.12.12<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">description</span>&gt;</span>ZooKeeper 地址<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>zookeeper.znode.parent<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/hbase<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">description</span>&gt;</span>ZooKeeper 中 HBase 的根 znode。<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>访问集群通过如下命令就可以访问集群了。</p>
+<p>bin/hbase shell</p>
+<h4 id="HBase-Shell-入门"><a href="#HBase-Shell-入门" class="headerlink" title="HBase Shell 入门"></a>HBase Shell 入门</h4><h5 id="1-展示HBase-Shell的帮助信息"><a href="#1-展示HBase-Shell的帮助信息" class="headerlink" title="1. 展示HBase Shell的帮助信息"></a>1. 展示HBase Shell的帮助信息</h5><p>help命令提供了很多基本的命令和对应的使用方法，当你忘记一些基本用法的时候，记得输入help来查看。</p>
+<p><code>hbase(main):001:0&gt; help</code></p>
+<p>如果要查看具体的命令帮助的话在后面加个命令名称</p>
+<p><code>hbase(main):002:0&gt; help &#39;list&#39;</code></p>
+<h5 id="2-基本命令"><a href="#2-基本命令" class="headerlink" title="2. 基本命令"></a>2. 基本命令</h5><p>使用create命令来创建一张新的表，在创建的时候你必须输入表的名称和ColumnFamily的名称</p>
+<p>使用list命令来查询已经创建的表。</p>
+<p>往表里面插入记录。在hbase中，往表里面写一行记录的命令叫做put</p>
+<p>查询表中的所有数据。scan是一种访问HBase数据的方式，它非常的灵活，你可以用它来扫描全表，也可以用它查询固定范围</p>
+<p>查询单条记录。使用get来查询单条记录</p>
+<p>禁用一张表。使用disable命令能够禁用一张表，使用enable命令能够取消禁用，恢复禁用的表。</p>
+<p>删除一张表。使用drop命令，这是一个危险的操作，使用的时候请务必小心。</p>
+<p>退出HBase Shell。输入quit命令就可以离开HBase Shell环境了。</p>
+<p>需要详细的介绍者请自行百度。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://help.aliyun.com/document_detail/52056.html?spm=a2c4g.11186623.6.555.3f7457bdKfIVRV" target="_blank" rel="noopener">阿里云使用 Shell 访问</a></li>
+<li><a href="https://help.aliyun.com/document_detail/52057.html?spm=a2c4g.11186623.6.554.4f553294ENHqYE" target="_blank" rel="noopener">阿里云HBase Shell 入门</a></li>
 </ul>
 ]]></content>
       <categories>
@@ -10409,45 +10446,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 <li><a href="https://www.cnblogs.com/superhedantou/p/5567787.html" target="_blank" rel="noopener">hbase本地调试环境搭建</a></li>
 <li><a href="https://www.cnblogs.com/panfeng412/archive/2012/07/22/hbase-exception-hbase-default-xml-file-seems-to-be-for-and-old-version-of-HBase.html" target="_blank" rel="noopener">HBase异常：hbase-default.xml file seems to be for and old version of HBase的解决方法</a></li>
 <li><a href="https://www.cnblogs.com/pekkle/p/10465654.html" target="_blank" rel="noopener">转 HBase异常：hbase-default.xml file seems to be for an old version of HBase</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>HBase Shell</title>
-    <url>/2019/03/19/hbase-shell-client/</url>
-    <content><![CDATA[<p>介绍最基本的HBase Shell的使用命令。</p>
-<hr>
-<h4 id="使用-HBase-Shell-访问"><a href="#使用-HBase-Shell-访问" class="headerlink" title="使用 HBase Shell 访问"></a>使用 HBase Shell 访问</h4><p>如果在 HBase 本身的机器上的话，找到 HBase bin 目录下启动 bin/hbase shell 即可</p>
-<p>在本地搭建访问 HBase 集群的 Shell 客户端的话，需要配置一下 hbase-site.xml</p>
-<p>官网下载二进制包即可。</p>
-<p><img src="/images/blog/2019-03-19-1.png" alt></p>
-<p>wget <a href="http://mirrors.tuna.tsinghua.edu.cn/apache/hbase/hbase-1.2.11/hbase-1.2.11-bin.tar.gz" target="_blank" rel="noopener">http://mirrors.tuna.tsinghua.edu.cn/apache/hbase/hbase-1.2.11/hbase-1.2.11-bin.tar.gz</a> </p>
-<p>修改 conf/hbase-site.xml 文件，添加集群的 ZK 地址。</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.zookeeper.quorum<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>100.73.12.12<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">description</span>&gt;</span>ZooKeeper 地址<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>zookeeper.znode.parent<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>/hbase<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">description</span>&gt;</span>ZooKeeper 中 HBase 的根 znode。<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>访问集群通过如下命令就可以访问集群了。</p>
-<p>bin/hbase shell</p>
-<h4 id="HBase-Shell-入门"><a href="#HBase-Shell-入门" class="headerlink" title="HBase Shell 入门"></a>HBase Shell 入门</h4><h5 id="1-展示HBase-Shell的帮助信息"><a href="#1-展示HBase-Shell的帮助信息" class="headerlink" title="1. 展示HBase Shell的帮助信息"></a>1. 展示HBase Shell的帮助信息</h5><p>help命令提供了很多基本的命令和对应的使用方法，当你忘记一些基本用法的时候，记得输入help来查看。</p>
-<p><code>hbase(main):001:0&gt; help</code></p>
-<p>如果要查看具体的命令帮助的话在后面加个命令名称</p>
-<p><code>hbase(main):002:0&gt; help &#39;list&#39;</code></p>
-<h5 id="2-基本命令"><a href="#2-基本命令" class="headerlink" title="2. 基本命令"></a>2. 基本命令</h5><p>使用create命令来创建一张新的表，在创建的时候你必须输入表的名称和ColumnFamily的名称</p>
-<p>使用list命令来查询已经创建的表。</p>
-<p>往表里面插入记录。在hbase中，往表里面写一行记录的命令叫做put</p>
-<p>查询表中的所有数据。scan是一种访问HBase数据的方式，它非常的灵活，你可以用它来扫描全表，也可以用它查询固定范围</p>
-<p>查询单条记录。使用get来查询单条记录</p>
-<p>禁用一张表。使用disable命令能够禁用一张表，使用enable命令能够取消禁用，恢复禁用的表。</p>
-<p>删除一张表。使用drop命令，这是一个危险的操作，使用的时候请务必小心。</p>
-<p>退出HBase Shell。输入quit命令就可以离开HBase Shell环境了。</p>
-<p>需要详细的介绍者请自行百度。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://help.aliyun.com/document_detail/52056.html?spm=a2c4g.11186623.6.555.3f7457bdKfIVRV" target="_blank" rel="noopener">阿里云使用 Shell 访问</a></li>
-<li><a href="https://help.aliyun.com/document_detail/52057.html?spm=a2c4g.11186623.6.554.4f553294ENHqYE" target="_blank" rel="noopener">阿里云HBase Shell 入门</a></li>
 </ul>
 ]]></content>
       <categories>
@@ -10651,43 +10649,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>Hive 重新配置元数据库</title>
-    <url>/2019/03/14/hive-memstore/</url>
-    <content><![CDATA[<p>Hive 重新配置元数据库</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有一套测试环境的 CDH 太久没维护了。各种组件都已经宕掉了。</p>
-<p>作为一个合格的运维人员肯定得负责帮开发工程师整起来</p>
-<p>在修复 Hive 的过程中，一直报 Hive Metastore canary创建数据库失败 。</p>
-<p>通过定位发现是元数据库 mysql 宕了。凭借自己一点点mysql 知识准备把它启动起来。结果失败了。。。。。</p>
-<p>后面找到负责搭建这个 mysql 的测试人员让其修复。。他折腾了一会说搞不定了。让找 DBA 看看。。。</p>
-<p>觉得太麻烦了。因为是测试环境，元数据丢弃。所以想重新配置一个元数据库。</p>
-<h4 id="修复"><a href="#修复" class="headerlink" title="修复"></a>修复</h4><p>先搭建一套 mysql 数据库。我使用的mysql 版本为 5.7.18</p>
-<p>搭建完成后需要新建数据库hive，新建 hive 连接的账号 和密码。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create databases hive</span><br><span class="line"></span><br><span class="line">grant all privileges on *.* to &#39;root&#39;@&#39;%&#39; identified by &#39;your_passwd&#39;;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/images/blog/2019-03-14-2.png" alt></p>
-<p>按图配置对应的参数</p>
-<p>接着给 hive 添加 mysql 驱动包  </p>
-<p>路径  /opt/cloudera/parcels/CDH/lib/hive/mysql-connector-java-5.1.35-bin.jar</p>
-<p>修改 hive 的参数</p>
-<p>关闭 严格的 Hive Metastore 架构验证</p>
-<p>打开 自动创建和升级 Hive Metastore 数据库架构</p>
-<p><img src="/images/blog/2019-03-14-2.png" alt></p>
-<p>最后到mysql中的hive数据库执行 alter database hive character set latin1;</p>
-<p>重启 hive 即可恢复</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>遇到问题，多看日志，根据日志来处理。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://blog.csdn.net/jim110/article/details/44907745" target="_blank" rel="noopener">hive 启动问题记录 及解决方法</a></li>
-<li><a href="https://blog.csdn.net/asas1314/article/details/50098453" target="_blank" rel="noopener">hive中遇到的几个问题</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Hive</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HDFS 块故障</title>
     <url>/2019/03/14/hdfs-block-fault/</url>
     <content><![CDATA[<p>发现测试集群HDFS报丢失块的告警。 对块进行修复</p>
@@ -10744,6 +10705,108 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>HDFS</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>MySQL 5.7 安装</title>
+    <url>/2019/03/14/mysql-install/</url>
+    <content><![CDATA[<p>在 Linux 环境下手动安装 mysql 5.7 二进制包</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>MySql 是数据库的明星。基本大小厂都在用</p>
+<p>作为一个运维人员，MySql 的安装是必须掌握的。</p>
+<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>Mysql 版本： 5.7.18</p>
+<p>mysql 二进制包到mysql 官网下载即可</p>
+<h5 id="1-解压"><a href="#1-解压" class="headerlink" title="1. 解压"></a>1. 解压</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 创建 MySql 目录</span><br><span class="line">mkdir &#x2F;opt&#x2F;mysql</span><br><span class="line"># 解压 Mysql 二进制包</span><br><span class="line">tar -zxvf mysql**** -C &#x2F;opt&#x2F;mysql</span><br><span class="line">cd &#x2F;opt&#x2F;mysql</span><br><span class="line">mv mysql... base</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-目录"><a href="#2-目录" class="headerlink" title="2. 目录"></a>2. 目录</h5><blockquote>
+<ul>
+<li>mysql安装目录：/opt/mysql/base</li>
+<li>数据目录：/opt/mysql/data/13307</li>
+<li>配置文件：/opt/mysql/my.cnf.13307</li>
+<li>binlog目录：/opt/mysql/binlogw/13307</li>
+<li>mysql 临时目录： /opt/mysql/base/mysql_tmp</li>
+</ul>
+</blockquote>
+<p>按照上面目录创建目录。没有的就创建，有的就忽略。</p>
+<h5 id="3-生成my-cnf-配置文件"><a href="#3-生成my-cnf-配置文件" class="headerlink" title="3. 生成my.cnf 配置文件"></a>3. 生成my.cnf 配置文件</h5><p>编辑修改 my.cnf.13307 文件<br>vim /opt/mysql/my.cnf.13307</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[mysql]</span><br><span class="line"># DO NOT CHANGE</span><br><span class="line">port &#x3D; 13307</span><br><span class="line">default-character-set &#x3D; utf8mb4</span><br><span class="line"></span><br><span class="line">[mysqld]</span><br><span class="line"># DO NOT CHANGE</span><br><span class="line">server_id &#x3D; 313432</span><br><span class="line">basedir &#x3D; &#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">datadir &#x3D; &#x2F;opt&#x2F;mysql&#x2F;data&#x2F;13307</span><br><span class="line">socket &#x3D; &#x2F;opt&#x2F;mysql&#x2F;data&#x2F;13307&#x2F;mysql_13307.sock</span><br><span class="line">port &#x3D; 13307</span><br><span class="line">log-bin &#x3D; &#x2F;opt&#x2F;mysql&#x2F;binlogw&#x2F;13307&#x2F;mysql-bin</span><br><span class="line">tmpdir &#x3D; &#x2F;opt&#x2F;mysql&#x2F;base&#x2F;mysql_tmp</span><br><span class="line">skip-name-resolve &#x3D; 1</span><br><span class="line">max_allowed_packet &#x3D; 64M</span><br><span class="line">default_storage_engine &#x3D; InnoDB</span><br><span class="line">character_set_server &#x3D; utf8mb4</span><br><span class="line">skip-external-locking &#x3D; 1</span><br><span class="line">table_open_cache_instances &#x3D; 32</span><br><span class="line">back_log &#x3D; 1500</span><br><span class="line">wait_timeout &#x3D; 3600</span><br><span class="line">interactive_timeout &#x3D; 3600</span><br><span class="line">default-time-zone &#x3D; &#39;+8:00&#39;</span><br><span class="line">explicit_defaults_for_timestamp &#x3D; 1</span><br><span class="line">lower_case_table_names &#x3D; 1</span><br><span class="line">symbolic-links &#x3D; 0</span><br><span class="line">secure_file_priv &#x3D; &#39;&#39;</span><br></pre></td></tr></table></figure>
+
+<h5 id="4-修改权限"><a href="#4-修改权限" class="headerlink" title="4. 修改权限"></a>4. 修改权限</h5><p>添加 mysql 用户，并修改 mysql 所在目录的权限</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">useradd mysql</span><br><span class="line"></span><br><span class="line">chown -R mysql:mysql &#x2F;opt&#x2F;mysql</span><br></pre></td></tr></table></figure>
+
+<h4 id="初始化实例"><a href="#初始化实例" class="headerlink" title="初始化实例"></a>初始化实例</h4><p>进入base目录下初始化实例</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd &#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">.&#x2F;bin&#x2F;mysqld --defaults-file&#x3D;&#x2F;opt&#x2F;mysql&#x2F;my.cnf.13307 --user&#x3D;mysql --initialize</span><br></pre></td></tr></table></figure>
+
+<p><strong>去 mysql-error.log 查看实例随机密码，搜索最后一个password 保留即可</strong></p>
+<p><img src="/images/blog/2019-03-14-1.png" alt></p>
+<p>路径为 /opt/mysql/data/13307/mysql-error.log</p>
+<p><strong>在/opt/mysql/data/13307下如果只有mysql-error.log 一个文件，说明初始化实例报错了，<br>查看mysql-error.log错误日志根据报错信息处理即可，处理完之后得把/opt/mysql/data/13307下的文件都清空，否者会数据目录不为空的错误</strong></p>
+<h4 id="起mysql实例"><a href="#起mysql实例" class="headerlink" title="起mysql实例"></a>起mysql实例</h4><p>进入 base 目录下起 mysql 实例</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd &#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">.&#x2F;bin&#x2F;mysqld_safe --defaults-file&#x3D;&#x2F;opt&#x2F;mysql&#x2F;my.cnf.13307 --user&#x3D;mysql &amp;</span><br><span class="line"></span><br><span class="line"># 查看是否有mysql 进程</span><br><span class="line"></span><br><span class="line">ps -ef | grep mysqld</span><br></pre></td></tr></table></figure>
+
+<p>如果启动mysql 失败， 查看 mysql-error.log 错误日志处理即可。</p>
+<h4 id="连接mysql"><a href="#连接mysql" class="headerlink" title="连接mysql"></a>连接mysql</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 如果不进入bin目录起，可能会报root密码过期错误</span><br><span class="line">cd &#x2F;opt&#x2F;mysql&#x2F;base    </span><br><span class="line">.&#x2F;bin&#x2F;mysql -S &#x2F;opt&#x2F;mysql&#x2F;data&#x2F;13307&#x2F;mysql_13307.sock  -u root -p -A</span><br></pre></td></tr></table></figure>
+
+<p>输入初始化实例步骤获得的随机密码</p>
+<p>连接成功后需要修改root密码</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SET PASSWORD &#x3D; PASSWORD(&#39;your_password&#39;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="修改环境变量"><a href="#修改环境变量" class="headerlink" title="修改环境变量"></a>修改环境变量</h4><p>全局环境变量</p>
+<p>vim /etc/profile</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export MYSQL_HOME&#x3D;&#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">export PATH&#x3D;$&#123;MYSQL_HOME&#125;&#x2F;bin:$PATH</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>MySQL</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Hive 重新配置元数据库</title>
+    <url>/2019/03/14/hive-memstore/</url>
+    <content><![CDATA[<p>Hive 重新配置元数据库</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有一套测试环境的 CDH 太久没维护了。各种组件都已经宕掉了。</p>
+<p>作为一个合格的运维人员肯定得负责帮开发工程师整起来</p>
+<p>在修复 Hive 的过程中，一直报 Hive Metastore canary创建数据库失败 。</p>
+<p>通过定位发现是元数据库 mysql 宕了。凭借自己一点点mysql 知识准备把它启动起来。结果失败了。。。。。</p>
+<p>后面找到负责搭建这个 mysql 的测试人员让其修复。。他折腾了一会说搞不定了。让找 DBA 看看。。。</p>
+<p>觉得太麻烦了。因为是测试环境，元数据丢弃。所以想重新配置一个元数据库。</p>
+<h4 id="修复"><a href="#修复" class="headerlink" title="修复"></a>修复</h4><p>先搭建一套 mysql 数据库。我使用的mysql 版本为 5.7.18</p>
+<p>搭建完成后需要新建数据库hive，新建 hive 连接的账号 和密码。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create databases hive</span><br><span class="line"></span><br><span class="line">grant all privileges on *.* to &#39;root&#39;@&#39;%&#39; identified by &#39;your_passwd&#39;;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2019-03-14-2.png" alt></p>
+<p>按图配置对应的参数</p>
+<p>接着给 hive 添加 mysql 驱动包  </p>
+<p>路径  /opt/cloudera/parcels/CDH/lib/hive/mysql-connector-java-5.1.35-bin.jar</p>
+<p>修改 hive 的参数</p>
+<p>关闭 严格的 Hive Metastore 架构验证</p>
+<p>打开 自动创建和升级 Hive Metastore 数据库架构</p>
+<p><img src="/images/blog/2019-03-14-2.png" alt></p>
+<p>最后到mysql中的hive数据库执行 alter database hive character set latin1;</p>
+<p>重启 hive 即可恢复</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>遇到问题，多看日志，根据日志来处理。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/jim110/article/details/44907745" target="_blank" rel="noopener">hive 启动问题记录 及解决方法</a></li>
+<li><a href="https://blog.csdn.net/asas1314/article/details/50098453" target="_blank" rel="noopener">hive中遇到的几个问题</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Hive</category>
       </categories>
   </entry>
   <entry>
@@ -10826,71 +10889,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>Hadoop</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>MySQL 5.7 安装</title>
-    <url>/2019/03/14/mysql-install/</url>
-    <content><![CDATA[<p>在 Linux 环境下手动安装 mysql 5.7 二进制包</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>MySql 是数据库的明星。基本大小厂都在用</p>
-<p>作为一个运维人员，MySql 的安装是必须掌握的。</p>
-<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>Mysql 版本： 5.7.18</p>
-<p>mysql 二进制包到mysql 官网下载即可</p>
-<h5 id="1-解压"><a href="#1-解压" class="headerlink" title="1. 解压"></a>1. 解压</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 创建 MySql 目录</span><br><span class="line">mkdir &#x2F;opt&#x2F;mysql</span><br><span class="line"># 解压 Mysql 二进制包</span><br><span class="line">tar -zxvf mysql**** -C &#x2F;opt&#x2F;mysql</span><br><span class="line">cd &#x2F;opt&#x2F;mysql</span><br><span class="line">mv mysql... base</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-目录"><a href="#2-目录" class="headerlink" title="2. 目录"></a>2. 目录</h5><blockquote>
-<ul>
-<li>mysql安装目录：/opt/mysql/base</li>
-<li>数据目录：/opt/mysql/data/13307</li>
-<li>配置文件：/opt/mysql/my.cnf.13307</li>
-<li>binlog目录：/opt/mysql/binlogw/13307</li>
-<li>mysql 临时目录： /opt/mysql/base/mysql_tmp</li>
-</ul>
-</blockquote>
-<p>按照上面目录创建目录。没有的就创建，有的就忽略。</p>
-<h5 id="3-生成my-cnf-配置文件"><a href="#3-生成my-cnf-配置文件" class="headerlink" title="3. 生成my.cnf 配置文件"></a>3. 生成my.cnf 配置文件</h5><p>编辑修改 my.cnf.13307 文件<br>vim /opt/mysql/my.cnf.13307</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[mysql]</span><br><span class="line"># DO NOT CHANGE</span><br><span class="line">port &#x3D; 13307</span><br><span class="line">default-character-set &#x3D; utf8mb4</span><br><span class="line"></span><br><span class="line">[mysqld]</span><br><span class="line"># DO NOT CHANGE</span><br><span class="line">server_id &#x3D; 313432</span><br><span class="line">basedir &#x3D; &#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">datadir &#x3D; &#x2F;opt&#x2F;mysql&#x2F;data&#x2F;13307</span><br><span class="line">socket &#x3D; &#x2F;opt&#x2F;mysql&#x2F;data&#x2F;13307&#x2F;mysql_13307.sock</span><br><span class="line">port &#x3D; 13307</span><br><span class="line">log-bin &#x3D; &#x2F;opt&#x2F;mysql&#x2F;binlogw&#x2F;13307&#x2F;mysql-bin</span><br><span class="line">tmpdir &#x3D; &#x2F;opt&#x2F;mysql&#x2F;base&#x2F;mysql_tmp</span><br><span class="line">skip-name-resolve &#x3D; 1</span><br><span class="line">max_allowed_packet &#x3D; 64M</span><br><span class="line">default_storage_engine &#x3D; InnoDB</span><br><span class="line">character_set_server &#x3D; utf8mb4</span><br><span class="line">skip-external-locking &#x3D; 1</span><br><span class="line">table_open_cache_instances &#x3D; 32</span><br><span class="line">back_log &#x3D; 1500</span><br><span class="line">wait_timeout &#x3D; 3600</span><br><span class="line">interactive_timeout &#x3D; 3600</span><br><span class="line">default-time-zone &#x3D; &#39;+8:00&#39;</span><br><span class="line">explicit_defaults_for_timestamp &#x3D; 1</span><br><span class="line">lower_case_table_names &#x3D; 1</span><br><span class="line">symbolic-links &#x3D; 0</span><br><span class="line">secure_file_priv &#x3D; &#39;&#39;</span><br></pre></td></tr></table></figure>
-
-<h5 id="4-修改权限"><a href="#4-修改权限" class="headerlink" title="4. 修改权限"></a>4. 修改权限</h5><p>添加 mysql 用户，并修改 mysql 所在目录的权限</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">useradd mysql</span><br><span class="line"></span><br><span class="line">chown -R mysql:mysql &#x2F;opt&#x2F;mysql</span><br></pre></td></tr></table></figure>
-
-<h4 id="初始化实例"><a href="#初始化实例" class="headerlink" title="初始化实例"></a>初始化实例</h4><p>进入base目录下初始化实例</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd &#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">.&#x2F;bin&#x2F;mysqld --defaults-file&#x3D;&#x2F;opt&#x2F;mysql&#x2F;my.cnf.13307 --user&#x3D;mysql --initialize</span><br></pre></td></tr></table></figure>
-
-<p><strong>去 mysql-error.log 查看实例随机密码，搜索最后一个password 保留即可</strong></p>
-<p><img src="/images/blog/2019-03-14-1.png" alt></p>
-<p>路径为 /opt/mysql/data/13307/mysql-error.log</p>
-<p><strong>在/opt/mysql/data/13307下如果只有mysql-error.log 一个文件，说明初始化实例报错了，<br>查看mysql-error.log错误日志根据报错信息处理即可，处理完之后得把/opt/mysql/data/13307下的文件都清空，否者会数据目录不为空的错误</strong></p>
-<h4 id="起mysql实例"><a href="#起mysql实例" class="headerlink" title="起mysql实例"></a>起mysql实例</h4><p>进入 base 目录下起 mysql 实例</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd &#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">.&#x2F;bin&#x2F;mysqld_safe --defaults-file&#x3D;&#x2F;opt&#x2F;mysql&#x2F;my.cnf.13307 --user&#x3D;mysql &amp;</span><br><span class="line"></span><br><span class="line"># 查看是否有mysql 进程</span><br><span class="line"></span><br><span class="line">ps -ef | grep mysqld</span><br></pre></td></tr></table></figure>
-
-<p>如果启动mysql 失败， 查看 mysql-error.log 错误日志处理即可。</p>
-<h4 id="连接mysql"><a href="#连接mysql" class="headerlink" title="连接mysql"></a>连接mysql</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 如果不进入bin目录起，可能会报root密码过期错误</span><br><span class="line">cd &#x2F;opt&#x2F;mysql&#x2F;base    </span><br><span class="line">.&#x2F;bin&#x2F;mysql -S &#x2F;opt&#x2F;mysql&#x2F;data&#x2F;13307&#x2F;mysql_13307.sock  -u root -p -A</span><br></pre></td></tr></table></figure>
-
-<p>输入初始化实例步骤获得的随机密码</p>
-<p>连接成功后需要修改root密码</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SET PASSWORD &#x3D; PASSWORD(&#39;your_password&#39;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="修改环境变量"><a href="#修改环境变量" class="headerlink" title="修改环境变量"></a>修改环境变量</h4><p>全局环境变量</p>
-<p>vim /etc/profile</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export MYSQL_HOME&#x3D;&#x2F;opt&#x2F;mysql&#x2F;base</span><br><span class="line">export PATH&#x3D;$&#123;MYSQL_HOME&#125;&#x2F;bin:$PATH</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>MySQL</category>
       </categories>
   </entry>
   <entry>
@@ -11567,40 +11565,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>SpringBoot 企业邮箱发送邮件</title>
-    <url>/2019/02/20/springboot-sendEmail/</url>
-    <content><![CDATA[<p>以腾讯企业邮箱为例，讲解如何用 spring-boot 发送邮件</p>
-<hr>
-<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>因公司内部平台需要用公家的企业邮箱账号发送邮件给运维人员。<br>发邮件是一个很常见的功能，代码本身并不复杂，有坑的地方主要在于各家邮件厂家的设置。故此记录下来。<br>下面以腾讯企业邮箱为例，讲解如何用spring-boot发送邮件。</p>
-<h4 id="添加依赖项"><a href="#添加依赖项" class="headerlink" title="添加依赖项"></a>添加依赖项</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;!-- SpringBoot Mail --&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-mail&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
-
-<h4 id="application-yml配置"><a href="#application-yml配置" class="headerlink" title="application.yml配置"></a>application.yml配置</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">spring:</span><br><span class="line">  mail:</span><br><span class="line">    host: smtp.exmail.qq.com  # 邮箱服务器地址</span><br><span class="line">    username: xxxx@puscene.com # 这里填写企业邮箱</span><br><span class="line">    password: **************** # 这里填写企业邮箱登录密码</span><br><span class="line">    properties:</span><br><span class="line">      mail:</span><br><span class="line">        smtp:</span><br><span class="line">          auth: true</span><br><span class="line">          socketFactory:</span><br><span class="line">            class: javax.net.ssl.SSLSocketFactory</span><br><span class="line">            fallback: false</span><br><span class="line">            port: 465</span><br></pre></td></tr></table></figure>
-<p>企业邮箱如果未开启安全登录，就不需要授权码了，直接填写登录密码即可。如果开启了安全登录，参考下图：</p>
-<p><img src="/images/blog/2019-02-20-1.png" alt></p>
-<p>则password这里，需要填写客户端专用密码</p>
-<h4 id="发送代码示例"><a href="#发送代码示例" class="headerlink" title="发送代码示例"></a>发送代码示例</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.mail.SimpleMailMessage;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.annotation.Async;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.mail.javamail.JavaMailSender;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> tu</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2019-02-20 15:47</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 企业邮箱发送邮件</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SendMailUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> JavaMailSender mailSender; <span class="comment">//框架自带的</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;spring.mail.username&#125;"</span>)  <span class="comment">//发送人的邮箱  比如155156641XX@163.com</span></span><br><span class="line">    <span class="keyword">private</span> String from;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span>  <span class="comment">//意思是异步调用这个方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMail</span><span class="params">(String title, String url, String email)</span> </span>&#123;</span><br><span class="line">        SimpleMailMessage message = <span class="keyword">new</span> SimpleMailMessage();</span><br><span class="line">        message.setFrom(from); <span class="comment">// 发送人的邮箱</span></span><br><span class="line">        message.setSubject(title); <span class="comment">//标题</span></span><br><span class="line">        message.setTo(email); <span class="comment">//发给谁  对方邮箱</span></span><br><span class="line">        message.setText(url); <span class="comment">//内容</span></span><br><span class="line">        System.out.println(<span class="string">"lihm"</span>);</span><br><span class="line">        mailSender.send(message); <span class="comment">//发送</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>注意: </p>
-<p>最开始我用单元测试的方式运行发送代码。邮箱未收到邮件。<br>后面运行 Application 之后再测试才收到邮件</p>
-<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>个人邮箱的发送可以参看<a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a> </p>
-<p>附上常见邮箱服务器地址:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">smtp.163.com</span><br><span class="line">smtp.qq.com</span><br></pre></td></tr></table></figure>
-
-
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/yjmyzz/p/send-mail-using-spring-boot.html" target="_blank" rel="noopener">spring-boot 速成(10) -【个人邮箱/企业邮箱】发送邮件</a></li>
-<li><a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a></li>
-<li><a href="https://www.cnblogs.com/LUA123/p/5575134.html" target="_blank" rel="noopener">Java + 腾讯企业邮箱 + javamail + SSL 发送邮件</a></li>
-<li><a href="https://blog.csdn.net/mcb520wf/article/details/80196804" target="_blank" rel="noopener">Springboot实现发送邮箱</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>SpringBoot</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HBase 表数据迁移</title>
     <url>/2019/02/20/hbase-copytable/</url>
     <content><![CDATA[<p>使用 CopyTable 同步 HBase 数据</p>
@@ -11642,6 +11606,40 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>SpringBoot 企业邮箱发送邮件</title>
+    <url>/2019/02/20/springboot-sendEmail/</url>
+    <content><![CDATA[<p>以腾讯企业邮箱为例，讲解如何用 spring-boot 发送邮件</p>
+<hr>
+<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>因公司内部平台需要用公家的企业邮箱账号发送邮件给运维人员。<br>发邮件是一个很常见的功能，代码本身并不复杂，有坑的地方主要在于各家邮件厂家的设置。故此记录下来。<br>下面以腾讯企业邮箱为例，讲解如何用spring-boot发送邮件。</p>
+<h4 id="添加依赖项"><a href="#添加依赖项" class="headerlink" title="添加依赖项"></a>添加依赖项</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;!-- SpringBoot Mail --&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-mail&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="application-yml配置"><a href="#application-yml配置" class="headerlink" title="application.yml配置"></a>application.yml配置</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">spring:</span><br><span class="line">  mail:</span><br><span class="line">    host: smtp.exmail.qq.com  # 邮箱服务器地址</span><br><span class="line">    username: xxxx@puscene.com # 这里填写企业邮箱</span><br><span class="line">    password: **************** # 这里填写企业邮箱登录密码</span><br><span class="line">    properties:</span><br><span class="line">      mail:</span><br><span class="line">        smtp:</span><br><span class="line">          auth: true</span><br><span class="line">          socketFactory:</span><br><span class="line">            class: javax.net.ssl.SSLSocketFactory</span><br><span class="line">            fallback: false</span><br><span class="line">            port: 465</span><br></pre></td></tr></table></figure>
+<p>企业邮箱如果未开启安全登录，就不需要授权码了，直接填写登录密码即可。如果开启了安全登录，参考下图：</p>
+<p><img src="/images/blog/2019-02-20-1.png" alt></p>
+<p>则password这里，需要填写客户端专用密码</p>
+<h4 id="发送代码示例"><a href="#发送代码示例" class="headerlink" title="发送代码示例"></a>发送代码示例</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.mail.SimpleMailMessage;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.annotation.Async;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.mail.javamail.JavaMailSender;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> tu</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2019-02-20 15:47</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 企业邮箱发送邮件</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SendMailUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> JavaMailSender mailSender; <span class="comment">//框架自带的</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;spring.mail.username&#125;"</span>)  <span class="comment">//发送人的邮箱  比如155156641XX@163.com</span></span><br><span class="line">    <span class="keyword">private</span> String from;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span>  <span class="comment">//意思是异步调用这个方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMail</span><span class="params">(String title, String url, String email)</span> </span>&#123;</span><br><span class="line">        SimpleMailMessage message = <span class="keyword">new</span> SimpleMailMessage();</span><br><span class="line">        message.setFrom(from); <span class="comment">// 发送人的邮箱</span></span><br><span class="line">        message.setSubject(title); <span class="comment">//标题</span></span><br><span class="line">        message.setTo(email); <span class="comment">//发给谁  对方邮箱</span></span><br><span class="line">        message.setText(url); <span class="comment">//内容</span></span><br><span class="line">        System.out.println(<span class="string">"lihm"</span>);</span><br><span class="line">        mailSender.send(message); <span class="comment">//发送</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意: </p>
+<p>最开始我用单元测试的方式运行发送代码。邮箱未收到邮件。<br>后面运行 Application 之后再测试才收到邮件</p>
+<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>个人邮箱的发送可以参看<a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a> </p>
+<p>附上常见邮箱服务器地址:</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">smtp.163.com</span><br><span class="line">smtp.qq.com</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/yjmyzz/p/send-mail-using-spring-boot.html" target="_blank" rel="noopener">spring-boot 速成(10) -【个人邮箱/企业邮箱】发送邮件</a></li>
+<li><a href="https://www.jianshu.com/p/19fb209c22c7" target="_blank" rel="noopener">Springboot 快速实现邮件发送功能</a></li>
+<li><a href="https://www.cnblogs.com/LUA123/p/5575134.html" target="_blank" rel="noopener">Java + 腾讯企业邮箱 + javamail + SSL 发送邮件</a></li>
+<li><a href="https://blog.csdn.net/mcb520wf/article/details/80196804" target="_blank" rel="noopener">Springboot实现发送邮箱</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>SpringBoot</category>
       </categories>
   </entry>
   <entry>
