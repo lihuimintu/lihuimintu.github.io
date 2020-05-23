@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Linux 性能调优工具 perf 使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="perf 工具">
+<meta property="og:url" content="http://yoursite.com/2020/05/23/perf/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="Linux 性能调优工具 perf 使用">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-05-23-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-05-23-3.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2020-05-23-4.png">
+<meta property="article:published_time" content="2020-05-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-05-23T13:42:18.975Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="perf">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2020-05-23-2.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/05/23/perf/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>perf 工具 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/23/perf/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          perf 工具
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-05-23 00:00:00 / 修改时间：21:42:18" itemprop="dateCreated datePublished" datetime="2020-05-23T00:00:00+08:00">2020-05-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Tools/" itemprop="url" rel="index">
+                    <span itemprop="name">Tools</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+            <div class="post-description">Linux 性能调优工具 perf 使用</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Linux 性能调优工具 perf 使用</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>背景知识啊，介绍啊，跳转阅读下方链接了解即可</p>
+<ul>
+<li><a href="https://www.ibm.com/developerworks/cn/linux/l-cn-perf1/" target="_blank" rel="noopener">Perf – Linux下的系统性能调优工具，第 1 部分</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/linux/l-cn-perf2/" target="_blank" rel="noopener">Perf – Linux下的系统性能调优工具，第 2 部分</a></li>
+</ul>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>perf 是一个包含多个子工具的工具集</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">$ perf --help</span><br><span class="line"></span><br><span class="line"> usage: perf [--version] [--help] [OPTIONS] COMMAND [ARGS]</span><br><span class="line"></span><br><span class="line"> The most commonly used perf commands are:</span><br><span class="line">   annotate        Read perf.data (created by perf record) and display annotated code</span><br><span class="line">   archive         Create archive with object files with build-ids found in perf.data file</span><br><span class="line">   bench           General framework for benchmark suites</span><br><span class="line">   buildid-cache   Manage build-id cache.</span><br><span class="line">   buildid-list    List the buildids in a perf.data file</span><br><span class="line">   c2c             Shared Data C2C&#x2F;HITM Analyzer.</span><br><span class="line">   config          Get and set variables in a configuration file.</span><br><span class="line">   data            Data file related processing</span><br><span class="line">   diff            Read perf.data files and display the differential profile</span><br><span class="line">   evlist          List the event names in a perf.data file</span><br><span class="line">   ftrace          simple wrapper for kernel&#39;s ftrace functionality</span><br><span class="line">   inject          Filter to augment the events stream with additional information</span><br><span class="line">   kallsyms        Searches running kernel for symbols</span><br><span class="line">   kmem            Tool to trace&#x2F;measure kernel memory properties</span><br><span class="line">   kvm             Tool to trace&#x2F;measure kvm guest os</span><br><span class="line">   list            List all symbolic event types</span><br><span class="line">   lock            Analyze lock events</span><br><span class="line">   mem             Profile memory accesses</span><br><span class="line">   record          Run a command and record its profile into perf.data</span><br><span class="line">   report          Read perf.data (created by perf record) and display the profile</span><br><span class="line">   sched           Tool to trace&#x2F;measure scheduler properties (latencies)</span><br><span class="line">   script          Read perf.data (created by perf record) and display trace output</span><br><span class="line">   stat            Run a command and gather performance counter statistics</span><br><span class="line">   test            Runs sanity tests.</span><br><span class="line">   timechart       Tool to visualize total system behavior during a workload</span><br><span class="line">   top             System profiling tool.</span><br><span class="line">   version         display the version of perf binary</span><br><span class="line">   probe           Define new dynamic tracepoints</span><br><span class="line">   trace           strace inspired tool</span><br><span class="line"></span><br><span class="line"> See &#39;perf help COMMAND&#39; for more information on a specific command.</span><br></pre></td></tr></table></figure>
+
+<p>其中最常用应该是<code>perf list</code>、<code>perf record</code>、<code>perf report</code>、<code>perf stat</code>、<code>perf top</code>这几个工具</p>
+<h5 id="perf-list"><a href="#perf-list" class="headerlink" title="perf list"></a>perf list</h5><p>perf list 用来查看 perf 所支持的性能事件（即能够触发perf能够采样点的事件），其中有软件的也有硬件的。</p>
+<p><img src="/images/blog/2020-05-23-2.png" alt></p>
+<p>说明:</p>
+<ul>
+<li>Software event: 是内核软件产生的事件，比如进程切换，tick 数等，与硬件无关</li>
+<li>Tracepoint event: 是内核中的静态 tracepoint 所触发的事件，这些 tracepoint 用来判断程序运行期间内核的行为细节，比如 slab 分配器的分配次数等</li>
+<li>Hardware event: 是硬件产生的事件，但这里的<code>perf list</code>上没有看到对应的事件，阅读前辈们文章都有提到这个，感觉是当前版本已经去掉了</li>
+</ul>
+<h5 id="perf-top"><a href="#perf-top" class="headerlink" title="perf top"></a>perf top</h5><p>有些时候，只是发现系统性能无端下降，并不清楚究竟哪个进程吃资源导致的。</p>
+<p>这时就需要用上<code>perf top</code>，其主要用于实时分析各个函数在某个性能事件上的热度，能够快速的定位热点函数，包括应用程序函数、</p>
+<p>直接运行perf top输出示例如下:</p>
+<p><img src="/images/blog/2020-05-23-3.png" alt></p>
+<p>输出格式解释:</p>
+<ul>
+<li>符号引发的性能事件的比例，默认指占用的cpu周期比例</li>
+<li>符号所在的DSO(Dynamic Shared Object)，可以是应用程序、内核、动态链接库、模块</li>
+<li>DSO的类型。[.]表示此符号属于用户态的ELF文件，包括可执行文件与动态链接库)。[k]表述此符号属于内核或模块</li>
+<li>符号名。有些符号不能解析为函数名，只能用地址表示</li>
+</ul>
+<p>使用示例:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">perf top                         # 默认配置</span><br><span class="line">perf top -G                      # 得到调用关系图</span><br><span class="line">perf top -e cycles               # 指定性能事件</span><br><span class="line">perf top -p 23015,32476          # 查看这两个进程的cpu cycles使用情况</span><br><span class="line">perf top -s comm,pid,symbol      # 显示调用symbol的进程名和进程号</span><br><span class="line">perf top --comms nginx,top       # 仅显示属于指定进程的符号</span><br><span class="line">perf top --symbols kfree         # 仅显示指定的符号</span><br></pre></td></tr></table></figure>
+
+<h5 id="perf-stat"><a href="#perf-stat" class="headerlink" title="perf stat"></a>perf stat</h5><p>用于分析指定程序的性能概况，<code>-p</code> 指定进程号，需要按ctrl-c结束</p>
+<p><img src="/images/blog/2020-05-23-4.png" alt></p>
+<p>输出格式解释:</p>
+<ul>
+<li>task-clock：任务真正占用的处理器时间，单位为ms。CPUs utilized = task-clock / time elapsed，CPU的占用率。</li>
+<li>context-switches：上下文的切换次数。</li>
+<li>CPU-migrations：处理器迁移次数。Linux为了维持多个处理器的负载均衡，在特定条件下会将某个任务从一个CPU迁移到另一个CPU。</li>
+<li>page-faults：缺页异常的次数。当应用程序请求的页面尚未建立、请求的页面不在内存中，或者请求的页面虽然在内存中，但物理地址和虚拟地址的映射关系尚未建立时，都会触发一次缺页异常。另外TLB不命中，页面访问权限不匹配等情况也会触发缺页异常。</li>
+</ul>
+<blockquote>
+<p>新版本对一些好像不太支持了</p>
+</blockquote>
+<h5 id="perf-record"><a href="#perf-record" class="headerlink" title="perf record"></a>perf record</h5><p>收集采样信息，并将其记录在数据文件中</p>
+<p>常用参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-a：从所有CPU上收集性能数据</span><br><span class="line">-e：&lt;event&gt;：指明要分析的性能事件</span><br><span class="line">-p：&lt;pid&gt;：仅分析目标进程及其创建的线程</span><br><span class="line">-t：&lt;tid&gt; 仅分析tid线程</span><br><span class="line">-o：将采集的数据输出到指定文件</span><br><span class="line">-g：采集函数的调用关系图</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>默认情况下，信息会存在<code>perf.data</code>文件里，需使用<code>perf report</code>命令可以解析这个文件，如需到其他文件使用<code>-o</code>参数</p>
+</blockquote>
+<h5 id="perf-report"><a href="#perf-report" class="headerlink" title="perf report"></a>perf report</h5><p>读取<code>perf record</code>创建的数据文件，并给出热点分析结果</p>
+<p>常用参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-i, --input&#x3D;：输入性能数据文件</span><br><span class="line">-T, --threads：显示每一个线程的事件统计信息</span><br><span class="line">--pid&#x3D;：仅显示给的pid的进程的事件统计信息</span><br><span class="line">--tid&#x3D;：仅显示给的tid的线程的事件统计信息</span><br></pre></td></tr></table></figure>
+
+
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="http://www.cpper.cn/2017/06/04/linux/perf/" target="_blank" rel="noopener">Linux性能调优工具perf的使用</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/12/Linux-Exercise/" rel="prev" title="Linux 知识练习">
+      <i class="fa fa-chevron-left"></i> Linux 知识练习
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/23/flame-graph/" rel="next" title="火焰图">
+      火焰图 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实操"><span class="nav-number">2.</span> <span class="nav-text">实操</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#perf-list"><span class="nav-number">2.1.</span> <span class="nav-text">perf list</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#perf-top"><span class="nav-number">2.2.</span> <span class="nav-text">perf top</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#perf-stat"><span class="nav-number">2.3.</span> <span class="nav-text">perf stat</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#perf-record"><span class="nav-number">2.4.</span> <span class="nav-text">perf record</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#perf-report"><span class="nav-number">2.5.</span> <span class="nav-text">perf report</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">197</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/lihuimintu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lihuimintu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lihuimintu@gmail.com" title="E-Mail → mailto:lihuimintu@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">504k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:38</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'ab014f599a18ecd171feaa15d8fc8262',
+        language: 'zh-CN',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <!-- 代码块复制功能 -->
+  <script type="text/javascript" src="/js/clipboard.min.js"></script>	
+<script type="text/javascript" src="/js/custom.js"></script>
+
+</body>
+</html>
