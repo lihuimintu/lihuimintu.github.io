@@ -56,7 +56,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-06-05-1.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2019-09-03-2.png">
 <meta property="article:published_time" content="2019-05-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-03T10:02:20.000Z">
+<meta property="article:modified_time" content="2020-12-14T15:40:21.463Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
@@ -239,7 +239,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-03 18:02:20" itemprop="dateModified" datetime="2020-02-03T18:02:20+08:00">2020-02-03</time>
+                <time title="修改时间：2020-12-14 23:40:21" itemprop="dateModified" datetime="2020-12-14T23:40:21+08:00">2020-12-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,14 +259,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.7k</span>
+              <span>1.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>1 分钟</span>
             </span>
             <div class="post-description">JVM 板斧</div>
 
@@ -281,7 +281,8 @@
       
         <p>Java 排查问题的命令和工具</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><h4 id="jps"><a href="#jps" class="headerlink" title="jps"></a>jps</h4><p>jps 主要用来输出JVM中运行的进程状态信息</p>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>JDK 自带些排查问题的命令和工具</p>
+<h4 id="jps"><a href="#jps" class="headerlink" title="jps"></a>jps</h4><p>jps 主要用来输出JVM中运行的进程状态信息</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">jps [options]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[hadoop@hadoop3 ~]$ jps -ml</span><br><span class="line">14020 org.apache.hadoop.yarn.server.nodemanager.NodeManager</span><br><span class="line">28790 com.baidu.hugegraph.dist.HugeGraphServer conf&#x2F;gremlin-server.yaml conf&#x2F;rest-server.properties</span><br><span class="line">21704 org.apache.spark.deploy.worker.Worker --webui-port 8081 spark:&#x2F;&#x2F;hadoop1:7077</span><br><span class="line">13497 org.apache.hadoop.hdfs.server.datanode.DataNode</span><br></pre></td></tr></table></figure>
 
 <p>参数说明</p>
@@ -293,21 +294,18 @@
 </blockquote>
 <p><img src="/images/blog/2019-06-05-1.png" alt> </p>
 <p>如果遇到 process information unavailable 情况。到 jdk 的安装路径下运行命令 bin/jps</p>
-<h4 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h4><p>查看当前java进程的堆栈状态</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jstack 2815</span><br></pre></td></tr></table></figure>
+<h4 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h4><p>jstack是JVM自带的Java堆栈跟踪工具，它用于打印出给定的java进程ID、core file、远程调试服务的Java堆栈信息.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jstack -l 2815</span><br></pre></td></tr></table></figure>
 
 <p>参数说明</p>
 <blockquote>
-<p>-l long listings，会打印出额外的锁信息，在发生死锁时可以用jstack -l pid来观察锁持有情况</p>
-<p>-m mixed mode，不仅会输出Java堆栈信息，还会输出C/C++堆栈信息（比如Native方法）</p>
+<p>-F 当正常输出的请求不被响应时，强制输出线程堆栈<br>-l long listings，会打印出额外的锁信息，在发生死锁时可以用jstack -l pid来观察锁持有情况<br>-m mixed mode，不仅会输出Java堆栈信息，还会输出C/C++堆栈信息（比如Native方法）</p>
 </blockquote>
-<p>jstack 命令生成的 thread dump 信息包含了JVM中所有存活的线程</p>
-<p>为了分析指定线程，必须找出对应线程的调用栈</p>
-<p>在top命令中，已经获取到了占用cpu资源较高的线程pid，将该pid转成16进制的值，在thread dump中每个线程都有一个nid，找到对应的nid即可；</p>
-<p>隔段时间再执行一次stack命令获取thread dump，区分两份dump是否有差别，在nid=0x246c的线程调用栈中，发现该线程一直在执行JstackCase类第33行的calculate方法，<br>得到这个信息，就可以检查对应的代码是否有问题。</p>
-<p>jstack 还能用来排查死锁问题。具体查阅<a href="https://www.cnblogs.com/aflyun/p/9194104.html" target="_blank" rel="noopener">Java死锁排查和Java CPU 100% 排查的步骤整理</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jstack -l  13497 | grep deadlock</span><br></pre></td></tr></table></figure>
-
+<p>相关使用案例见:</p>
+<ul>
+<li><a href="https://www.cnblogs.com/aflyun/p/9194104.html" target="_blank" rel="noopener">Java死锁排查和Java CPU 100% 排查的步骤整理</a></li>
+<li><a href="https://juejin.cn/post/6844904152850497543" target="_blank" rel="noopener">Java程序员必备：jstack命令解析</a></li>
+</ul>
 <h5 id="jinfo"><a href="#jinfo" class="headerlink" title="jinfo"></a>jinfo</h5><p>可看系统启动的参数，如下</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jinfo 30670</span><br><span class="line">jinfo -flags  30670</span><br></pre></td></tr></table></figure>
 
@@ -348,12 +346,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/06/01/HBase-save-picture/" rel="prev" title="使用 HBase 存储图片">
-      <i class="fa fa-chevron-left"></i> 使用 HBase 存储图片
+    <a href="/2019/05/24/Consistent-Hashing/" rel="prev" title="一致性哈希算法">
+      <i class="fa fa-chevron-left"></i> 一致性哈希算法
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/06/03/WAL-of-HBase-Source-Code-Analysis/" rel="next" title="HBase 源码分析之 WAL">
-      HBase 源码分析之 WAL <i class="fa fa-chevron-right"></i>
+    <a href="/2019/06/01/HBase-save-picture/" rel="next" title="使用 HBase 存储图片">
+      使用 HBase 存储图片 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
