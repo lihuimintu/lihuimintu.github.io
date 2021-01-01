@@ -55,7 +55,7 @@
 <meta property="og:description" content="读懂火焰图">
 <meta property="og:image" content="http://yoursite.com/images/blog/2020-05-23-1.png">
 <meta property="article:published_time" content="2020-05-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-05-23T12:33:31.000Z">
+<meta property="article:modified_time" content="2021-01-01T15:17:47.330Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="flame graph">
 <meta name="twitter:card" content="summary">
@@ -230,10 +230,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-05-23 00:00:00 / 修改时间：20:33:31" itemprop="dateCreated datePublished" datetime="2020-05-23T00:00:00+08:00">2020-05-23</time>
+              <time title="创建时间：2020-05-23 00:00:00" itemprop="dateCreated datePublished" datetime="2020-05-23T00:00:00+08:00">2020-05-23</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-01 23:17:47" itemprop="dateModified" datetime="2021-01-01T23:17:47+08:00">2021-01-01</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -252,7 +258,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>747</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -290,7 +296,12 @@
 <p><img src="/images/blog/2020-05-23-1.png" alt></p>
 <p><strong>搜索</strong></p>
 <p>按下 Ctrl + F 会显示一个搜索框，用户可以输入关键词或正则表达式，所有符合条件的函数名会高亮显示。</p>
-<h4 id="生成工具"><a href="#生成工具" class="headerlink" title="生成工具"></a>生成工具</h4><p>在之前生成火焰图要使用 <a href="https://github.com/brendangregg/FlameGraph" target="_blank" rel="noopener">FlameGraph</a> 工具。现在已经不需要了，使用自带火焰图的 Java 性能分析工具 <a href="https://github.com/jvm-profiling-tools/async-profiler" target="_blank" rel="noopener">Async-profiler</a><br>，其已经内置了开箱即用的 SVG 文件生成功能。</p>
+<h4 id="生成工具"><a href="#生成工具" class="headerlink" title="生成工具"></a>生成工具</h4><p>以perf为例，看一下<code>flamegraph</code>的使用方法</p>
+<p>1、Flame Graph项目位于GitHub上：<a href="https://github.com/brendangregg/FlameGraph" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph</a></p>
+<p>2、可以用git将其clone下来：git clone <a href="https://github.com/brendangregg/FlameGraph.git" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph.git</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">1、第一步</span><br><span class="line"></span><br><span class="line">perf record -e cpu-clock -g -p 28591</span><br><span class="line"></span><br><span class="line">Ctrl+c结束执行后，在当前目录下会生成采样数据perf.data.</span><br><span class="line"></span><br><span class="line">2、第二步</span><br><span class="line"></span><br><span class="line">用perf script工具对perf.data进行解析</span><br><span class="line"></span><br><span class="line">perf script -i perf.data &amp;&gt; perf.unfold</span><br><span class="line"></span><br><span class="line">3、第三步</span><br><span class="line"></span><br><span class="line">将perf.unfold中的符号进行折叠：</span><br><span class="line"></span><br><span class="line">.&#x2F;stackcollapse-perf.pl perf.unfold &amp;&gt; perf.folded</span><br><span class="line"></span><br><span class="line">4、最后生成svg图：</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.&#x2F;flamegraph.pl perf.folded &gt; perf.svg</span><br></pre></td></tr></table></figure>
+
+<p>现在可以使用自带火焰图的 Java 性能分析工具 <a href="https://github.com/jvm-profiling-tools/async-profiler" target="_blank" rel="noopener">Async-profiler</a><br>，其已经内置了开箱即用的 SVG 文件生成功能。</p>
 <hr>
 <p>参考链接</p>
 <ul>
@@ -313,8 +324,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/05/12/Linux-Exercise/" rel="prev" title="Linux 知识练习">
-      <i class="fa fa-chevron-left"></i> Linux 知识练习
+    <a href="/2020/05/23/async-profile/" rel="prev" title="async-profile 工具">
+      <i class="fa fa-chevron-left"></i> async-profile 工具
     </a></div>
       <div class="post-nav-item">
     <a href="/2020/05/23/perf/" rel="next" title="perf 工具">
@@ -396,7 +407,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">201</span>
+          <span class="site-state-item-count">202</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -439,7 +450,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2020</span>
+  <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -453,7 +464,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:41</span>
+    <span title="站点阅读时长">7:42</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
