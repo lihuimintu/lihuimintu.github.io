@@ -54,8 +54,9 @@
 <meta property="og:site_name" content="lihuimintu">
 <meta property="og:description" content="HDFS 纠删码">
 <meta property="og:image" content="http://yoursite.com/images/blog/2020-02-24-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2021-01-17-1.png">
 <meta property="article:published_time" content="2019-11-13T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-02-24T07:24:06.000Z">
+<meta property="article:modified_time" content="2021-01-17T15:26:59.475Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="HDFS">
 <meta property="article:tag" content=" EC">
@@ -239,7 +240,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-24 15:24:06" itemprop="dateModified" datetime="2020-02-24T15:24:06+08:00">2020-02-24</time>
+                <time title="修改时间：2021-01-17 23:26:59" itemprop="dateModified" datetime="2021-01-17T23:26:59+08:00">2021-01-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -259,7 +260,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>932</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -291,14 +292,33 @@
 </ul>
 <h4 id="多副本和纠删码"><a href="#多副本和纠删码" class="headerlink" title="多副本和纠删码"></a>多副本和纠删码</h4><p>多副本策略即将数据存储多个副本（一般是三副本，比如HDFS），当某个副本丢失时，可以通过其他副本复制回来。三副本的磁盘利用率为1/3。</p>
 <p>纠删码技术主要是通过纠删码算法将原始的数据进行编码得到校验数据块来达到冗余，并将数据块和校验块一并存储起来，以达到容错的目的。磁盘利用率为 n/(n+m)。    </p>
-<h4 id="EC-和-RAID"><a href="#EC-和-RAID" class="headerlink" title="EC 和 RAID"></a>EC 和 RAID</h4><p>Erasurecoding 纠删码技术简称 EC，是一种数据保护技术。</p>
-<p>最简单的 EC 实现可以基于异或操作(XOR)，Reed-SolomonCodes 也是 EC 编码中的一种。Reed-Solomon Codes 缩写为 RS 码</p>
-<p>RAID5 一般使用 XOR 编码，因为只需要容忍单个磁盘故障，而 RAID6 使用 Reed-Solomon 和两个奇偶校验块来容忍最多两个磁盘故障。</p>
+<blockquote>
+<p>问：与纠错码的区别</p>
+<p>如果严格的区分，实际上按照误码控制的不同功能，可分为检错、纠错和纠删三种类型</p>
+<p>检错码仅具备识别错码功能 而无纠正错码功能</p>
+<p>纠错码不仅具备识别错码功能，同时具备纠正错码功能</p>
+<p>纠删码则不仅具备识别错码和纠正错码的功能，而且当错码超过纠正范围时，还可把无法纠错的信息删除</p>
+</blockquote>
+<h4 id="EC"><a href="#EC" class="headerlink" title="EC"></a>EC</h4><p>纠删码是一种前向错误纠正技术，英文名叫Erasure Code，简称EC。前向是指纠错过程是单方向的，不存在差错的信息反馈，即在传输过程中发生错误后能在收端自行发现或纠正的码。</p>
 <h4 id="Reed-Solomon-RS-码"><a href="#Reed-Solomon-RS-码" class="headerlink" title="Reed-Solomon(RS) 码"></a>Reed-Solomon(RS) 码</h4><p>Reed-Solomon（RS）码是存储系统较为常用的一种纠删码，它有两个参数 n 和 m，记为 RS(n,m)。n 代表原始数据块个数。m 代表校验块个数。具体原理参阅下方文章</p>
 <ul>
-<li><a href="https://www.jianshu.com/p/4abf65ad03af" target="_blank" rel="noopener">纠删码（Erasure Code）浅析</a></li>
+<li><a href="https://juejin.cn/post/6844903460928913421" target="_blank" rel="noopener">纠删码（Erasure Code）浅析</a></li>
 <li><a href="https://mp.weixin.qq.com/s/aOX4sfTCrRp4agPxrM4txA" target="_blank" rel="noopener">纠删码(Erasure Code)的数学原理竟然这么简单</a></li>
 </ul>
+<h4 id="快速入门"><a href="#快速入门" class="headerlink" title="快速入门"></a>快速入门</h4><p>列出当前集群中所有支持的EC编解码算法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdfs ec -listCodecs</span><br></pre></td></tr></table></figure>
+
+<p>列出当前集群中所有的EC策略</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdfs ec -listPolicies</span><br></pre></td></tr></table></figure>
+
+<p>启用指定的EC策略</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdfs ec -enablePolicy -policy &lt;policyName&gt;</span><br></pre></td></tr></table></figure>
+
+<p>停用指定的EC策略</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdfs ec -disablePolicy -policy &lt;policyName&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="EC与三副本转换"><a href="#EC与三副本转换" class="headerlink" title="EC与三副本转换"></a>EC与三副本转换</h4><p>见<a href="https://bbs.huaweicloud.com/forum/thread-28865-1-1.html" target="_blank" rel="noopener">鲲鹏大数据纠删码EC用户指南</a></p>
+<p><img src="/images/blog/2021-01-17-1.png" alt></p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>工程实践中，一般对于热数据还是会使用多副本策略来冗余，冷数据使用纠删码。</p>
 <p>纠删码和RAID技术看起来是有些类似，但与RAID5、RAID6不同的是纠删码从功能上来看最大的区分特点是校验和数据的比例按N+M可调整，并且校验块数量不再受限于2个(RAID最多2个，比如RAID6)，纠删码的M可以是3、4甚至更多。</p>
 <hr>
@@ -309,6 +329,9 @@
 <li><a href="https://www.jianshu.com/p/4abf65ad03af" target="_blank" rel="noopener">纠删码（Erasure Code）浅析</a></li>
 <li><a href="https://mp.weixin.qq.com/s/aOX4sfTCrRp4agPxrM4txA" target="_blank" rel="noopener">纠删码(Erasure Code)的数学原理竟然这么简单</a></li>
 <li><a href="https://blog.csdn.net/BtB5e6Nsu1g511Eg5XEg/article/details/82321298" target="_blank" rel="noopener">纠删码(Erasure Code)的数学原理竟然这么简单(转)</a></li>
+<li><a href="https://blog.csdn.net/fenquegong2126/article/details/81010059" target="_blank" rel="noopener">纠删码简要介绍（与纠错码的区别）</a></li>
+<li><a href="https://www.cnblogs.com/cainiao-chuanqi/p/12107314.html" target="_blank" rel="noopener">纠错技术之FEC（向前纠错）</a></li>
+<li><a href="https://bbs.huaweicloud.com/forum/thread-28865-1-1.html" target="_blank" rel="noopener">鲲鹏大数据纠删码EC用户指南</a></li>
 </ul>
 
     </div>
@@ -325,8 +348,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/11/13/hdfs-SafeMode/" rel="prev" title="HDFS 安全模式">
-      <i class="fa fa-chevron-left"></i> HDFS 安全模式
+    <a href="/2019/11/13/HBase-fix-meta/" rel="prev" title="元数据逆向修复原理">
+      <i class="fa fa-chevron-left"></i> 元数据逆向修复原理
     </a></div>
       <div class="post-nav-item">
     <a href="/2019/11/17/CDH-reduce-host/" rel="next" title="使用Cloudera Manager在线为集群减容">
@@ -392,7 +415,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多副本和纠删码"><span class="nav-number">2.</span> <span class="nav-text">多副本和纠删码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#EC-和-RAID"><span class="nav-number">3.</span> <span class="nav-text">EC 和 RAID</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Reed-Solomon-RS-码"><span class="nav-number">4.</span> <span class="nav-text">Reed-Solomon(RS) 码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多副本和纠删码"><span class="nav-number">2.</span> <span class="nav-text">多副本和纠删码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#EC"><span class="nav-number">3.</span> <span class="nav-text">EC</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Reed-Solomon-RS-码"><span class="nav-number">4.</span> <span class="nav-text">Reed-Solomon(RS) 码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#快速入门"><span class="nav-number">5.</span> <span class="nav-text">快速入门</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#EC与三副本转换"><span class="nav-number">6.</span> <span class="nav-text">EC与三副本转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -408,7 +431,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">203</span>
+          <span class="site-state-item-count">207</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -460,12 +483,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">514k</span>
+    <span title="站点总字数">517k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:47</span>
+    <span title="站点阅读时长">7:50</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
