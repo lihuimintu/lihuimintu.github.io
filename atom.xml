@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2021-02-10T16:25:22.457Z</updated>
+  <updated>2021-02-14T13:19:32.683Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,69 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Kafka 痛点及优化方案</title>
+    <link href="http://yoursite.com/2021/02/14/kafka-weak-point/"/>
+    <id>http://yoursite.com/2021/02/14/kafka-weak-point/</id>
+    <published>2021-02-13T16:00:00.000Z</published>
+    <updated>2021-02-14T13:19:32.683Z</updated>
+    
+    <content type="html"><![CDATA[<p>Kafka常见痛点及优化方案</p><hr><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>Apache Kafka 作为一款成熟的消费队列得到了很广泛地运用。运维Kafka有半年有余，其在一定层面上是有很明显的缺点和痛点存在的。</p><h4 id="痛点"><a href="#痛点" class="headerlink" title="痛点"></a>痛点</h4><p>读到一个文章，感兴趣自行阅读<a href="https://blog.csdn.net/yangyijun1990/article/details/106698084" target="_blank" rel="noopener">Kafka常见痛点及优化方案</a></p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/weidajiangjiang/article/details/103389368" target="_blank" rel="noopener">Kafka痛点与Puslar介绍</a></li><li><a href="https://blog.csdn.net/yangyijun1990/article/details/106698084" target="_blank" rel="noopener">Kafka常见痛点及优化方案</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Kafka 痛点及优化方案
+    
+    </summary>
+    
+    
+      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka 分区策略</title>
+    <link href="http://yoursite.com/2021/02/14/kafka-partition-strategy/"/>
+    <id>http://yoursite.com/2021/02/14/kafka-partition-strategy/</id>
+    <published>2021-02-13T16:00:00.000Z</published>
+    <updated>2021-02-14T13:19:32.680Z</updated>
+    
+    <content type="html"><![CDATA[<p>Kafka 分区策略</p><hr><h4 id="生产者分区选择配策略"><a href="#生产者分区选择配策略" class="headerlink" title="生产者分区选择配策略"></a>生产者分区选择配策略</h4><p>生产者在将消息发送到某个Topic，需要经过拦截器、序列化器和分区器（Partitioner）的一系列作用之后才能发送到对应的Broker，在发往Broker之前是需要确定它所发往的分区。</p><p>生产端将消息发送给Broker之前，会将producer发送的数据封装成一个 ProducerRecord 对象。是否依赖分区器看partition字段有无指定。</p><p><img src="/images/blog/2021-02-14-1.png" alt></p><p>是否依赖分区器看partition字段有无指定</p><ul><li>如果消息 ProducerRecord 指定了 partition 字段，那么就不需要分区器。</li><li>如果消息 ProducerRecord 没有指定 partition 字段，那么就需要依赖分区器，根据key这个字段来计算partition的值。分区器的作用就是为消息分配分区。</li></ul><p>Kafka 中提供的默认分区器是 <a href="https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/clients/producer/internals/DefaultPartitioner.java" target="_blank" rel="noopener">DefaultPartitioner</a> ，它实现了Partitioner接口（用户可以实现这个接口来自定义分区器）</p><p>用户可以通过实现kafka.producer.Partitioner接口实现自己的分区类（重载并实现partition方法），在生产端添加配置<code>partitioner.class</code>即可使用</p><blockquote><ul><li>指明 partition 的情况下，直接将指明的值直接作为 partiton 值。</li><li>没有指明 partition 值但有 key 的情况下，将 key 的 hash 值与 topic 的 partition 数进行取余得到 partition 值。</li><li>既没有 partition 值又没有 key 值的情况下，第一次调用时随机生成一个整数（后面每次调用在这个整数上自增），将这个值与 topic 可用的 partition 总数取余得到 partition 值，也就是常说的 round-robin 算法。</li><li>既没有 partition 值又指定了自定义的分区类，则按自定义分区类来得到 partition 值</li></ul></blockquote><h4 id="消费者分区分配策略"><a href="#消费者分区分配策略" class="headerlink" title="消费者分区分配策略"></a>消费者分区分配策略</h4><p>消费者以组的名义订阅主题，主题有多个分区，消费者组中有多个消费者实例，<strong>同一时刻，一条消息只能被组中的一个消费者实例消费</strong></p><ul><li>如果分区数大于或者等于组中的消费者实例数，一个消费者会负责多个分区</li><li>如果分区数小于组中的消费者实例数，有些消费者将处于空闲状态并且无法接收消息</li></ul><blockquote><p>如果多个消费者负责同一个分区，那么就意味着两个消费者同时读取分区的消息，由于消费者自己可以控制读取消息的Offset，就有可能C1才读到2，而C1读到1，C1还没处理完，C2已经读到3了，这就相当于多线程读取同一个消息，会造成消息处理的重复，且不能保证消息的顺序。</p></blockquote><p>在 Kafka 中存在着两种分区分配策略，通过 partition.assignment.strategy 来设置。</p><ul><li>RangeAssignor 范围分区策略，也是默认模式。</li><li>RoundRobinAssignor 分配策略，轮询分区模式。</li></ul><h5 id="RangeAssignor"><a href="#RangeAssignor" class="headerlink" title="RangeAssignor"></a>RangeAssignor</h5><p>range （默认分配策略）对应的实现类是 org.apache.kafka.clients.consumer.RangeAssignor</p><ol><li>将分区按数字顺序排行序，消费者按名称的字典序排序</li><li>用分区总数除以消费者总数。如果能够除尽，平均分配；若除不尽，则位于排序前面的消费者将多负责一个分区</li></ol><p>假如现在有 10 个分区，3 个消费者，排序后的分区将会是p0~p9。消费者排序完之后将会是C1-0、C2-0、C3-0。通过 Partitions数 / Consumer数 来决定每个消费者应该消费几个分区。如果除不尽，那么前面几个消费者将会多消费 1 个分区。</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C1-0</td><td>消费 0、1、2、3分区</td></tr><tr><td>C2-0</td><td>消费 4、5、6分区</td></tr><tr><td>C3-0</td><td>消费 7、8、9分区</td></tr></tbody></table><blockquote><p>Range 范围分区的弊端: </p><p>如上只是针对 1 个 topic 而言，C1-0 消费者多消费1个分区影响不是很大。如果有 N 多个 topic，那么针对每个 topic，消费者 C1-0 都将多消费 1 个分区，topic越多，C1-0 消费的分区会比其他消费者明显多消费 N 个分区。这就是 Range 范围分区的一个很明显的弊端了.</p></blockquote><h5 id="RoundRobinAssignor"><a href="#RoundRobinAssignor" class="headerlink" title="RoundRobinAssignor"></a>RoundRobinAssignor</h5><p>RoundRobin基于轮询算法，对应的实现类是 org.apache.kafka.clients.consumer.RoundRobinAssignor</p><ol><li>将所有主题的分区组成TopicAndPartition列表</li><li>对TopicAndPartition列表按照hashCode进行排序某个topic</li><li>最后通过轮询算法来分配 partition 给到各个消费者</li></ol><p>轮询分区分为如下两种情况：</p><ul><li>同一个 Consumer Group 内 Consumer  订阅信息相同</li><li>同一个 Consumer Group 内 Consumer  订阅信息不相同</li></ul><h6 id="订阅信息相同"><a href="#订阅信息相同" class="headerlink" title="订阅信息相同"></a>订阅信息相同</h6><p>如果同一消费组内，所有的消费者订阅的消息都是相同的，那么 RoundRobin 策略的分区分配会是均匀的。</p><p>例如同一消费者组中，有 3 个消费者C0、C1和C2，都订阅了 2 个主题 t0 和 t1，并且每个主题都有 3 个分区(p0、p1、p2)，那么所订阅的所以分区可以标识为t0p0、t0p1、t0p2、t1p0、t1p1、t1p2。</p><p>最终分区分配结果如下</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C0</td><td>消费 t0p0、t1p0 分区</td></tr><tr><td>C1</td><td>消费 t0p1、t1p1 分区</td></tr><tr><td>C2</td><td>消费 t0p2、t1p2 分区</td></tr></tbody></table><h5 id="订阅信息不相同"><a href="#订阅信息不相同" class="headerlink" title="订阅信息不相同"></a>订阅信息不相同</h5><p>同一消费者组内，所订阅的消息是不相同的，那么分区分配就不是完全的轮询分配，有可能会导致分区分配的不均匀。如果某个消费者没有订阅消费组内的某个 topic，那么在分配分区的时候，此消费者将不会分配到这个 topic 的任何分区。</p><p>例如同一消费者组中有3个消费者C0、C1、C2，他们共订阅了 3 个主题t0、t1、t2，这 3 个主题分别有 1、2、3 个分区(即t0有1个分区(p0)，t1有2个分区(p0、p1)，t2有3个分区(p0、p1、p2))，即整个消费者所订阅的所有分区可以标识为 t0p0、t1p0、t1p1、t2p0、t2p1、t2p2。然后消费者 C0 订阅的是主题t0，消费者C1订阅的是主题t0和t1，消费者C2订阅的是主题t0、t1和t2</p><p>最终分区分配结果如下</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C0</td><td>消费 t0p0 分区</td></tr><tr><td>C1</td><td>消费 t1p0 分区</td></tr><tr><td>C2</td><td>消费 t1p1、 t2p0、 t2p1、 t2p2 分区</td></tr></tbody></table><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/99b4187a994d" target="_blank" rel="noopener">Kafka分区策略</a></li><li><a href="https://mp.weixin.qq.com/s/st-7k7WH5pvLZwA_o9jPpw" target="_blank" rel="noopener">六问 Kafka 为啥那么牛！</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Kafka 分区策略
+    
+    </summary>
+    
+    
+      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka 分区迁移</title>
+    <link href="http://yoursite.com/2021/02/14/kafka-partition-migration/"/>
+    <id>http://yoursite.com/2021/02/14/kafka-partition-migration/</id>
+    <published>2021-02-13T16:00:00.000Z</published>
+    <updated>2021-02-14T13:38:16.350Z</updated>
+    
+    <content type="html"><![CDATA[<p>Kafka集群扩容后将数据量大Topic迁移到新的Kafka节点上</p><hr><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近因数据量上涨，对Kafka集群进行扩容后，需将Topic量大的迁移到新Kafka节点上，缓解集群压力。</p><h4 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h4><p>Kafka系统提供了一个分区重新分配工具（kafka-reassign-partitions.sh），该工具可用于在Broker之间迁移分区。</p><h5 id="生成待迁移topic的json"><a href="#生成待迁移topic的json" class="headerlink" title="生成待迁移topic的json"></a>生成待迁移topic的json</h5><p>新建文件topics-to-move.json，包含要迁移到Topic 列表。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cat topic-to-move.json</span><br><span class="line">&#123;</span><br><span class="line">    &quot;topics&quot;: [&#123;&quot;topic&quot;: &quot;ke01&quot;&#125;,&#123;&quot;topic&quot;: &quot;ke02&quot;&#125;],</span><br><span class="line">    &quot;version&quot;:1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h5 id="generate生成迁移计划"><a href="#generate生成迁移计划" class="headerlink" title="generate生成迁移计划"></a>generate生成迁移计划</h5><p>需要指定topics-to-move.json 文件和迁移目标节点的broker id</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist --topics-to-move-json-file topics-to-move.json --broker-list &quot;$brokerlist&quot; --generate &gt; generate.json</span><br></pre></td></tr></table></figure><p>查看generate.json文件结果类似如下</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Current partition replica assignment</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[61,62]&#125;,&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[62,61]&#125;]&#125;</span><br><span class="line"></span><br><span class="line">Proposed partition reassignment configuration</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[140,141]&#125;,&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[141,140]&#125;]&#125;</span><br></pre></td></tr></table></figure><p>将Current partition replica assignment 的内容保存到rollback-cluster-reassignment.json，用于回滚操作。</p><p>将Proposed partition reassignment configuration 的内容保存到expand-cluster-reassignment.json，用于执行迁移操作。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat generate.json  |grep -A1 &quot;Proposed partition reassignment configuration&quot; |tail -1 &gt; expand-cluster-reassignment.json</span><br></pre></td></tr></table></figure><h5 id="迁移执行generate-prop-json"><a href="#迁移执行generate-prop-json" class="headerlink" title="迁移执行generate_prop.json"></a>迁移执行generate_prop.json</h5><p>限制带宽大小为500Mb/s</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist --reassignment-json-file generate_prop.json --execute --throttle 50000000</span><br></pre></td></tr></table></figure><p>迁移操作会将指定Topic 的数据文件移动到新的节点目录下，这个过程可能需要等待很长时间，视Topic 的数据量而定。</p><p>可以运行以下命令查看执行状态。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist  --reassignment-json-file generate_prop.json --verify</span><br></pre></td></tr></table></figure><p>状态有两种，in progress 表示正在迁移，completed successlly 表示已经成功完成迁移。迁移完成后，原先的节点下将不存在该Topic 的数据文件。</p><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>如果要迁移的Topic 有大量数据（Topic 默认保留1天的数据），可以在迁移之前临时动态地调整retention.ms 来减少数据。</p><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/626b147821cd" target="_blank" rel="noopener">Kafka扩容节点和分区迁移</a></li><li><a href="https://www.cnblogs.com/smartloli/p/10551165.html" target="_blank" rel="noopener">Kafka数据迁移</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Kafka 分区迁移
+    
+    </summary>
+    
+    
+      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>滴滴开源 Logi-KafkaManager</title>
@@ -42,9 +105,9 @@
     <link href="http://yoursite.com/2021/02/10/Kafka-storage-mechanism/"/>
     <id>http://yoursite.com/2021/02/10/Kafka-storage-mechanism/</id>
     <published>2021-02-09T16:00:00.000Z</published>
-    <updated>2021-02-10T11:41:01.161Z</updated>
+    <updated>2021-02-14T08:34:12.584Z</updated>
     
-    <content type="html"><![CDATA[<p>从Kafka文件存储机制和物理结构角度，分析Kafka是如何实现高效文件存储，及实际应用效果。</p><hr><h4 id="相关"><a href="#相关" class="headerlink" title="相关"></a>相关</h4><p>在美团上看到一个介绍Kafka 文件存储机制的文章感觉挺好的，适合新手阅读。</p><p>详细见<a href="https://tech.meituan.com/2015/01/13/kafka-fs-design-theory.html" target="_blank" rel="noopener">《Kafka文件存储机制那些事》</a></p><h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><p>Kafka高效文件存储设计特点</p><ul><li>Kafka把topic中一个parition大文件分成多个小文件段，通过多个小文件段，就容易定期清除或删除已经消费完文件，减少磁盘占用。</li><li>通过索引信息可以快速定位message和确定response的最大大小。</li><li>通过index元数据全部映射到memory，可以避免segment file的IO磁盘操作。</li><li>通过索引文件稀疏存储，可以大幅降低index文件元数据占用空间大小。</li></ul>]]></content>
+    <content type="html"><![CDATA[<p>从Kafka文件存储机制和物理结构角度，分析Kafka是如何实现高效文件存储，及实际应用效果。</p><hr><h4 id="相关"><a href="#相关" class="headerlink" title="相关"></a>相关</h4><p>在美团上看到一个介绍Kafka 文件存储机制的文章感觉挺好的，适合新手阅读。</p><p>详细见<a href="https://tech.meituan.com/2015/01/13/kafka-fs-design-theory.html" target="_blank" rel="noopener">《Kafka文件存储机制那些事》</a></p><blockquote><p>PS：链接中说segment文件命名规则是19位数字字符长度，本人查看已部署的kafka服务确认为20个字符长度</p></blockquote><h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><p>Kafka高效文件存储设计特点</p><ul><li>Kafka把topic中一个parition大文件分成多个小文件段，通过多个小文件段，就容易定期清除或删除已经消费完文件，减少磁盘占用。</li><li>通过索引信息可以快速定位message和确定response的最大大小。</li><li>通过index元数据全部映射到memory，可以避免segment file的IO磁盘操作。</li><li>通过索引文件稀疏存储，可以大幅降低index文件元数据占用空间大小。</li></ul>]]></content>
     
     <summary type="html">
     
@@ -126,9 +189,9 @@
     <link href="http://yoursite.com/2020/12/31/Kafka-offset-to-datetime/"/>
     <id>http://yoursite.com/2020/12/31/Kafka-offset-to-datetime/</id>
     <published>2020-12-30T16:00:00.000Z</published>
-    <updated>2021-01-02T13:25:36.716Z</updated>
+    <updated>2021-02-14T09:00:52.692Z</updated>
     
-    <content type="html"><![CDATA[<hr><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>有需求排查某个时间的数据是否重复，因此需要将消费者组重置到某个时间点</p><h4 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h4><p>kafka-consumer-groups.sh 使用 –to-datetime 参数可以做到，需要注意这个–to-datetime是utc时间，需要减去8个小时</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group group --reset-offsets --all-topics --to-datetime 2020-12-31T02:00:00.000 --execute</span><br></pre></td></tr></table></figure><p>当然可以根据时区设置时间，以东8时区进行设置，把对应时间改为 2020-12-31T10:00:00.000+08:00</p><p>重置前有个前提是consumer group状态必须是inactive的，即不能是处于正在工作中的状态。</p><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>Kafka 还支持其他位移重设策略，感兴趣的可以自行阅读<a href="https://www.cnblogs.com/huxi2b/p/7284767.html" target="_blank" rel="noopener">Kafka consumer group位移重设</a></p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/u010003835/article/details/83314766" target="_blank" rel="noopener">Kafka-kafka 重置偏移量 ：通过 kafka-consumer-groups.sh 针对 &gt;= kafka 0.11</a></li><li><a href="https://www.cnblogs.com/tonglin0325/p/7039747.html" target="_blank" rel="noopener">Ubuntu下安装和使用zookeeper和kafka</a></li></ul>]]></content>
+    <content type="html"><![CDATA[<hr><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>有需求排查某个时间的数据是否重复，因此需要将消费者组重置到某个时间点</p><h4 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h4><p>kafka-consumer-groups.sh 使用 –to-datetime 参数可以做到，需要注意这个–to-datetime是utc时间，需要减去8个小时</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group group --reset-offsets --all-topics --to-datetime 2020-12-31T02:00:00.000 --execute</span><br></pre></td></tr></table></figure><p>当然可以根据时区设置时间，以东8时区进行设置，把对应时间改为 2020-12-31T10:00:00.000+08:00</p><p>重置前有个前提是consumer group状态必须是inactive的，即不能是处于正在工作中的状态。</p><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><h5 id="Message-body"><a href="#Message-body" class="headerlink" title="Message body"></a>Message body</h5><p>Kafka从0.10.0.0版本起，在消息内新增加了个timestamp字段</p><p>时间戳的类型有两种：可以设定为producer创建消息的时间(CreateTime)，也可以设定为该消息写入Broker的时间(LogAppendTime)。默认为CreateTime，可通过参数message.timestamp.type 实现Topic级别的类型更改，Broker级别的时间戳类型参数为log.message.timestamp.type</p><p>有关Kafka Message新增时间戳的相关细节，可详见Kafka官方Doc <a href="https://cwiki.apache.org/confluence/display/KAFKA/KIP-32+-+Add+timestamps+to+Kafka+message" target="_blank" rel="noopener">KIP-32 - Add timestamps to Kafka message</a></p><h5 id="Log-Segment"><a href="#Log-Segment" class="headerlink" title="Log Segment"></a>Log Segment</h5><p>从Kafka 0.10开始，对于日志文件，新增一个<code>.timeindex</code>文件，即每个Segment分别由<code>.log、.index</code>和<code>.timeindex</code>这三个文件组成。</p><p>有关Log Segment 新增.timeindex相关细节，可详见Kafka官方Doc <a href="https://cwiki.apache.org/confluence/display/KAFKA/KIP-33+-+Add+a+time+based+log+index" target="_blank" rel="noopener">KIP-33 - Add a time based log index</a></p><p>Kafka API提供了一个 offsetsForTimes（Map&lt;TopicPartition, Long&gt; timestampsToSearch）方法，该方法会返回时间戳大于等于待查询时间的第一条消息对应的偏移量。</p><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>Kafka 还支持其他位移重设策略，感兴趣的可以自行阅读<a href="https://www.cnblogs.com/huxi2b/p/7284767.html" target="_blank" rel="noopener">Kafka consumer group位移重设</a></p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/u010003835/article/details/83314766" target="_blank" rel="noopener">Kafka-kafka 重置偏移量 ：通过 kafka-consumer-groups.sh 针对 &gt;= kafka 0.11</a></li><li><a href="https://www.cnblogs.com/tonglin0325/p/7039747.html" target="_blank" rel="noopener">Ubuntu下安装和使用zookeeper和kafka</a></li><li><a href="https://yhyr.github.io/2019/01/23/Kafka-Timestamp/" target="_blank" rel="noopener">Kafka Timestamp</a></li><li><a href="https://juejin.cn/post/6844903919424913415" target="_blank" rel="noopener">Kafka 原理和实战</a></li></ul>]]></content>
     
     <summary type="html">
     
@@ -248,27 +311,6 @@
   </entry>
   
   <entry>
-    <title>火焰图</title>
-    <link href="http://yoursite.com/2020/05/23/flame-graph/"/>
-    <id>http://yoursite.com/2020/05/23/flame-graph/</id>
-    <published>2020-05-22T16:00:00.000Z</published>
-    <updated>2021-01-01T15:17:47.330Z</updated>
-    
-    <content type="html"><![CDATA[<p>火焰图（flame graph）是性能分析的利器</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在涉猎运维知识时，多次看到大佬们使用火焰图来进行性能分析，因此跟着涨了下知识。</p><h4 id="含义"><a href="#含义" class="headerlink" title="含义"></a>含义</h4><p>先来体验下火焰图 – <a href="https://queue.acm.org/downloads/2016/Gregg4.svg" target="_blank" rel="noopener">SVG 图片</a>，该图来自阮一峰老师的<a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">《如何读懂火焰图？》</a>，其用来展示 CPU 的调用栈。</p><p>y 轴表示调用栈，每一层都是一个函数。调用栈越深，火焰就越高，顶部就是正在执行的函数，下方都是它的父函数。</p><p>x 轴表示抽样数，如果一个函数在 x 轴占据的宽度越宽，就表示它被抽到的次数多，即执行的时间长。注意，x 轴不代表时间，而是所有的调用栈合并后，按字母顺序排列的。</p><p>火焰图就是看顶层的哪个函数占据的宽度最大。只要有”平顶”（plateaus），就表示该函数可能存在性能问题，也是常说的”大平顶”问题</p><p>颜色没有特殊含义，因为火焰图表示的是 CPU 的繁忙程度，所以一般选择暖色调。</p><h4 id="互动"><a href="#互动" class="headerlink" title="互动"></a>互动</h4><p>火焰图是 SVG 图片，可以与用户互动。</p><p><strong>鼠标悬浮</strong></p><p>火焰的每一层都会标注函数名，鼠标悬浮时会显示完整的函数名、抽样抽中的次数、占据总抽样次数的百分比。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqld&#39;JOIN::exec (272,959 samples, 78.34 percent)</span><br></pre></td></tr></table></figure><p><strong>点击放大</strong></p><p>在某一层点击，火焰图会水平放大，该层会占据所有宽度，显示详细信息。左上角会同时显示”Reset Zoom”，点击该链接，图片就会恢复原样。</p><p><img src="/images/blog/2020-05-23-1.png" alt></p><p><strong>搜索</strong></p><p>按下 Ctrl + F 会显示一个搜索框，用户可以输入关键词或正则表达式，所有符合条件的函数名会高亮显示。</p><h4 id="生成工具"><a href="#生成工具" class="headerlink" title="生成工具"></a>生成工具</h4><p>以perf为例，看一下<code>flamegraph</code>的使用方法</p><p>1、Flame Graph项目位于GitHub上：<a href="https://github.com/brendangregg/FlameGraph" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph</a></p><p>2、可以用git将其clone下来：git clone <a href="https://github.com/brendangregg/FlameGraph.git" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph.git</a></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">1、第一步</span><br><span class="line"></span><br><span class="line">perf record -e cpu-clock -g -p 28591</span><br><span class="line"></span><br><span class="line">Ctrl+c结束执行后，在当前目录下会生成采样数据perf.data.</span><br><span class="line"></span><br><span class="line">2、第二步</span><br><span class="line"></span><br><span class="line">用perf script工具对perf.data进行解析</span><br><span class="line"></span><br><span class="line">perf script -i perf.data &amp;&gt; perf.unfold</span><br><span class="line"></span><br><span class="line">3、第三步</span><br><span class="line"></span><br><span class="line">将perf.unfold中的符号进行折叠：</span><br><span class="line"></span><br><span class="line">.&#x2F;stackcollapse-perf.pl perf.unfold &amp;&gt; perf.folded</span><br><span class="line"></span><br><span class="line">4、最后生成svg图：</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.&#x2F;flamegraph.pl perf.folded &gt; perf.svg</span><br></pre></td></tr></table></figure><p>现在可以使用自带火焰图的 Java 性能分析工具 <a href="https://github.com/jvm-profiling-tools/async-profiler" target="_blank" rel="noopener">Async-profiler</a><br>，其已经内置了开箱即用的 SVG 文件生成功能。</p><hr><p>参考链接</p><ul><li><a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">如何读懂火焰图？</a></li><li><a href="https://juejin.im/post/5ded9ade6fb9a0164a10bcda#heading-2" target="_blank" rel="noopener">超好用的自带火焰图的 Java 性能分析工具 Async-profiler 了解一下</a></li><li><a href="https://zhuanlan.zhihu.com/p/85654612" target="_blank" rel="noopener">Linux火焰图性能分析</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      读懂火焰图
-    
-    </summary>
-    
-    
-      <category term="Distributed" scheme="http://yoursite.com/categories/Distributed/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>perf 工具</title>
     <link href="http://yoursite.com/2020/05/23/perf/"/>
     <id>http://yoursite.com/2020/05/23/perf/</id>
@@ -285,6 +327,27 @@
     
     
       <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>火焰图</title>
+    <link href="http://yoursite.com/2020/05/23/flame-graph/"/>
+    <id>http://yoursite.com/2020/05/23/flame-graph/</id>
+    <published>2020-05-22T16:00:00.000Z</published>
+    <updated>2021-01-01T15:17:47.330Z</updated>
+    
+    <content type="html"><![CDATA[<p>火焰图（flame graph）是性能分析的利器</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在涉猎运维知识时，多次看到大佬们使用火焰图来进行性能分析，因此跟着涨了下知识。</p><h4 id="含义"><a href="#含义" class="headerlink" title="含义"></a>含义</h4><p>先来体验下火焰图 – <a href="https://queue.acm.org/downloads/2016/Gregg4.svg" target="_blank" rel="noopener">SVG 图片</a>，该图来自阮一峰老师的<a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">《如何读懂火焰图？》</a>，其用来展示 CPU 的调用栈。</p><p>y 轴表示调用栈，每一层都是一个函数。调用栈越深，火焰就越高，顶部就是正在执行的函数，下方都是它的父函数。</p><p>x 轴表示抽样数，如果一个函数在 x 轴占据的宽度越宽，就表示它被抽到的次数多，即执行的时间长。注意，x 轴不代表时间，而是所有的调用栈合并后，按字母顺序排列的。</p><p>火焰图就是看顶层的哪个函数占据的宽度最大。只要有”平顶”（plateaus），就表示该函数可能存在性能问题，也是常说的”大平顶”问题</p><p>颜色没有特殊含义，因为火焰图表示的是 CPU 的繁忙程度，所以一般选择暖色调。</p><h4 id="互动"><a href="#互动" class="headerlink" title="互动"></a>互动</h4><p>火焰图是 SVG 图片，可以与用户互动。</p><p><strong>鼠标悬浮</strong></p><p>火焰的每一层都会标注函数名，鼠标悬浮时会显示完整的函数名、抽样抽中的次数、占据总抽样次数的百分比。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqld&#39;JOIN::exec (272,959 samples, 78.34 percent)</span><br></pre></td></tr></table></figure><p><strong>点击放大</strong></p><p>在某一层点击，火焰图会水平放大，该层会占据所有宽度，显示详细信息。左上角会同时显示”Reset Zoom”，点击该链接，图片就会恢复原样。</p><p><img src="/images/blog/2020-05-23-1.png" alt></p><p><strong>搜索</strong></p><p>按下 Ctrl + F 会显示一个搜索框，用户可以输入关键词或正则表达式，所有符合条件的函数名会高亮显示。</p><h4 id="生成工具"><a href="#生成工具" class="headerlink" title="生成工具"></a>生成工具</h4><p>以perf为例，看一下<code>flamegraph</code>的使用方法</p><p>1、Flame Graph项目位于GitHub上：<a href="https://github.com/brendangregg/FlameGraph" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph</a></p><p>2、可以用git将其clone下来：git clone <a href="https://github.com/brendangregg/FlameGraph.git" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph.git</a></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">1、第一步</span><br><span class="line"></span><br><span class="line">perf record -e cpu-clock -g -p 28591</span><br><span class="line"></span><br><span class="line">Ctrl+c结束执行后，在当前目录下会生成采样数据perf.data.</span><br><span class="line"></span><br><span class="line">2、第二步</span><br><span class="line"></span><br><span class="line">用perf script工具对perf.data进行解析</span><br><span class="line"></span><br><span class="line">perf script -i perf.data &amp;&gt; perf.unfold</span><br><span class="line"></span><br><span class="line">3、第三步</span><br><span class="line"></span><br><span class="line">将perf.unfold中的符号进行折叠：</span><br><span class="line"></span><br><span class="line">.&#x2F;stackcollapse-perf.pl perf.unfold &amp;&gt; perf.folded</span><br><span class="line"></span><br><span class="line">4、最后生成svg图：</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.&#x2F;flamegraph.pl perf.folded &gt; perf.svg</span><br></pre></td></tr></table></figure><p>现在可以使用自带火焰图的 Java 性能分析工具 <a href="https://github.com/jvm-profiling-tools/async-profiler" target="_blank" rel="noopener">Async-profiler</a><br>，其已经内置了开箱即用的 SVG 文件生成功能。</p><hr><p>参考链接</p><ul><li><a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">如何读懂火焰图？</a></li><li><a href="https://juejin.im/post/5ded9ade6fb9a0164a10bcda#heading-2" target="_blank" rel="noopener">超好用的自带火焰图的 Java 性能分析工具 Async-profiler 了解一下</a></li><li><a href="https://zhuanlan.zhihu.com/p/85654612" target="_blank" rel="noopener">Linux火焰图性能分析</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      读懂火焰图
+    
+    </summary>
+    
+    
+      <category term="Distributed" scheme="http://yoursite.com/categories/Distributed/"/>
     
     
   </entry>
@@ -369,69 +432,6 @@
     
     
       <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>SQL 中的 NULL</title>
-    <link href="http://yoursite.com/2020/03/23/SQL-NULL/"/>
-    <id>http://yoursite.com/2020/03/23/SQL-NULL/</id>
-    <published>2020-03-22T16:00:00.000Z</published>
-    <updated>2020-03-23T06:53:37.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>NULL 就是 NULL，是「未知」  </p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>有幸阅读到 Inotime 的文章<a href="https://blog.csdn.net/lnotime/article/details/104847946" target="_blank" rel="noopener">SQL 中的 NULL 你真的懂了吗？【数据库｜SQL】</a></p><p><strong>NULL 就是 NULL，是「未知」</strong></p><p>关于 NULL 的理解比以前更清晰。其文章译自 <a href="https://mitchum.blog/null-values-in-sql-queries/" target="_blank" rel="noopener">NULL Values in SQL Queries</a></p>]]></content>
-    
-    <summary type="html">
-    
-      SQL 中的 NULL
-    
-    </summary>
-    
-    
-      <category term="SQL" scheme="http://yoursite.com/categories/SQL/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>HBase 写入性能优化</title>
-    <link href="http://yoursite.com/2020/03/11/HBase-write-optimization/"/>
-    <id>http://yoursite.com/2020/03/11/HBase-write-optimization/</id>
-    <published>2020-03-10T16:00:00.000Z</published>
-    <updated>2020-03-11T04:07:00.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>HBase 写入性能优化</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>本文主要借阅于《HBase原理与实践》这本书，可以自行查阅 13.6 章</p><p>可以从HBase服务器端和业务客户端两个角度分析，确认是否还有提高的空间</p><h4 id="客户端优化"><a href="#客户端优化" class="headerlink" title="客户端优化"></a>客户端优化</h4><h5 id="是否可以使用-Bulkload-方案写入？"><a href="#是否可以使用-Bulkload-方案写入？" class="headerlink" title="是否可以使用 Bulkload 方案写入？"></a>是否可以使用 Bulkload 方案写入？</h5><p>Bulkload 是一个 MapReduce 程序（当然，也可以自行改成 Spark 程序）运行在Hadoop集群。程序的输入是指定数据源，输出是 HFile 文件。HFile 文件生成之后再通过 LoadIncrementalHFiles 工具将 HFile 中相关元数据加载到 HBase 中。</p><p>Bulkload 方案适合将已经存在于 HDFS 上的数据批量导入 HBase 集群。相比调用API的写入方案，Bulkload 方案可以更加高效、快速地导入数据，而且对 HBase 集群几乎不产生任何影响。</p><p>关于 Bulkload 可以阅读《HBase原理与实践》6.2 章</p><h5 id="是否需要写-WAL-WAL-是否需要同步写入？"><a href="#是否需要写-WAL-WAL-是否需要同步写入？" class="headerlink" title="是否需要写 WAL? WAL 是否需要同步写入？"></a>是否需要写 WAL? WAL 是否需要同步写入？</h5><p>优化原理: 数据写入流程可以理解为一次顺序写WAL+一次写缓存，通常情况下写缓存延迟很低，因此提升写性能只能从WAL入手。HBase中可以通过设置WAL的持久化等级决定是否开启WAL机制以及HLog的落盘方式。WAL的持久化分为四个等级：SKIP_WAL，ASYNC_WAL，SYNC_WAL以及FSYNC_WAL。如果用户没有指定持久化等级，HBase默认使用SYNC_WAL等级持久化数据。</p><p>在实际生产线环境中，部分业务可能并不特别关心异常情况下少量数据的丢失，而更关心数据写入吞吐量。比如某些推荐业务，这类业务即使丢失一部分用户行为数据可能对推荐结果也不会构成很大影响，但是对于写入吞吐量要求很高，不能造成队列阻塞。这种场景下可以考虑关闭WAL写入。退而求其次，有些业务必须写WAL，但可以接受WAL异步写入，这是可以考虑优化的，通常也会带来一定的性能提升。</p><p>优化推荐: 根据业务关注点在WAL机制与写入吞吐量之间做出选择，用户可以通过客户端设置WAL持久化等级。</p><h5 id="Put-是否可以同步批量提交？"><a href="#Put-是否可以同步批量提交？" class="headerlink" title="Put 是否可以同步批量提交？"></a>Put 是否可以同步批量提交？</h5><p>优化原理: HBase分别提供了单条put以及批量put的API接口，使用批量put接口可以减少客户端到RegionServer之间的RPC连接数，提高写入吞吐量。另外需要注意的是，批量put请求要么全部成功返回，要么抛出异常。</p><p>优化建议: 使用批量put写入请求。</p><h5 id="Put-是否可以异步批量提交？"><a href="#Put-是否可以异步批量提交？" class="headerlink" title="Put 是否可以异步批量提交？"></a>Put 是否可以异步批量提交？</h5><p>优化原理: 如果业务可以接受异常情况下少量数据丢失，可以使用异步批量提交的方式提交请求。提交分两阶段执行：用户提交写请求，数据写入客户端缓存，并返回用户写入成功；当客户端缓存达到阈值（默认2M）后批量提交给RegionServer。需要注意的是，在某些客户端异常的情况下，缓存数据有可能丢失。</p><p>优化建议: 在业务可以接受的情况下开启异步批量提交，用户可以设置setAutoFlush (false)</p><h6 id="写入-KeyValue-数据是否太大？"><a href="#写入-KeyValue-数据是否太大？" class="headerlink" title="写入 KeyValue 数据是否太大？"></a>写入 KeyValue 数据是否太大？</h6><p>KeyValue大小对写入性能的影响巨大。一旦遇到写入性能比较差的情况，需要分析写入性能下降是否因为写入KeyValue的数据太大。</p><p>KeyValue大小对写入性能影响曲线如下</p><p><img src="/images/blog/2020-03-11-1.png" alt></p><p>横坐标是写入的一行数据（每行数据10列）大小，左纵坐标是写入吞吐量，右纵坐标是写入平均延迟（ms）。可以看出，随着单行数据不断变大，写入吞吐量急剧下降，写入延迟在100K之后急剧增大。</p><h4 id="服务端优化"><a href="#服务端优化" class="headerlink" title="服务端优化"></a>服务端优化</h4><h5 id="Region-是否太少？"><a href="#Region-是否太少？" class="headerlink" title="Region 是否太少？"></a>Region 是否太少？</h5><p>优化原理: 当前集群中表的Region个数如果小于RegionServer个数，即Num (Region of Table)&lt; Num (RegionServer)，可以考虑切分Region并尽可能分布到不同的RegionServer上以提高系统请求并发度。</p><h5 id="写入请求是否均衡？"><a href="#写入请求是否均衡？" class="headerlink" title="写入请求是否均衡？"></a>写入请求是否均衡？</h5><p>优化原理: 写入请求如果不均衡，会导致系统并发度较低，还有可能造成部分节点负载很高，进而影响其他业务。分布式系统中特别需要注意单个节点负载很高的情况，单个节点负载很高可能会拖慢整个集群，这是因为很多业务会使用Mutli批量提交读写请求，一旦其中一部分请求落到慢节点无法得到及时响应，会导致整个批量请求超时。</p><p>优化建议: 检查Rowkey设计以及预分区策略，保证写入请求均衡。</p><h5 id="Utilize-Flash-storage-for-WAL"><a href="#Utilize-Flash-storage-for-WAL" class="headerlink" title="Utilize Flash storage for WAL"></a>Utilize Flash storage for WAL</h5><p>该特性会将WAL文件写到SSD上，对于写性能会有非常大的提升。需要注意的是，该特性建立在HDFS 2.6.0+以及HBase 1.1.0+版本基础上，以前的版本并不支持该特性。</p><p>使用该特性需要两个配置步骤:</p><p>1) 使用HDFS Archival Storage机制，在确保物理机有SSD硬盘的前提下配置HDFS的部分文件目录为SSD介质<br>2) 在hbase-site.xml中添加如下配置<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">  &lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.wal.storage.policy&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;ONE_SSD&lt;&#x2F;value&gt;</span><br><span class="line">  &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure><br>   hbase.wal.storage.policy默认为none，用户可以指定ONE_SSD或者ALL_SSD</p><ul><li>ONE_SSD: WAL在HDFS上的一个副本文件写入SSD介质，另两个副本写入默认存储介质</li><li>ALL_SSD: WAL的三个副本文件全部写入SSD介质</li></ul><h4 id="写入问题"><a href="#写入问题" class="headerlink" title="写入问题"></a>写入问题</h4><ul><li>写阻塞<ul><li>MemStore 占用内存超过 RegionServer 级别高水位阈值导致阻塞 (hbase.regionserver.global.memstore.size)</li><li>RegionServer Active Handler 资源被耗尽  (可能跟KeyValue太大有关)</li><li>Store 中 HFile 文件数量达到阈值就会阻塞写入 (hbase.hstore.blockingStoreFiles)</li></ul></li><li>写延迟<ul><li>WAL 写入延迟，IO 资源是否争抢 (Utilize Flash storage for WAL)</li><li>JVM young gc (CCSMap)</li></ul></li></ul><hr><p>参考链接</p><ul><li><a href="https://mp.weixin.qq.com/s/RBXctAm9YGMPCQHR1NN8TQ" target="_blank" rel="noopener">Apache HBase 问题排查思路</a></li><li><a href="https://mp.weixin.qq.com/s/ippW4kRsdbO45JqQPfbMOw" target="_blank" rel="noopener">从原理到参数解析，HBase 刷写与合并机制介绍</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      HBase 写优化套路
-    
-    </summary>
-    
-    
-      <category term="HBase" scheme="http://yoursite.com/categories/HBase/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>ZooKeeper 监控指标</title>
-    <link href="http://yoursite.com/2020/03/07/Zookeeper-Monitor/"/>
-    <id>http://yoursite.com/2020/03/07/Zookeeper-Monitor/</id>
-    <published>2020-03-06T16:00:00.000Z</published>
-    <updated>2020-03-07T04:05:57.000Z</updated>
-    
-    <content type="html"><![CDATA[<hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>ZooKeeper 是一个开放源码的分布式应用程序协调服务，很多分布式应用程序可以基于它实现同步服务，如 HDFS、HBase、Kafka</p><h4 id="状态"><a href="#状态" class="headerlink" title="状态"></a>状态</h4><p>ZooKeeper 提供了四字命令(The Four Letter Words)，用来获取 ZooKeeper 服务的当前状态及相关信息</p><p><strong>有哪些命令可以使用？</strong></p><table><thead><tr><th>四字命令</th><th>功能描述</th></tr></thead><tbody><tr><td>conf</td><td>打印配置</td></tr><tr><td>cons</td><td>列出所有连接到这台服务器的客户端全部连接/会话详细信息。包括”接受/发送”的包数量、会话id、操作延迟、最后的操作执行等等信息</td></tr><tr><td>crst</td><td>重置所有连接的连接和会话统计信息</td></tr><tr><td>dump</td><td>列出那些比较重要的会话和临时节点。这个命令只能在leader节点上有用</td></tr><tr><td>envi</td><td>打印出服务环境的详细信息</td></tr><tr><td>reqs</td><td>列出未经处理的请求</td></tr><tr><td>ruok</td><td>即”Are you ok”，测试服务是否处于正确状态。如果确实如此，那么服务返回”imok”，否则不做任何相应</td></tr><tr><td>stat</td><td>输出关于性能和连接的客户端的列表</td></tr><tr><td>srst</td><td>重置服务器的统计</td></tr><tr><td>srvr</td><td>列出连接服务器的详细信息</td></tr><tr><td>wchs</td><td>列出服务器watch的详细信息</td></tr><tr><td>wchc</td><td>通过session列出服务器watch的详细信息，它的输出是一个与watch相关的会话的列表</td></tr><tr><td>wchp</td><td>通过路径列出服务器watch的详细信息。它输出一个与session相关的路径</td></tr><tr><td>mntr</td><td>输出可用于检测集群健康状态的变量列表</td></tr></tbody></table><p>通过下列命令来获取这些监控信息 <code>echo commands  |  nc ip port</code></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ echo mntr | nc 192.168.1.229 2181</span><br><span class="line">zk_version      3.4.5-cdh6.3.1--1, built on 09&#x2F;26&#x2F;2019 09:28 GMT    # 版本</span><br><span class="line">zk_avg_latency  0                                                   # 平均延时</span><br><span class="line">zk_max_latency  51                                                  # 最大延时</span><br><span class="line">zk_min_latency  0                                                   # 最小延时</span><br><span class="line">zk_packets_received     825166                                      # 收包数</span><br><span class="line">zk_packets_sent 844514                                              # 发包数</span><br><span class="line">zk_num_alive_connections        10                                  # 连接数</span><br><span class="line">zk_outstanding_requests 0                                           # 堆积请求数</span><br><span class="line">zk_server_state leader                                              # 状态</span><br><span class="line">zk_znode_count  399                                                 # znode 数量</span><br><span class="line">zk_watch_count  74                                                  # watch 数量</span><br><span class="line">zk_ephemerals_count     9                                           # 临时节点(znode)</span><br><span class="line">zk_approximate_data_size        28043                               # 数据大小</span><br><span class="line">zk_open_file_descriptor_count   59                                  # 打开的文件描述符数量</span><br><span class="line">zk_max_file_descriptor_count    32768                               # 最大文件描述符数量</span><br><span class="line">zk_fsync_threshold_exceed_count 0</span><br><span class="line">zk_followers    2                                                   # follower 数量，leader角色才会有这个输出</span><br><span class="line">zk_synced_followers     2                                           # 同步的 follower 数量</span><br><span class="line">zk_pending_syncs        0                                           # 准备同步数，leader角色才会有这个输出</span><br><span class="line">zk_last_proposal_size   32                                          # 最近一次 Proposal 消息大小</span><br><span class="line">zk_max_proposal_size    1337                                        # 最大 Proposal 消息大小</span><br><span class="line">zk_min_proposal_size    32                                          # 最小 Proposal 消息大小</span><br></pre></td></tr></table></figure><p>还有很多信息可以获取，更多可以自行搜索。</p><h4 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h4><p>监控平台的话目前业界已经比较成熟的阿里开源 ZooKeeper 监控框架 <a href="https://github.com/alibaba/taokeeper" target="_blank" rel="noopener">TaoKeeper</a></p><p>TaoKeeper 同作原理通过SSH连接到ZooKeeper部署的机器上，再在上面执行 ZooKeeper 的四字命令来得到统计信息，再分析保存到 MySQL 数据库中。</p><p>当然也可以使用四字命令+nc写脚本去做告警也行，针对以下几个维度去</p><p>open_connections  单机打开连接连接数，建议超过平常的两倍就报警，这样就能知道比平常连接数激增</p><p>latency  响应一个客户端请求的时间，建议这个时间大于10个TickTime就报警</p><blockquote><p>tickTime 这个时间是作为 Zookeeper 服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个 tickTime 时间就会发送一个心跳。默认是 2000 毫秒</p></blockquote><p>outstanding_requests   排队请求的数量，当ZooKeeper超过了它的处理能力时，这个值会增大，建议设置报警阀值为10</p><blockquote><p>zookeeper globalOutstandingLimit 配置指定了等待处理的最大请求数量的限制</p></blockquote><p>open_file_descriptor_count   打开文件数量，当这个值大于允许值”zk_max_file_descriptor_count” 85% 时报警</p><p>Java Heap Size  JVM 堆栈内存使用情况大于分配的最大内存 80% 时报警</p><hr><p>参考链接</p><ul><li><a href="https://www.cnblogs.com/xinfang520/p/10721770.html" target="_blank" rel="noopener">Hadoop记录- zookeeper 监控指标</a></li><li><a href="https://www.cnblogs.com/allenhaozi/p/11416817.html" target="_blank" rel="noopener">zookeeper globalOutstandingLimit</a></li><li><a href="https://www.cnblogs.com/linuxbug/p/4840506.html" target="_blank" rel="noopener">zookeeper监控告警</a></li><li><a href="https://blog.csdn.net/hackerwin7/article/details/43985049" target="_blank" rel="noopener">Zookeeper 监控原型开发</a></li><li><a href="https://www.jianshu.com/p/4f11d7bfc9ce" target="_blank" rel="noopener">ZooKeeper监控工具(六)</a></li><li><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-zookeeper/index.html" target="_blank" rel="noopener">分布式服务框架 Zookeeper — 管理分布式环境中的数据</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      ZooKeeper 监控指标
-    
-    </summary>
-    
-    
-      <category term="Zookeeper" scheme="http://yoursite.com/categories/Zookeeper/"/>
     
     
   </entry>

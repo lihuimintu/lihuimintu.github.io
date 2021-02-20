@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Kafka 分区策略">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka 分区策略">
+<meta property="og:url" content="http://yoursite.com/2021/02/14/kafka-partition-strategy/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="Kafka 分区策略">
+<meta property="og:image" content="http://yoursite.com/images/blog/2021-02-14-1.png">
+<meta property="article:published_time" content="2021-02-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-02-14T13:19:32.680Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Kafka">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2021-02-14-1.png">
+
+<link rel="canonical" href="http://yoursite.com/2021/02/14/kafka-partition-strategy/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Kafka 分区策略 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/14/kafka-partition-strategy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kafka 分区策略
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-02-14 00:00:00 / 修改时间：21:19:32" itemprop="dateCreated datePublished" datetime="2021-02-14T00:00:00+08:00">2021-02-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kafka/" itemprop="url" rel="index">
+                    <span itemprop="name">Kafka</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">Kafka 分区策略</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Kafka 分区策略</p>
+<hr>
+<h4 id="生产者分区选择配策略"><a href="#生产者分区选择配策略" class="headerlink" title="生产者分区选择配策略"></a>生产者分区选择配策略</h4><p>生产者在将消息发送到某个Topic，需要经过拦截器、序列化器和分区器（Partitioner）的一系列作用之后才能发送到对应的Broker，在发往Broker之前是需要确定它所发往的分区。</p>
+<p>生产端将消息发送给Broker之前，会将producer发送的数据封装成一个 ProducerRecord 对象。是否依赖分区器看partition字段有无指定。</p>
+<p><img src="/images/blog/2021-02-14-1.png" alt></p>
+<p>是否依赖分区器看partition字段有无指定</p>
+<ul>
+<li>如果消息 ProducerRecord 指定了 partition 字段，那么就不需要分区器。</li>
+<li>如果消息 ProducerRecord 没有指定 partition 字段，那么就需要依赖分区器，根据key这个字段来计算partition的值。分区器的作用就是为消息分配分区。</li>
+</ul>
+<p>Kafka 中提供的默认分区器是 <a href="https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/clients/producer/internals/DefaultPartitioner.java" target="_blank" rel="noopener">DefaultPartitioner</a> ，它实现了Partitioner接口（用户可以实现这个接口来自定义分区器）</p>
+<p>用户可以通过实现kafka.producer.Partitioner接口实现自己的分区类（重载并实现partition方法），在生产端添加配置<code>partitioner.class</code>即可使用</p>
+<blockquote>
+<ul>
+<li>指明 partition 的情况下，直接将指明的值直接作为 partiton 值。</li>
+<li>没有指明 partition 值但有 key 的情况下，将 key 的 hash 值与 topic 的 partition 数进行取余得到 partition 值。</li>
+<li>既没有 partition 值又没有 key 值的情况下，第一次调用时随机生成一个整数（后面每次调用在这个整数上自增），将这个值与 topic 可用的 partition 总数取余得到 partition 值，也就是常说的 round-robin 算法。</li>
+<li>既没有 partition 值又指定了自定义的分区类，则按自定义分区类来得到 partition 值</li>
+</ul>
+</blockquote>
+<h4 id="消费者分区分配策略"><a href="#消费者分区分配策略" class="headerlink" title="消费者分区分配策略"></a>消费者分区分配策略</h4><p>消费者以组的名义订阅主题，主题有多个分区，消费者组中有多个消费者实例，<strong>同一时刻，一条消息只能被组中的一个消费者实例消费</strong></p>
+<ul>
+<li>如果分区数大于或者等于组中的消费者实例数，一个消费者会负责多个分区</li>
+<li>如果分区数小于组中的消费者实例数，有些消费者将处于空闲状态并且无法接收消息</li>
+</ul>
+<blockquote>
+<p>如果多个消费者负责同一个分区，那么就意味着两个消费者同时读取分区的消息，由于消费者自己可以控制读取消息的Offset，就有可能C1才读到2，而C1读到1，C1还没处理完，C2已经读到3了，这就相当于多线程读取同一个消息，会造成消息处理的重复，且不能保证消息的顺序。</p>
+</blockquote>
+<p>在 Kafka 中存在着两种分区分配策略，通过 partition.assignment.strategy 来设置。</p>
+<ul>
+<li>RangeAssignor 范围分区策略，也是默认模式。</li>
+<li>RoundRobinAssignor 分配策略，轮询分区模式。</li>
+</ul>
+<h5 id="RangeAssignor"><a href="#RangeAssignor" class="headerlink" title="RangeAssignor"></a>RangeAssignor</h5><p>range （默认分配策略）对应的实现类是 org.apache.kafka.clients.consumer.RangeAssignor</p>
+<ol>
+<li>将分区按数字顺序排行序，消费者按名称的字典序排序</li>
+<li>用分区总数除以消费者总数。如果能够除尽，平均分配；若除不尽，则位于排序前面的消费者将多负责一个分区</li>
+</ol>
+<p>假如现在有 10 个分区，3 个消费者，排序后的分区将会是p0~p9。消费者排序完之后将会是C1-0、C2-0、C3-0。通过 Partitions数 / Consumer数 来决定每个消费者应该消费几个分区。如果除不尽，那么前面几个消费者将会多消费 1 个分区。</p>
+<table>
+<thead>
+<tr>
+<th>消费者</th>
+<th>消费的分区</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C1-0</td>
+<td>消费 0、1、2、3分区</td>
+</tr>
+<tr>
+<td>C2-0</td>
+<td>消费 4、5、6分区</td>
+</tr>
+<tr>
+<td>C3-0</td>
+<td>消费 7、8、9分区</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Range 范围分区的弊端: </p>
+<p>如上只是针对 1 个 topic 而言，C1-0 消费者多消费1个分区影响不是很大。如果有 N 多个 topic，那么针对每个 topic，消费者 C1-0 都将多消费 1 个分区，topic越多，C1-0 消费的分区会比其他消费者明显多消费 N 个分区。这就是 Range 范围分区的一个很明显的弊端了.</p>
+</blockquote>
+<h5 id="RoundRobinAssignor"><a href="#RoundRobinAssignor" class="headerlink" title="RoundRobinAssignor"></a>RoundRobinAssignor</h5><p>RoundRobin基于轮询算法，对应的实现类是 org.apache.kafka.clients.consumer.RoundRobinAssignor</p>
+<ol>
+<li>将所有主题的分区组成TopicAndPartition列表</li>
+<li>对TopicAndPartition列表按照hashCode进行排序某个topic</li>
+<li>最后通过轮询算法来分配 partition 给到各个消费者</li>
+</ol>
+<p>轮询分区分为如下两种情况：</p>
+<ul>
+<li>同一个 Consumer Group 内 Consumer  订阅信息相同</li>
+<li>同一个 Consumer Group 内 Consumer  订阅信息不相同</li>
+</ul>
+<h6 id="订阅信息相同"><a href="#订阅信息相同" class="headerlink" title="订阅信息相同"></a>订阅信息相同</h6><p>如果同一消费组内，所有的消费者订阅的消息都是相同的，那么 RoundRobin 策略的分区分配会是均匀的。</p>
+<p>例如同一消费者组中，有 3 个消费者C0、C1和C2，都订阅了 2 个主题 t0 和 t1，并且每个主题都有 3 个分区(p0、p1、p2)，那么所订阅的所以分区可以标识为t0p0、t0p1、t0p2、t1p0、t1p1、t1p2。</p>
+<p>最终分区分配结果如下</p>
+<table>
+<thead>
+<tr>
+<th>消费者</th>
+<th>消费的分区</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C0</td>
+<td>消费 t0p0、t1p0 分区</td>
+</tr>
+<tr>
+<td>C1</td>
+<td>消费 t0p1、t1p1 分区</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>消费 t0p2、t1p2 分区</td>
+</tr>
+</tbody></table>
+<h5 id="订阅信息不相同"><a href="#订阅信息不相同" class="headerlink" title="订阅信息不相同"></a>订阅信息不相同</h5><p>同一消费者组内，所订阅的消息是不相同的，那么分区分配就不是完全的轮询分配，有可能会导致分区分配的不均匀。如果某个消费者没有订阅消费组内的某个 topic，那么在分配分区的时候，此消费者将不会分配到这个 topic 的任何分区。</p>
+<p>例如同一消费者组中有3个消费者C0、C1、C2，他们共订阅了 3 个主题t0、t1、t2，这 3 个主题分别有 1、2、3 个分区(即t0有1个分区(p0)，t1有2个分区(p0、p1)，t2有3个分区(p0、p1、p2))，即整个消费者所订阅的所有分区可以标识为 t0p0、t1p0、t1p1、t2p0、t2p1、t2p2。然后消费者 C0 订阅的是主题t0，消费者C1订阅的是主题t0和t1，消费者C2订阅的是主题t0、t1和t2</p>
+<p>最终分区分配结果如下</p>
+<table>
+<thead>
+<tr>
+<th>消费者</th>
+<th>消费的分区</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C0</td>
+<td>消费 t0p0 分区</td>
+</tr>
+<tr>
+<td>C1</td>
+<td>消费 t1p0 分区</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>消费 t1p1、 t2p0、 t2p1、 t2p2 分区</td>
+</tr>
+</tbody></table>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/99b4187a994d" target="_blank" rel="noopener">Kafka分区策略</a></li>
+<li><a href="https://mp.weixin.qq.com/s/st-7k7WH5pvLZwA_o9jPpw" target="_blank" rel="noopener">六问 Kafka 为啥那么牛！</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/14/kafka-partition-migration/" rel="prev" title="Kafka 分区迁移">
+      <i class="fa fa-chevron-left"></i> Kafka 分区迁移
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/14/kafka-weak-point/" rel="next" title="Kafka 痛点及优化方案">
+      Kafka 痛点及优化方案 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#生产者分区选择配策略"><span class="nav-number">1.</span> <span class="nav-text">生产者分区选择配策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消费者分区分配策略"><span class="nav-number">2.</span> <span class="nav-text">消费者分区分配策略</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#RangeAssignor"><span class="nav-number">2.1.</span> <span class="nav-text">RangeAssignor</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#RoundRobinAssignor"><span class="nav-number">2.2.</span> <span class="nav-text">RoundRobinAssignor</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#订阅信息相同"><span class="nav-number">2.2.1.</span> <span class="nav-text">订阅信息相同</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#订阅信息不相同"><span class="nav-number">2.3.</span> <span class="nav-text">订阅信息不相同</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">210</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/lihuimintu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lihuimintu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lihuimintu@gmail.com" title="E-Mail → mailto:lihuimintu@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">522k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:55</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '2085faf26df223988e669f22ab537a3c',
+        language: 'zh-CN',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <!-- 代码块复制功能 -->
+  <script type="text/javascript" src="/js/clipboard.min.js"></script>	
+<script type="text/javascript" src="/js/custom.js"></script>
+
+</body>
+</html>
