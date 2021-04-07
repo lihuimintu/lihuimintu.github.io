@@ -53,11 +53,16 @@
 <meta property="og:url" content="http://yoursite.com/2021/04/07/test/index.html">
 <meta property="og:site_name" content="lihuimintu">
 <meta property="og:description" content="零拷贝技术">
+<meta property="og:image" content="http://yoursite.com/images/blog/2021-04-05-1.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2021-04-05-2.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2021-04-05-3.png">
+<meta property="og:image" content="http://yoursite.com/images/blog/2021-04-05-4.png">
 <meta property="article:published_time" content="2021-04-06T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-04-07T06:47:41.384Z">
+<meta property="article:modified_time" content="2021-04-07T06:55:04.841Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/blog/2021-04-05-1.png">
 
 <link rel="canonical" href="http://yoursite.com/2021/04/07/test/">
 
@@ -230,7 +235,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-04-07 00:00:00 / 修改时间：14:47:41" itemprop="dateCreated datePublished" datetime="2021-04-07T00:00:00+08:00">2021-04-07</time>
+              <time title="创建时间：2021-04-07 00:00:00 / 修改时间：14:55:04" itemprop="dateCreated datePublished" datetime="2021-04-07T00:00:00+08:00">2021-04-07</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -250,14 +255,14 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>354</span>
+              <span>2.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
             <div class="post-description">零拷贝技术</div>
 
@@ -276,12 +281,84 @@
 <h4 id="传统I-O"><a href="#传统I-O" class="headerlink" title="传统I/O"></a>传统I/O</h4><p>首先要对传统的IO方式有一个概念</p>
 <p>基于传统的IO方式，底层实际上通过调用read()和write()来实现</p>
 <p>通过read()把数据从硬盘读取到内核缓冲区，再复制到用户缓冲区；然后再通过write()写入到socket缓冲区，最后写入网卡设备。</p>
-<h4 id="相关"><a href="#相关" class="headerlink" title="相关"></a>相关</h4><p>文章介绍：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">read(file,tmp_buf,len)</span><br><span class="line">write(socket,tmp_buf,len)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2021-04-05-1.png" alt></p>
+<p>从磁盘文件读取并且通过socket写出的过程发生了4次用户态和内核态的上下文切换和4次拷贝</p>
+<ol>
+<li>用户进程通过read()方法向操作系统发起调用，此时上下文从用户态切换为内核态</li>
+<li>DMA控制器把数据从硬盘中拷贝到读缓冲区</li>
+<li>CPU把读缓冲区数据拷贝到应用缓冲区，上下文从内核态切换为用户态，read()返回</li>
+<li>用户进程通过write()方法发起调用，上下文从用户态切换为内核态</li>
+<li>CPU把用户缓冲区的数据拷贝到socket缓冲区</li>
+<li>DMA控制器把数据从socket缓冲区拷贝到网卡，上下文从内核态切换回用户态，write()返回</li>
+</ol>
+<blockquote>
+<p>用户态、内核态指的是什么？上下文切换又是什么？</p>
+<p>简单来说，用户空间指的就是用户进程的运行空间，内核空间就是内核的运行空间。</p>
+<p>如果进程运行在内核空间就是内核态，运行在用户空间就是用户态。</p>
+<p>为了安全起见，他们之间是互相隔离的，而在用户态和内核态之间的上下文切换也是比较耗时的。</p>
+</blockquote>
+<blockquote>
+<p>什么又是DMA拷贝呢？</p>
+<p>因为对于一个IO操作而言，都是通过CPU发出对应的指令来完成，但是相比CPU来说，IO的速度太慢了，CPU有大量的时间处于等待IO的状态。</p>
+<p>因此就产生了DMA（Direct Memory Access）直接内存访问技术，本质上来说他就是一块主板上独立的芯片，通过它来进行内存和IO设备的数据传输，从而减少CPU的等待时间。</p>
+</blockquote>
+<h4 id="零拷贝技术"><a href="#零拷贝技术" class="headerlink" title="零拷贝技术"></a>零拷贝技术</h4><p>接下来有针对性的来谈谈几种常见的零拷贝技术</p>
+<h5 id="mmap-write"><a href="#mmap-write" class="headerlink" title="mmap+write"></a>mmap+write</h5><p>简单来说就是使用mmap替换了read+write中的read操作，减少了一次CPU的拷贝。</p>
+<p>mmap主要实现方式是将读缓冲区的地址和用户缓冲区的地址进行映射，内核缓冲区和应用缓冲区共享，从而减少了从读缓冲区到用户缓冲区的一次CPU拷贝。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tmp_buf &#x3D; mmap(file, len);</span><br><span class="line">write(socket, tmp_buf, len);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2021-04-05-2.png" alt></p>
+<p>整个过程发生了4次用户态和内核态的上下文切换和3次拷贝</p>
+<ol>
+<li>用户进程通过mmap()方法向操作系统发起调用，上下文从用户态转向内核态</li>
+</ol>
+<h5 id="sendfile"><a href="#sendfile" class="headerlink" title="sendfile"></a>sendfile</h5><p>相比mmap来说，sendfile同样减少了一次CPU拷贝，而且还减少了2次上下文切换。</p>
+<p>sendfile是Linux2.1内核版本后引入的一个系统调用函数，通过使用sendfile数据可以直接在内核空间进行传输，因此避免了用户空间和内核空间的拷贝，同时由于使用sendfile替代了read+write从而节省了一次系统调用，也就是2次上下文切换。</p>
+<p><img src="/images/blog/2021-04-05-3.png" alt></p>
+<p>整个过程发生了2次用户态和内核态的上下文切换和3次拷贝，具体流程如下：</p>
+<ol>
+<li>用户进程通过sendfile()方法向操作系统发起调用，上下文从用户态切换为内核态</li>
+<li>DMA控制器把数据从硬盘中拷贝到读缓冲区</li>
+<li>CPU将读缓冲区中数据拷贝到socket缓冲区</li>
+<li>DMA控制器把数据从socket缓冲区拷贝到网卡，上下文从内核态切换为用户态，sendfile调用返回</li>
+</ol>
+<p><strong>sendfile方法IO数据对用户空间完全不可见，所以只能适用于完全不需要用户空间处理的情况，比如静态文件服务器。</strong></p>
+<h5 id="sendfile-DMA-Scatter-Gather"><a href="#sendfile-DMA-Scatter-Gather" class="headerlink" title="sendfile+DMA Scatter/Gather"></a>sendfile+DMA Scatter/Gather</h5><p>Linux2.4内核版本之后对sendfile做了进一步优化，通过引入新的硬件支持，这个方式叫做DMA Scatter/Gather 分散/收集功能。</p>
+<p>将读缓冲区中的数据描述信息–内存地址和偏移量记录到socket缓冲区，由 DMA 根据这些将数据从读缓冲区拷贝到网卡，相比之前版本减少了一次CPU拷贝的过程</p>
+<blockquote>
+<p>之前是把读缓冲区的数据拷贝到socket缓存中，实际上，仅仅需要把读缓冲区描述符传到socket缓冲区，再把数据长度传过去，这样DMA控制器直接将页缓存中的数据打包发送到网络中就可以了。</p>
+</blockquote>
+<p>依旧是系统调用sendfile()</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sendfile(socket, file, len);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2021-04-05-4.png" alt></p>
+<ol>
+<li>用户进程通过sendfile()方法向操作系统发起调用，上下文从用户态转向内核态</li>
+<li>DMA控制器利用scatter把数据从硬盘中拷贝到读缓冲区离散存储</li>
+<li>CPU把读缓冲区中的文件描述符和数据长度发送到socket缓冲区</li>
+<li>DMA控制器根据文件描述符和数据长度，使用scatter/gather把数据从内核缓冲区拷贝到网卡</li>
+<li>sendfile()调用返回，上下文从内核态切换回用户态</li>
+</ol>
+<p>DMA gather和sendfile一样数据对用户空间不可见，而且需要硬件支持，同时输入文件描述符只能是文件，但是过程中完全没有CPU拷贝过程，极大提升了性能。</p>
+<blockquote>
+<p>这种模式实现起来需要硬件的支持，但对于基于操作系统的用户来讲，操作系统已经屏蔽了这种差异，它会根据不同的硬件平台来实现这个系统调用</p>
+</blockquote>
+<h4 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h4><p>RocketMQ和Kafka都使用到了零拷贝的技术</p>
+<p>对于MQ而言，无非就是生产者发送数据到MQ然后持久化到磁盘，之后消费者从MQ读取数据。</p>
+<p>对于RocketMQ来说这两个步骤使用的是mmap+write，而Kafka则是使用mmap+write持久化数据，发送数据使用sendfile。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>由于CPU和IO速度的差异问题，产生了DMA技术，通过DMA搬运来减少CPU的等待时间。</p>
+<p>传统的IO read+write方式会产生2次DMA拷贝+2次CPU拷贝，同时有4次上下文切换。</p>
+<p>而通过mmap+write方式则产生2次DMA拷贝+1次CPU拷贝，4次上下文切换，通过内存映射减少了一次CPU拷贝，可以减少内存使用，适合大文件的传输。</p>
+<p>sendfile方式是新增的一个系统调用函数，产生2次DMA拷贝+1次CPU拷贝，但是只有2次上下文切换。因为只有一次调用，减少了上下文的切换，但是用户空间对IO数据不可见，适用于静态文件服务器。</p>
+<p>sendfile+DMA gather方式产生2次DMA拷贝，没有CPU拷贝，而且也只有2次上下文切换。虽然极大地提升了性能，但是需要依赖新的硬件设备支持。</p>
+<hr>
+<p>参考链接</p>
 <ul>
-<li><a href="https://mp.weixin.qq.com/s/ebUY-9WCt05qDX4jet6Enw" target="_blank" rel="noopener">滴滴Logi-KafkaManager开源之路：一站式Kafka集群指标监控与运维管控平台</a></li>
-<li><a href="https://mp.weixin.qq.com/s/JmVrypgR5mI8GH7BvgEs_g" target="_blank" rel="noopener">滴滴开源Logi-KafkaManager 一站式Kafka监控与管控平台</a></li>
+<li><a href="https://mp.weixin.qq.com/s/dt0h2UhaoRECvjpeMZMsUA" target="_blank" rel="noopener">阿里二面：什么是mmap？</a></li>
+<li><a href="https://www.jianshu.com/p/497e7640b57c" target="_blank" rel="noopener">零拷贝的原理及Java实现</a></li>
 </ul>
-<p>GitHub地址：<a href="https://github.com/didi/Logi-KafkaManager" target="_blank" rel="noopener">Logi-KafkaManager</a></p>
 
     </div>
 
@@ -361,7 +438,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#传统I-O"><span class="nav-number">2.</span> <span class="nav-text">传统I&#x2F;O</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#相关"><span class="nav-number">3.</span> <span class="nav-text">相关</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#传统I-O"><span class="nav-number">2.</span> <span class="nav-text">传统I&#x2F;O</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#零拷贝技术"><span class="nav-number">3.</span> <span class="nav-text">零拷贝技术</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#mmap-write"><span class="nav-number">3.1.</span> <span class="nav-text">mmap+write</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#sendfile"><span class="nav-number">3.2.</span> <span class="nav-text">sendfile</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#sendfile-DMA-Scatter-Gather"><span class="nav-number">3.3.</span> <span class="nav-text">sendfile+DMA Scatter&#x2F;Gather</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用场景"><span class="nav-number">4.</span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -429,12 +506,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">527k</span>
+    <span title="站点总字数">529k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">7:59</span>
+    <span title="站点阅读时长">8:01</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
