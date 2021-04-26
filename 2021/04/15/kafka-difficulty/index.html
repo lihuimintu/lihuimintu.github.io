@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Kafka的一些问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka的一些问题">
+<meta property="og:url" content="http://yoursite.com/2021/04/15/kafka-difficulty/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="Kafka的一些问题">
+<meta property="article:published_time" content="2021-04-14T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-04-14T19:36:32.545Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Kafka">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2021/04/15/kafka-difficulty/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Kafka的一些问题 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/04/15/kafka-difficulty/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kafka的一些问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-04-15 00:00:00 / 修改时间：03:36:32" itemprop="dateCreated datePublished" datetime="2021-04-15T00:00:00+08:00">2021-04-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kafka/" itemprop="url" rel="index">
+                    <span itemprop="name">Kafka</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+            <div class="post-description">Kafka的一些问题</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Kafka的一些问题</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>读自vivo 互联网技术的文章–<a href="https://juejin.cn/post/6844903919424913415#heading-9" target="_blank" rel="noopener">《Kafka 原理和实战》</a> 整理</p>
+<h4 id="问题点"><a href="#问题点" class="headerlink" title="问题点"></a>问题点</h4><h5 id="单分区有序"><a href="#单分区有序" class="headerlink" title="单分区有序"></a>单分区有序</h5><p>只保证单个主题单个分区内的消息有序，但是不能保证单个主题所有分区消息有序。如果应用严格要求消息有序，那么kafka可能不大合适</p>
+<h5 id="消费偏移量维护"><a href="#消费偏移量维护" class="headerlink" title="消费偏移量维护"></a>消费偏移量维护</h5><p>消费偏移量由消费者跟踪和提交，但是消费者并不会经常把这个偏移量写会kafka，因为broker维护这些更新的代价很大，这会导致异常情况下消息可能会被多次消费或者没有消费。</p>
+<p>具体分析如下：消息可能已经被消费了，但是消费者还没有像broker提交偏移量(commit offset)确认该消息已经被消费就挂掉了，接着另一个消费者又开始处理同一个分区，那么它会从上一个已提交偏移量开始，导致有些消息被重复消费。但是反过来，如果消费者在批处理消息之前就先提交偏移量，但是在处理消息的时候挂掉了，那么这部分消息就相当于『丢失』了。通常来说，处理消息和提交偏移量很难构成一个原子性操作，因此无法总是保证所有消息都刚好只被处理一次。</p>
+<h5 id="主题和分区的数目有限"><a href="#主题和分区的数目有限" class="headerlink" title="主题和分区的数目有限"></a>主题和分区的数目有限</h5><p>Kafka集群能够处理的主题数目是有限的，达到1000个主题左右时，性能就开始下降。这些问题基本上都跟Kafka的基本实现决策有关。特别是，随着主题数目增加，broker上的随机IO量急剧增加，因为每个主题分区的写操作实际上都是一个单独的文件追加(append)操作。随着分区数目增加，问题越来越严重。如果Kafka不接管IO调度，问题就很难解决。</p>
+<h5 id="磁盘大小"><a href="#磁盘大小" class="headerlink" title="磁盘大小"></a>磁盘大小</h5><p>单个节点必须有足够的磁盘空间来处理副本，因此非常大的副本可能会迫使你是用非常大的磁盘，磁盘的冗余需要评估和衡量</p>
+<h5 id="手动均衡分区负载"><a href="#手动均衡分区负载" class="headerlink" title="手动均衡分区负载"></a>手动均衡分区负载</h5><p>在集群扩展时必须做Rebalance。这个过程是比较痛苦的，需要良好的计划和执行来保证没有任何故障的情况下分散节点的存储压力</p>
+<h5 id="follow副本-replica-只充当冷备（解决HA问题），无法提供读服务"><a href="#follow副本-replica-只充当冷备（解决HA问题），无法提供读服务" class="headerlink" title="follow副本(replica)只充当冷备（解决HA问题），无法提供读服务"></a>follow副本(replica)只充当冷备（解决HA问题），无法提供读服务</h5><p>kafka因为读服务是有状态的（要维护commited offset），所以follow副本并没有参与到读写服务中。只是作为一个冷备，解决单点问题。</p>
+<h5 id="顺序消费"><a href="#顺序消费" class="headerlink" title="顺序消费"></a>顺序消费</h5><p>只能顺序消费消息，不能随机定位消息，出问题的时候不方便快速定位问题</p>
+<p>这其实是所有以消息系统作为异步RPC的通用问题。假设发送方发了一条消息，但是消费者说我没有收到，那么怎么排查呢？消息队列缺少随机访问消息的机制，如根据消息的key获取消息。</p>
+<p>这导致排查这种问题不大容易。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://juejin.cn/post/6844903919424913415#heading-9" target="_blank" rel="noopener">Kafka 原理和实战</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/07/zore-copy/" rel="prev" title="零拷贝">
+      <i class="fa fa-chevron-left"></i> 零拷贝
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/26/kafkactl/" rel="next" title="kafkactl">
+      kafkactl <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#问题点"><span class="nav-number">2.</span> <span class="nav-text">问题点</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#单分区有序"><span class="nav-number">2.1.</span> <span class="nav-text">单分区有序</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#消费偏移量维护"><span class="nav-number">2.2.</span> <span class="nav-text">消费偏移量维护</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#主题和分区的数目有限"><span class="nav-number">2.3.</span> <span class="nav-text">主题和分区的数目有限</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#磁盘大小"><span class="nav-number">2.4.</span> <span class="nav-text">磁盘大小</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#手动均衡分区负载"><span class="nav-number">2.5.</span> <span class="nav-text">手动均衡分区负载</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#follow副本-replica-只充当冷备（解决HA问题），无法提供读服务"><span class="nav-number">2.6.</span> <span class="nav-text">follow副本(replica)只充当冷备（解决HA问题），无法提供读服务</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#顺序消费"><span class="nav-number">2.7.</span> <span class="nav-text">顺序消费</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">213</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/lihuimintu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lihuimintu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lihuimintu@gmail.com" title="E-Mail → mailto:lihuimintu@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">529k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">8:01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: 'aba8b32d03b8f551e7f793b8cfb93582',
+        language: 'zh-CN',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <!-- 代码块复制功能 -->
+  <script type="text/javascript" src="/js/clipboard.min.js"></script>	
+<script type="text/javascript" src="/js/custom.js"></script>
+
+</body>
+</html>
