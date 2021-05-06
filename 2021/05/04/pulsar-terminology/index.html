@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/header.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/header.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":null},
+    back2top: {"enable":true,"sidebar":false,"b2t":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Apache Pulsar 相关的一些术语">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pulsar 术语">
+<meta property="og:url" content="http://yoursite.com/2021/05/04/pulsar-terminology/index.html">
+<meta property="og:site_name" content="lihuimintu">
+<meta property="og:description" content="Apache Pulsar 相关的一些术语">
+<meta property="article:published_time" content="2021-05-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-05-05T07:11:46.231Z">
+<meta property="article:author" content="图">
+<meta property="article:tag" content="Pulsar">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2021/05/04/pulsar-terminology/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Pulsar 术语 | lihuimintu</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="lihuimintu" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lihuimintu</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/05/04/pulsar-terminology/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/zzh.jpg">
+      <meta itemprop="name" content="图">
+      <meta itemprop="description" content="Life isn't always what one likes.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lihuimintu">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Pulsar 术语
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-04 00:00:00" itemprop="dateCreated datePublished" datetime="2021-05-04T00:00:00+08:00">2021-05-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-05 15:11:46" itemprop="dateModified" datetime="2021-05-05T15:11:46+08:00">2021-05-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Pulsar/" itemprop="url" rel="index">
+                    <span itemprop="name">Pulsar</span>
+                  </a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">Apache Pulsar 相关的一些术语</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Apache Pulsar 相关的一些术语</p>
+<hr>
+<h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>该文摘自Apache Pulsar 官方文档<a href="https://pulsar.apache.org/docs/zh-CN/reference-terminology/" target="_blank" rel="noopener">Apache Pulsar Terminology</a></p>
+<p>下面是 Apache Pulsar 相关的一些术语</p>
+<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><h5 id="Pulsar"><a href="#Pulsar" class="headerlink" title="Pulsar"></a>Pulsar</h5><p>Pulsar 是一个分布式消息系统，最初由 Yahoo 创建，现在是 Apache 软件基金会的一个孵化器项目。</p>
+<h5 id="消息（Message）"><a href="#消息（Message）" class="headerlink" title="消息（Message）"></a>消息（Message）</h5><p>消息是Pulsar的基本单位。它是生产者发布到主题的内容，然后是消费者从主题中消费的内容。</p>
+<h5 id="Topic"><a href="#Topic" class="headerlink" title="Topic"></a>Topic</h5><p>Topic 接收 producer 发布的消息后，将消息传递给 consumer，由 consumer 消费这些消息。</p>
+<h5 id="分区-Topic（Partitioned-Topic）"><a href="#分区-Topic（Partitioned-Topic）" class="headerlink" title="分区 Topic（Partitioned Topic）"></a>分区 Topic（Partitioned Topic）</h5><p>由多个 Pulsar broker 处理分区 topic，提高吞吐量。</p>
+<h5 id="命名空间（Namespace）"><a href="#命名空间（Namespace）" class="headerlink" title="命名空间（Namespace）"></a>命名空间（Namespace）</h5><p>相关 topic 间的分组机制。</p>
+<h5 id="命名空间-Bundle（Namespace-Bundle）"><a href="#命名空间-Bundle（Namespace-Bundle）" class="headerlink" title="命名空间 Bundle（Namespace Bundle）"></a>命名空间 Bundle（Namespace Bundle）</h5><p>同一个命名空间下的虚拟 topic 组。 命名空间 bundle 是 32 位的哈希值，取值范围从 0x00000000 到 0xffffffff。</p>
+<h5 id="租户（Tenant）"><a href="#租户（Tenant）" class="headerlink" title="租户（Tenant）"></a>租户（Tenant）</h5><p>用于分配容量和执行身份验证/授权方案的管理单元。</p>
+<h5 id="订阅（Subscription）"><a href="#订阅（Subscription）" class="headerlink" title="订阅（Subscription）"></a>订阅（Subscription）</h5><p>由一组消费者建立关于Topic的租约。 Pulsar具有四种订阅模式（独占，共享，故障转移和key_shared）。</p>
+<h5 id="发布-订阅（Pub-Sub）"><a href="#发布-订阅（Pub-Sub）" class="headerlink" title="发布 - 订阅（Pub-Sub）"></a>发布 - 订阅（Pub-Sub）</h5><p>一种消息传递模式，即 producer 进程发布消息到 topic，consumer 进程消费（处理）这些消息。</p>
+<h5 id="生产者（Producer）"><a href="#生产者（Producer）" class="headerlink" title="生产者（Producer）"></a>生产者（Producer）</h5><p>发送消息到 Pulsar topic 的进程。</p>
+<h5 id="消费者（Consumer）"><a href="#消费者（Consumer）" class="headerlink" title="消费者（Consumer）"></a>消费者（Consumer）</h5><p>订阅 Pulsar topic 并处理消息（由 producer 发布到该 topic）的进程。</p>
+<h5 id="Reader"><a href="#Reader" class="headerlink" title="Reader"></a>Reader</h5><p>消息处理程序，与 Pulsar consumer 非常相似。二者之间有两个主要区别:</p>
+<ul>
+<li>Reader可以指定读在主题上从何处开始处理消息（消费者总是以最新的可用未确认消息开始）</li>
+<li>Reader 不保留数据，也不确认消息。</li>
+</ul>
+<blockquote>
+<p>由于Pulsar主题分区实际上是存储在Apache BookKeeper中，它还提供了一个读取API（Reader），类似于消费者API（但Reader没有游标管理），以便用户完全控制如何使用Topic中的消息。</p>
+</blockquote>
+<h5 id="游标（Cursor）"><a href="#游标（Cursor）" class="headerlink" title="游标（Cursor）"></a>游标（Cursor）</h5><p>Consumer 订阅分区的位置。</p>
+<h5 id="Ack（Acknowledgement）"><a href="#Ack（Acknowledgement）" class="headerlink" title="Ack（Acknowledgement）"></a>Ack（Acknowledgement）</h5><p>Consumer 发送 ack 到 Pulsar broker，表明消息处理成功。 Pulsar 通过 Ack 确认是否可以将消息从系统中删除。如果没有收到 Ack，则一直保留消息到处理完成。</p>
+<h5 id="Nack（Negative-Acknowledgment）"><a href="#Nack（Negative-Acknowledgment）" class="headerlink" title="Nack（Negative Acknowledgment）"></a>Nack（Negative Acknowledgment）</h5><p>当应用程序无法处理特定消息时，应用程序向 Pulsar 发送 Nack，表示可以在一段时间后重新消费此消息。 （默认情况下，延迟1分钟后会重播失败的消息）</p>
+<p>请注意，对独占、灾备、key共享的订阅类型的否定确认可能会导致失败的消息以非原始顺序到达使用者。</p>
+<h5 id="未确认（Unacknowledged）"><a href="#未确认（Unacknowledged）" class="headerlink" title="未确认（Unacknowledged）"></a>未确认（Unacknowledged）</h5><p>已传递给使用者以进行处理但尚未确认为已由使用者处理的消息。</p>
+<h5 id="保留政策（Retention-Policy）"><a href="#保留政策（Retention-Policy）" class="headerlink" title="保留政策（Retention Policy）"></a>保留政策（Retention Policy）</h5><p>在命名空间级别，通过设置消息大小和消息保留时间，为消息（已被 Ack）设置保留策略。</p>
+<h5 id="多租户（Multi-Tenancy）"><a href="#多租户（Multi-Tenancy）" class="headerlink" title="多租户（Multi-Tenancy）"></a>多租户（Multi-Tenancy）</h5><p>能够隔离名称空间，指定配额以及按租户配置身份验证和授权的功能。</p>
+<h4 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h4><h5 id="单机版（Standalone）"><a href="#单机版（Standalone）" class="headerlink" title="单机版（Standalone）"></a>单机版（Standalone）</h5><p>轻量级的Pulsar代理，其中所有组件都在单个Java虚拟机（JVM）进程中运行。独立群集可以在单台计算机上运行，​​并且对于开发目的很有用。</p>
+<h5 id="集群（Cluster）"><a href="#集群（Cluster）" class="headerlink" title="集群（Cluster）"></a>集群（Cluster）</h5><p>一组Pulsar代理和BookKeeper服务器（又称bookies）。集群可以驻留在不同的地理区域中，并且可以在称为地理复制的过程中将消息彼此复制。</p>
+<h5 id="实例（Instance）"><a href="#实例（Instance）" class="headerlink" title="实例（Instance）"></a>实例（Instance）</h5><p>一组Pulsar集群，这多个集群一起作为一个单元起作用。</p>
+<h5 id="地理复制（Geo-Replication）"><a href="#地理复制（Geo-Replication）" class="headerlink" title="地理复制（Geo-Replication）"></a>地理复制（Geo-Replication）</h5><p>在Pulsar群集之间（可能在不同的数据中心或地理区域中）复制消息。</p>
+<h5 id="Configuration-Store"><a href="#Configuration-Store" class="headerlink" title="Configuration Store"></a>Configuration Store</h5><p>Pulsar的配置存储（以前称为配置存储）是ZooKeeper仲裁，用于特定于配置的任务。多集群的Pulsar安装仅需要跨所有集群的一个配置存储。</p>
+<h5 id="Topic-Lookup"><a href="#Topic-Lookup" class="headerlink" title="Topic Lookup"></a>Topic Lookup</h5><p>由Pulsar代理提供的一项服务，使连接客户端可以自动确定哪个Pulsar集群负责某个主题（从而确定该主题的消息通信需要路由到何处）。</p>
+<h5 id="服务发现（Service-Discovery）"><a href="#服务发现（Service-Discovery）" class="headerlink" title="服务发现（Service Discovery）"></a>服务发现（Service Discovery）</h5><p>Pulsar提供的一种机制，使连接客户端可以仅使用单个URL与集群中的所有代理进行交互。</p>
+<h5 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h5><p>Pulsar群集的无状态组件，该组件运行其他两个组件</p>
+<ul>
+<li>公开用于管理和主题查找的REST接口的HTTP服务器</li>
+<li>处理所有消息传输的调度程序</li>
+</ul>
+<p>Pulsar集群由多个broker组成</p>
+<h5 id="Dispatcher"><a href="#Dispatcher" class="headerlink" title="Dispatcher"></a>Dispatcher</h5><p>用于进出Pulsar代理的所有数据传输的异步TCP服务器。脉冲星调度程序对所有通信使用自定义二进制协议。</p>
+<h4 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h4><h5 id="BookKeeper"><a href="#BookKeeper" class="headerlink" title="BookKeeper"></a>BookKeeper</h5><p>Apache BookKeeper是一种可扩展的，低延迟的持久日志存储服务，Pulsar用于存储数据。</p>
+<h5 id="Bookie"><a href="#Bookie" class="headerlink" title="Bookie"></a>Bookie</h5><p>Bookie是单个BookKeeper服务器的名称。它实际上是Pulsar的存储服务器。</p>
+<h5 id="Ledger"><a href="#Ledger" class="headerlink" title="Ledger"></a>Ledger</h5><p>BookKeeper中的仅追加数据结构，用于将消息持久存储在Pulsar主题中。</p>
+<h4 id="Functions"><a href="#Functions" class="headerlink" title="Functions"></a>Functions</h4><p>Pulsar函数是轻量级函数，可以使用来自Pulsar主题的消息，应用自定义处理逻辑，并在需要时将结果发布到主题。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://pulsar.apache.org/docs/zh-CN/reference-terminology/" target="_blank" rel="noopener">Apache Pulsar Terminology</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/03/pulsar-news-subscription/" rel="prev" title="Pulsar 消息订阅">
+      <i class="fa fa-chevron-left"></i> Pulsar 消息订阅
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/05/pulsar-retention/" rel="next" title="Pulsar 消息保留（Retention）">
+      Pulsar 消息保留（Retention） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#概念"><span class="nav-number">2.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Pulsar"><span class="nav-number">2.1.</span> <span class="nav-text">Pulsar</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#消息（Message）"><span class="nav-number">2.2.</span> <span class="nav-text">消息（Message）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Topic"><span class="nav-number">2.3.</span> <span class="nav-text">Topic</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分区-Topic（Partitioned-Topic）"><span class="nav-number">2.4.</span> <span class="nav-text">分区 Topic（Partitioned Topic）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#命名空间（Namespace）"><span class="nav-number">2.5.</span> <span class="nav-text">命名空间（Namespace）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#命名空间-Bundle（Namespace-Bundle）"><span class="nav-number">2.6.</span> <span class="nav-text">命名空间 Bundle（Namespace Bundle）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#租户（Tenant）"><span class="nav-number">2.7.</span> <span class="nav-text">租户（Tenant）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#订阅（Subscription）"><span class="nav-number">2.8.</span> <span class="nav-text">订阅（Subscription）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#发布-订阅（Pub-Sub）"><span class="nav-number">2.9.</span> <span class="nav-text">发布 - 订阅（Pub-Sub）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#生产者（Producer）"><span class="nav-number">2.10.</span> <span class="nav-text">生产者（Producer）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#消费者（Consumer）"><span class="nav-number">2.11.</span> <span class="nav-text">消费者（Consumer）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Reader"><span class="nav-number">2.12.</span> <span class="nav-text">Reader</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#游标（Cursor）"><span class="nav-number">2.13.</span> <span class="nav-text">游标（Cursor）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Ack（Acknowledgement）"><span class="nav-number">2.14.</span> <span class="nav-text">Ack（Acknowledgement）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Nack（Negative-Acknowledgment）"><span class="nav-number">2.15.</span> <span class="nav-text">Nack（Negative Acknowledgment）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#未确认（Unacknowledged）"><span class="nav-number">2.16.</span> <span class="nav-text">未确认（Unacknowledged）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#保留政策（Retention-Policy）"><span class="nav-number">2.17.</span> <span class="nav-text">保留政策（Retention Policy）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#多租户（Multi-Tenancy）"><span class="nav-number">2.18.</span> <span class="nav-text">多租户（Multi-Tenancy）</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#架构"><span class="nav-number">3.</span> <span class="nav-text">架构</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#单机版（Standalone）"><span class="nav-number">3.1.</span> <span class="nav-text">单机版（Standalone）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#集群（Cluster）"><span class="nav-number">3.2.</span> <span class="nav-text">集群（Cluster）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实例（Instance）"><span class="nav-number">3.3.</span> <span class="nav-text">实例（Instance）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#地理复制（Geo-Replication）"><span class="nav-number">3.4.</span> <span class="nav-text">地理复制（Geo-Replication）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Configuration-Store"><span class="nav-number">3.5.</span> <span class="nav-text">Configuration Store</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Topic-Lookup"><span class="nav-number">3.6.</span> <span class="nav-text">Topic Lookup</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#服务发现（Service-Discovery）"><span class="nav-number">3.7.</span> <span class="nav-text">服务发现（Service Discovery）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Broker"><span class="nav-number">3.8.</span> <span class="nav-text">Broker</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Dispatcher"><span class="nav-number">3.9.</span> <span class="nav-text">Dispatcher</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#存储"><span class="nav-number">4.</span> <span class="nav-text">存储</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#BookKeeper"><span class="nav-number">4.1.</span> <span class="nav-text">BookKeeper</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Bookie"><span class="nav-number">4.2.</span> <span class="nav-text">Bookie</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Ledger"><span class="nav-number">4.3.</span> <span class="nav-text">Ledger</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Functions"><span class="nav-number">5.</span> <span class="nav-text">Functions</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="图"
+      src="/images/zzh.jpg">
+  <p class="site-author-name" itemprop="name">图</p>
+  <div class="site-description" itemprop="description">Life isn't always what one likes.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">218</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/atom.xml" title="RSS → &#x2F;atom.xml"><i class="fa fa-fw fa-rss"></i>RSS</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://github.com/lihuimintu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lihuimintu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lihuimintu@gmail.com" title="E-Mail → mailto:lihuimintu@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">图</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">8:08</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: '2099ede60a4e9fcf1a9b',
+      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
+      repo: 'lihuimintu.github.io',
+      owner: 'lihuimintu',
+      admin: ['lihuimintu'],
+      id: '9314424f3957280b0837ef510569de30',
+        language: 'zh-CN',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <!-- 代码块复制功能 -->
+  <script type="text/javascript" src="/js/clipboard.min.js"></script>	
+<script type="text/javascript" src="/js/custom.js"></script>
+
+</body>
+</html>
