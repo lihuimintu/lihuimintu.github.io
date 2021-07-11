@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2021-05-05T07:20:32.858Z</updated>
+  <updated>2021-07-11T09:47:21.493Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,48 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Pulsar 端口信息</title>
+    <link href="http://yoursite.com/2021/07/11/pulsarctl/"/>
+    <id>http://yoursite.com/2021/07/11/pulsarctl/</id>
+    <published>2021-07-10T16:00:00.000Z</published>
+    <updated>2021-07-11T09:47:21.493Z</updated>
+    
+    <content type="html"><![CDATA[<p>Apache Pulsar 项目的 CLI 工具</p><hr><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>pulsarctl 是一个 CLI 工具，采用 Go 语言开发，基于 Pulsar REST API，用于控制和管理 Pulsar 集群、租户、命名空间、主题、模式、源、接收器、函数等。</p><p>Github地址：<a href="https://github.com/streamnative/pulsarctl" target="_blank" rel="noopener">https://github.com/streamnative/pulsarctl</a></p><h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>pulsarctl 支持 Mac、Linux、Windows，具体部署见官方文档。</p><p>使用帮助信息<code>pulsarctl -h</code></p><h5 id="context"><a href="#context" class="headerlink" title="context"></a>context</h5><p>在多集群中，context是一个非常有趣和有用的功能。可以帮助用户缓存多个集群的信息，可以在多个集群之间切换。</p><p>见<a href="https://github.com/streamnative/pulsarctl/blob/master/docs/en/how-to-use-context.md" target="_blank" rel="noopener">How to use pulsarctl context</a></p><h4 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h4><p>pulsarctl还是挺好用的，开箱即用，不需要专门部署JDK来执行pulsar-admin</p><p>另外在执行相同命令下，pulsarctl比pulsar-admin快很多</p><p><img src="/images/blog/2021-07-11-1.png" alt></p>]]></content>
+    
+    <summary type="html">
+    
+      pulsarctl
+    
+    </summary>
+    
+    
+      <category term="Pulsar" scheme="http://yoursite.com/categories/Pulsar/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Pulsar 端口信息</title>
+    <link href="http://yoursite.com/2021/05/17/pulsar-port/"/>
+    <id>http://yoursite.com/2021/05/17/pulsar-port/</id>
+    <published>2021-05-16T16:00:00.000Z</published>
+    <updated>2021-05-17T13:12:06.402Z</updated>
+    
+    <content type="html"><![CDATA[<p>默认情况下，Pulsar 集群会使用如下的端口信息。</p><hr><h4 id="端口信息"><a href="#端口信息" class="headerlink" title="端口信息"></a>端口信息</h4><p>默认情况下，Pulsar 集群会使用如下的端口信息。</p><table><thead><tr><th>组件</th><th>端口</th><th>描述</th></tr></thead><tbody><tr><td>Broker</td><td>6650</td><td>Broker 二进制协议通信端口（不开启加密）</td></tr><tr><td>Broker</td><td>6651</td><td>Broker 二进制协议通信端口（开启加密）</td></tr><tr><td>Broker</td><td>8080</td><td>Broker admin 和 restful 服务的端口号（不开启加密）</td></tr><tr><td>Broker</td><td>8443</td><td>Broker admin 和 restful 服务的端口号（开启加密）</td></tr><tr><td>Bookie</td><td>8000</td><td>Bookie admin 和 restful 服务的端口号 (plain text, aka HTTP)</td></tr><tr><td>Bookie</td><td>3181</td><td>Bookie 协议通讯端口 (plain text or TLS encrypted)</td></tr><tr><td>Table Services</td><td>4181</td><td>Bookie table service API 端口(gRPC)</td></tr><tr><td>Zookeeper</td><td>2181</td><td>zk client之间的通讯端口</td></tr><tr><td>Zookeeper</td><td>2888</td><td>zk followers 节点之间的通讯端口</td></tr><tr><td>Zookeeper</td><td>3888</td><td>zk leader 节点之间的通讯端口</td></tr></tbody></table><p>根据实际的部署环境，用户可以自定义相关的端口信息。</p>]]></content>
+    
+    <summary type="html">
+    
+      Pulsar 端口信息
+    
+    </summary>
+    
+    
+      <category term="Pulsar" scheme="http://yoursite.com/categories/Pulsar/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>Pulsar 消息确认（ACK）</title>
@@ -206,27 +248,6 @@
   </entry>
   
   <entry>
-    <title>Kafka 分区策略</title>
-    <link href="http://yoursite.com/2021/02/14/kafka-partition-strategy/"/>
-    <id>http://yoursite.com/2021/02/14/kafka-partition-strategy/</id>
-    <published>2021-02-13T16:00:00.000Z</published>
-    <updated>2021-02-14T13:19:32.680Z</updated>
-    
-    <content type="html"><![CDATA[<p>Kafka 分区策略</p><hr><h4 id="生产者分区选择配策略"><a href="#生产者分区选择配策略" class="headerlink" title="生产者分区选择配策略"></a>生产者分区选择配策略</h4><p>生产者在将消息发送到某个Topic，需要经过拦截器、序列化器和分区器（Partitioner）的一系列作用之后才能发送到对应的Broker，在发往Broker之前是需要确定它所发往的分区。</p><p>生产端将消息发送给Broker之前，会将producer发送的数据封装成一个 ProducerRecord 对象。是否依赖分区器看partition字段有无指定。</p><p><img src="/images/blog/2021-02-14-1.png" alt></p><p>是否依赖分区器看partition字段有无指定</p><ul><li>如果消息 ProducerRecord 指定了 partition 字段，那么就不需要分区器。</li><li>如果消息 ProducerRecord 没有指定 partition 字段，那么就需要依赖分区器，根据key这个字段来计算partition的值。分区器的作用就是为消息分配分区。</li></ul><p>Kafka 中提供的默认分区器是 <a href="https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/clients/producer/internals/DefaultPartitioner.java" target="_blank" rel="noopener">DefaultPartitioner</a> ，它实现了Partitioner接口（用户可以实现这个接口来自定义分区器）</p><p>用户可以通过实现kafka.producer.Partitioner接口实现自己的分区类（重载并实现partition方法），在生产端添加配置<code>partitioner.class</code>即可使用</p><blockquote><ul><li>指明 partition 的情况下，直接将指明的值直接作为 partiton 值。</li><li>没有指明 partition 值但有 key 的情况下，将 key 的 hash 值与 topic 的 partition 数进行取余得到 partition 值。</li><li>既没有 partition 值又没有 key 值的情况下，第一次调用时随机生成一个整数（后面每次调用在这个整数上自增），将这个值与 topic 可用的 partition 总数取余得到 partition 值，也就是常说的 round-robin 算法。</li><li>既没有 partition 值又指定了自定义的分区类，则按自定义分区类来得到 partition 值</li></ul></blockquote><h4 id="消费者分区分配策略"><a href="#消费者分区分配策略" class="headerlink" title="消费者分区分配策略"></a>消费者分区分配策略</h4><p>消费者以组的名义订阅主题，主题有多个分区，消费者组中有多个消费者实例，<strong>同一时刻，一条消息只能被组中的一个消费者实例消费</strong></p><ul><li>如果分区数大于或者等于组中的消费者实例数，一个消费者会负责多个分区</li><li>如果分区数小于组中的消费者实例数，有些消费者将处于空闲状态并且无法接收消息</li></ul><blockquote><p>如果多个消费者负责同一个分区，那么就意味着两个消费者同时读取分区的消息，由于消费者自己可以控制读取消息的Offset，就有可能C1才读到2，而C1读到1，C1还没处理完，C2已经读到3了，这就相当于多线程读取同一个消息，会造成消息处理的重复，且不能保证消息的顺序。</p></blockquote><p>在 Kafka 中存在着两种分区分配策略，通过 partition.assignment.strategy 来设置。</p><ul><li>RangeAssignor 范围分区策略，也是默认模式。</li><li>RoundRobinAssignor 分配策略，轮询分区模式。</li></ul><h5 id="RangeAssignor"><a href="#RangeAssignor" class="headerlink" title="RangeAssignor"></a>RangeAssignor</h5><p>range （默认分配策略）对应的实现类是 org.apache.kafka.clients.consumer.RangeAssignor</p><ol><li>将分区按数字顺序排行序，消费者按名称的字典序排序</li><li>用分区总数除以消费者总数。如果能够除尽，平均分配；若除不尽，则位于排序前面的消费者将多负责一个分区</li></ol><p>假如现在有 10 个分区，3 个消费者，排序后的分区将会是p0~p9。消费者排序完之后将会是C1-0、C2-0、C3-0。通过 Partitions数 / Consumer数 来决定每个消费者应该消费几个分区。如果除不尽，那么前面几个消费者将会多消费 1 个分区。</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C1-0</td><td>消费 0、1、2、3分区</td></tr><tr><td>C2-0</td><td>消费 4、5、6分区</td></tr><tr><td>C3-0</td><td>消费 7、8、9分区</td></tr></tbody></table><blockquote><p>Range 范围分区的弊端: </p><p>如上只是针对 1 个 topic 而言，C1-0 消费者多消费1个分区影响不是很大。如果有 N 多个 topic，那么针对每个 topic，消费者 C1-0 都将多消费 1 个分区，topic越多，C1-0 消费的分区会比其他消费者明显多消费 N 个分区。这就是 Range 范围分区的一个很明显的弊端了.</p></blockquote><h5 id="RoundRobinAssignor"><a href="#RoundRobinAssignor" class="headerlink" title="RoundRobinAssignor"></a>RoundRobinAssignor</h5><p>RoundRobin基于轮询算法，对应的实现类是 org.apache.kafka.clients.consumer.RoundRobinAssignor</p><ol><li>将所有主题的分区组成TopicAndPartition列表</li><li>对TopicAndPartition列表按照hashCode进行排序某个topic</li><li>最后通过轮询算法来分配 partition 给到各个消费者</li></ol><p>轮询分区分为如下两种情况：</p><ul><li>同一个 Consumer Group 内 Consumer  订阅信息相同</li><li>同一个 Consumer Group 内 Consumer  订阅信息不相同</li></ul><h6 id="订阅信息相同"><a href="#订阅信息相同" class="headerlink" title="订阅信息相同"></a>订阅信息相同</h6><p>如果同一消费组内，所有的消费者订阅的消息都是相同的，那么 RoundRobin 策略的分区分配会是均匀的。</p><p>例如同一消费者组中，有 3 个消费者C0、C1和C2，都订阅了 2 个主题 t0 和 t1，并且每个主题都有 3 个分区(p0、p1、p2)，那么所订阅的所以分区可以标识为t0p0、t0p1、t0p2、t1p0、t1p1、t1p2。</p><p>最终分区分配结果如下</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C0</td><td>消费 t0p0、t1p0 分区</td></tr><tr><td>C1</td><td>消费 t0p1、t1p1 分区</td></tr><tr><td>C2</td><td>消费 t0p2、t1p2 分区</td></tr></tbody></table><h5 id="订阅信息不相同"><a href="#订阅信息不相同" class="headerlink" title="订阅信息不相同"></a>订阅信息不相同</h5><p>同一消费者组内，所订阅的消息是不相同的，那么分区分配就不是完全的轮询分配，有可能会导致分区分配的不均匀。如果某个消费者没有订阅消费组内的某个 topic，那么在分配分区的时候，此消费者将不会分配到这个 topic 的任何分区。</p><p>例如同一消费者组中有3个消费者C0、C1、C2，他们共订阅了 3 个主题t0、t1、t2，这 3 个主题分别有 1、2、3 个分区(即t0有1个分区(p0)，t1有2个分区(p0、p1)，t2有3个分区(p0、p1、p2))，即整个消费者所订阅的所有分区可以标识为 t0p0、t1p0、t1p1、t2p0、t2p1、t2p2。然后消费者 C0 订阅的是主题t0，消费者C1订阅的是主题t0和t1，消费者C2订阅的是主题t0、t1和t2</p><p>最终分区分配结果如下</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C0</td><td>消费 t0p0 分区</td></tr><tr><td>C1</td><td>消费 t1p0 分区</td></tr><tr><td>C2</td><td>消费 t1p1、 t2p0、 t2p1、 t2p2 分区</td></tr></tbody></table><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/99b4187a994d" target="_blank" rel="noopener">Kafka分区策略</a></li><li><a href="https://mp.weixin.qq.com/s/st-7k7WH5pvLZwA_o9jPpw" target="_blank" rel="noopener">六问 Kafka 为啥那么牛！</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Kafka 分区策略
-    
-    </summary>
-    
-    
-      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>Kafka 分区迁移</title>
     <link href="http://yoursite.com/2021/02/14/kafka-partition-migration/"/>
     <id>http://yoursite.com/2021/02/14/kafka-partition-migration/</id>
@@ -238,6 +259,27 @@
     <summary type="html">
     
       Kafka 分区迁移
+    
+    </summary>
+    
+    
+      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka 分区策略</title>
+    <link href="http://yoursite.com/2021/02/14/kafka-partition-strategy/"/>
+    <id>http://yoursite.com/2021/02/14/kafka-partition-strategy/</id>
+    <published>2021-02-13T16:00:00.000Z</published>
+    <updated>2021-02-14T13:19:32.680Z</updated>
+    
+    <content type="html"><![CDATA[<p>Kafka 分区策略</p><hr><h4 id="生产者分区选择配策略"><a href="#生产者分区选择配策略" class="headerlink" title="生产者分区选择配策略"></a>生产者分区选择配策略</h4><p>生产者在将消息发送到某个Topic，需要经过拦截器、序列化器和分区器（Partitioner）的一系列作用之后才能发送到对应的Broker，在发往Broker之前是需要确定它所发往的分区。</p><p>生产端将消息发送给Broker之前，会将producer发送的数据封装成一个 ProducerRecord 对象。是否依赖分区器看partition字段有无指定。</p><p><img src="/images/blog/2021-02-14-1.png" alt></p><p>是否依赖分区器看partition字段有无指定</p><ul><li>如果消息 ProducerRecord 指定了 partition 字段，那么就不需要分区器。</li><li>如果消息 ProducerRecord 没有指定 partition 字段，那么就需要依赖分区器，根据key这个字段来计算partition的值。分区器的作用就是为消息分配分区。</li></ul><p>Kafka 中提供的默认分区器是 <a href="https://github.com/apache/kafka/blob/trunk/clients/src/main/java/org/apache/kafka/clients/producer/internals/DefaultPartitioner.java" target="_blank" rel="noopener">DefaultPartitioner</a> ，它实现了Partitioner接口（用户可以实现这个接口来自定义分区器）</p><p>用户可以通过实现kafka.producer.Partitioner接口实现自己的分区类（重载并实现partition方法），在生产端添加配置<code>partitioner.class</code>即可使用</p><blockquote><ul><li>指明 partition 的情况下，直接将指明的值直接作为 partiton 值。</li><li>没有指明 partition 值但有 key 的情况下，将 key 的 hash 值与 topic 的 partition 数进行取余得到 partition 值。</li><li>既没有 partition 值又没有 key 值的情况下，第一次调用时随机生成一个整数（后面每次调用在这个整数上自增），将这个值与 topic 可用的 partition 总数取余得到 partition 值，也就是常说的 round-robin 算法。</li><li>既没有 partition 值又指定了自定义的分区类，则按自定义分区类来得到 partition 值</li></ul></blockquote><h4 id="消费者分区分配策略"><a href="#消费者分区分配策略" class="headerlink" title="消费者分区分配策略"></a>消费者分区分配策略</h4><p>消费者以组的名义订阅主题，主题有多个分区，消费者组中有多个消费者实例，<strong>同一时刻，一条消息只能被组中的一个消费者实例消费</strong></p><ul><li>如果分区数大于或者等于组中的消费者实例数，一个消费者会负责多个分区</li><li>如果分区数小于组中的消费者实例数，有些消费者将处于空闲状态并且无法接收消息</li></ul><blockquote><p>如果多个消费者负责同一个分区，那么就意味着两个消费者同时读取分区的消息，由于消费者自己可以控制读取消息的Offset，就有可能C1才读到2，而C1读到1，C1还没处理完，C2已经读到3了，这就相当于多线程读取同一个消息，会造成消息处理的重复，且不能保证消息的顺序。</p></blockquote><p>在 Kafka 中存在着两种分区分配策略，通过 partition.assignment.strategy 来设置。</p><ul><li>RangeAssignor 范围分区策略，也是默认模式。</li><li>RoundRobinAssignor 分配策略，轮询分区模式。</li></ul><h5 id="RangeAssignor"><a href="#RangeAssignor" class="headerlink" title="RangeAssignor"></a>RangeAssignor</h5><p>range （默认分配策略）对应的实现类是 org.apache.kafka.clients.consumer.RangeAssignor</p><ol><li>将分区按数字顺序排行序，消费者按名称的字典序排序</li><li>用分区总数除以消费者总数。如果能够除尽，平均分配；若除不尽，则位于排序前面的消费者将多负责一个分区</li></ol><p>假如现在有 10 个分区，3 个消费者，排序后的分区将会是p0~p9。消费者排序完之后将会是C1-0、C2-0、C3-0。通过 Partitions数 / Consumer数 来决定每个消费者应该消费几个分区。如果除不尽，那么前面几个消费者将会多消费 1 个分区。</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C1-0</td><td>消费 0、1、2、3分区</td></tr><tr><td>C2-0</td><td>消费 4、5、6分区</td></tr><tr><td>C3-0</td><td>消费 7、8、9分区</td></tr></tbody></table><blockquote><p>Range 范围分区的弊端: </p><p>如上只是针对 1 个 topic 而言，C1-0 消费者多消费1个分区影响不是很大。如果有 N 多个 topic，那么针对每个 topic，消费者 C1-0 都将多消费 1 个分区，topic越多，C1-0 消费的分区会比其他消费者明显多消费 N 个分区。这就是 Range 范围分区的一个很明显的弊端了.</p></blockquote><h5 id="RoundRobinAssignor"><a href="#RoundRobinAssignor" class="headerlink" title="RoundRobinAssignor"></a>RoundRobinAssignor</h5><p>RoundRobin基于轮询算法，对应的实现类是 org.apache.kafka.clients.consumer.RoundRobinAssignor</p><ol><li>将所有主题的分区组成TopicAndPartition列表</li><li>对TopicAndPartition列表按照hashCode进行排序某个topic</li><li>最后通过轮询算法来分配 partition 给到各个消费者</li></ol><p>轮询分区分为如下两种情况：</p><ul><li>同一个 Consumer Group 内 Consumer  订阅信息相同</li><li>同一个 Consumer Group 内 Consumer  订阅信息不相同</li></ul><h6 id="订阅信息相同"><a href="#订阅信息相同" class="headerlink" title="订阅信息相同"></a>订阅信息相同</h6><p>如果同一消费组内，所有的消费者订阅的消息都是相同的，那么 RoundRobin 策略的分区分配会是均匀的。</p><p>例如同一消费者组中，有 3 个消费者C0、C1和C2，都订阅了 2 个主题 t0 和 t1，并且每个主题都有 3 个分区(p0、p1、p2)，那么所订阅的所以分区可以标识为t0p0、t0p1、t0p2、t1p0、t1p1、t1p2。</p><p>最终分区分配结果如下</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C0</td><td>消费 t0p0、t1p0 分区</td></tr><tr><td>C1</td><td>消费 t0p1、t1p1 分区</td></tr><tr><td>C2</td><td>消费 t0p2、t1p2 分区</td></tr></tbody></table><h5 id="订阅信息不相同"><a href="#订阅信息不相同" class="headerlink" title="订阅信息不相同"></a>订阅信息不相同</h5><p>同一消费者组内，所订阅的消息是不相同的，那么分区分配就不是完全的轮询分配，有可能会导致分区分配的不均匀。如果某个消费者没有订阅消费组内的某个 topic，那么在分配分区的时候，此消费者将不会分配到这个 topic 的任何分区。</p><p>例如同一消费者组中有3个消费者C0、C1、C2，他们共订阅了 3 个主题t0、t1、t2，这 3 个主题分别有 1、2、3 个分区(即t0有1个分区(p0)，t1有2个分区(p0、p1)，t2有3个分区(p0、p1、p2))，即整个消费者所订阅的所有分区可以标识为 t0p0、t1p0、t1p1、t2p0、t2p1、t2p2。然后消费者 C0 订阅的是主题t0，消费者C1订阅的是主题t0和t1，消费者C2订阅的是主题t0、t1和t2</p><p>最终分区分配结果如下</p><table><thead><tr><th>消费者</th><th>消费的分区</th></tr></thead><tbody><tr><td>C0</td><td>消费 t0p0 分区</td></tr><tr><td>C1</td><td>消费 t1p0 分区</td></tr><tr><td>C2</td><td>消费 t1p1、 t2p0、 t2p1、 t2p2 分区</td></tr></tbody></table><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/99b4187a994d" target="_blank" rel="noopener">Kafka分区策略</a></li><li><a href="https://mp.weixin.qq.com/s/st-7k7WH5pvLZwA_o9jPpw" target="_blank" rel="noopener">六问 Kafka 为啥那么牛！</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Kafka 分区策略
     
     </summary>
     
@@ -390,48 +432,6 @@
     
     
       <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Kafka 失效副本</title>
-    <link href="http://yoursite.com/2020/12/24/kafka-under-replicated/"/>
-    <id>http://yoursite.com/2020/12/24/kafka-under-replicated/</id>
-    <published>2020-12-23T16:00:00.000Z</published>
-    <updated>2020-12-24T12:55:32.522Z</updated>
-    
-    <content type="html"><![CDATA[<p>Kafka 失效副本</p><hr><h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>每个分区的多个副本称之为AR（assigned replicas），包含至多一个leader副本和多个follower副本。与AR对应的另一个重要的概念就是ISR（in-sync replicas），ISR是指与leader副本保持同步状态的副本集合，当然leader副本本身也是这个集合中的一员。而ISR之外，也就是处于同步失败或失效状态的副本，副本对应的分区也就称之为同步失效分区，即under-replicated分区。</p><h4 id="判定"><a href="#判定" class="headerlink" title="判定"></a>判定</h4><p>怎么样判定一个分区是否有副本是处于同步失效状态的呢？从Kafka 0.9.x版本开始通过唯一的一个参数replica.lag.time.max.ms（默认大小为10,000）来控制，当ISR中的一个follower副本滞后leader副本的时间超过参数replica.lag.time.max.ms指定的值时即判定为副本失效，需要将此follower副本剔出除ISR之外。具体实现原理很简单，当follower副本将leader副本的LEO（Log End Offset，每个分区最后一条消息的位置）之前的日志全部同步时，则认为该follower副本已经追赶上leader副本，此时更新该副本的lastCaughtUpTimeMs标识。Kafka的副本管理器（ReplicaManager）启动时会启动一个副本过期检测的定时任务，而这个定时任务会定时检查当前时间与副本的lastCaughtUpTimeMs差值是否大于参数replica.lag.time.max.ms指定的值。千万不要错误的认为follower副本只要拉取leader副本的数据就会更新lastCaughtUpTimeMs，试想当leader副本的消息流入速度大于follower副本的拉取速度时，follower副本一直不断的拉取leader副本的消息也不能与leader副本同步，如果还将此follower副本置于ISR中，那么当leader副本失效，而选取此follower副本为新的leader副本，那么就会有严重的消息丢失。</p><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/aed1326880f1" target="_blank" rel="noopener">Kafka解析之失效副本</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Kafka 失效副本
-    
-    </summary>
-    
-    
-      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Kafka __consumer_offsets 占用磁盘空间过大处理</title>
-    <link href="http://yoursite.com/2020/12/16/kafka-consumer-offsets/"/>
-    <id>http://yoursite.com/2020/12/16/kafka-consumer-offsets/</id>
-    <published>2020-12-15T16:00:00.000Z</published>
-    <updated>2021-01-10T12:29:08.294Z</updated>
-    
-    <content type="html"><![CDATA[<p>__consumer_offsets 占用磁盘空间过大处理</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>生产环境上有一台Kafka机器磁盘告警，通过查看发现kafka的日志储存目录数据盘占用80%的存储，发现是__consumer_offsets的储存文件过大导致的</p><h4 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h4><p>Kafka 中用于保存消费者消费位移的主题<code>__consumer_offsets</code>与普通topic在清理策略上不同，使用的就是Log Compaction策略。</p><p>Log Compaction是kafka提供的一种整理offset数据的方式。Log Compaction对于有相同key的的不同value值，只保留最后一个版本。如果应用只关心key对应的最新value值，可以开启Kafka的日志清理功能，Kafka会定期将相同key的消息进行合并，只保留最新的value值。</p><h4 id="清理"><a href="#清理" class="headerlink" title="清理"></a>清理</h4><p>查看现有的<code>__consumer_offsets</code>清理策略</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-configs.sh --zookeeper xxxx:2181 --entity-type topics --entity-name __consumer_offsets --describe</span><br></pre></td></tr></table></figure><p>查看第一行输出可以看到 <code>cleanup.policy=compact</code>，则说明cleanup.policy是compact</p><p><code>__consumer_offsets</code>的确与普通topic在清理策略上不同，也就是参数cleanup.policy上，给<code>__consumer_offsets</code>手动添加了清理策略</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-configs.sh --zookeeper xxxx:2181 --entity-type topics --entity-name __consumer_offsets --alter --add-config &#39;cleanup.policy&#x3D;delete&#39;</span><br></pre></td></tr></table></figure><p>添加完后，等了一会磁盘占用就会减少</p><hr><p>参考链接</p><ul><li><a href="https://www.codenong.com/cs107089637/" target="_blank" rel="noopener">KAFKA consumer_offsets 清理</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      __consumer_offsets 占用磁盘空间过大处理
-    
-    </summary>
-    
-    
-      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
     
     
   </entry>
