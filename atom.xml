@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2021-07-11T09:47:21.493Z</updated>
+  <updated>2021-07-20T09:48:57.943Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -17,11 +17,32 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>Pulsar 端口信息</title>
+    <title>Kafka 显示Leader不可用的分区</title>
+    <link href="http://yoursite.com/2021/07/20/kafka-partitions/"/>
+    <id>http://yoursite.com/2021/07/20/kafka-partitions/</id>
+    <published>2021-07-19T16:00:00.000Z</published>
+    <updated>2021-07-20T09:48:57.943Z</updated>
+    
+    <content type="html"><![CDATA[<p>Apache Pulsar 项目的 CLI 工具</p><hr><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>当集群Broker出现问题的时候，Topic的分区会出现两种情况</p><ul><li>不同步的分区</li><li>Leader不可用</li></ul><p>Kafka 有相关命令能支持这两类分区问题的过滤，执行<code>bin/kafka-topics.sh</code></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">--unavailable-partitions                 if set when describing topics, only    </span><br><span class="line">                                           show partitions whose leader is not  </span><br><span class="line">                                           available                            </span><br><span class="line">--under-replicated-partitions            if set when describing topics, only    </span><br><span class="line">                                           show under replicated partitions</span><br></pre></td></tr></table></figure><h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>通过监控面板，可以知道有分区不同步</p><p><img src="/images/blog/2021-07-20-1.png" alt></p><p>这时，需要知道是哪些分区不同</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --under-replicated-partitions</span><br></pre></td></tr></table></figure><p>同理对应想知道哪些分区leader不可用</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --unavailable-partitions</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      Kafka 显示Leader不可用的分区
+    
+    </summary>
+    
+    
+      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>pulsarctl</title>
     <link href="http://yoursite.com/2021/07/11/pulsarctl/"/>
     <id>http://yoursite.com/2021/07/11/pulsarctl/</id>
     <published>2021-07-10T16:00:00.000Z</published>
-    <updated>2021-07-11T09:47:21.493Z</updated>
+    <updated>2021-07-11T10:28:01.316Z</updated>
     
     <content type="html"><![CDATA[<p>Apache Pulsar 项目的 CLI 工具</p><hr><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>pulsarctl 是一个 CLI 工具，采用 Go 语言开发，基于 Pulsar REST API，用于控制和管理 Pulsar 集群、租户、命名空间、主题、模式、源、接收器、函数等。</p><p>Github地址：<a href="https://github.com/streamnative/pulsarctl" target="_blank" rel="noopener">https://github.com/streamnative/pulsarctl</a></p><h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>pulsarctl 支持 Mac、Linux、Windows，具体部署见官方文档。</p><p>使用帮助信息<code>pulsarctl -h</code></p><h5 id="context"><a href="#context" class="headerlink" title="context"></a>context</h5><p>在多集群中，context是一个非常有趣和有用的功能。可以帮助用户缓存多个集群的信息，可以在多个集群之间切换。</p><p>见<a href="https://github.com/streamnative/pulsarctl/blob/master/docs/en/how-to-use-context.md" target="_blank" rel="noopener">How to use pulsarctl context</a></p><h4 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h4><p>pulsarctl还是挺好用的，开箱即用，不需要专门部署JDK来执行pulsar-admin</p><p>另外在执行相同命令下，pulsarctl比pulsar-admin快很多</p><p><img src="/images/blog/2021-07-11-1.png" alt></p>]]></content>
     
@@ -411,27 +432,6 @@
     
     
       <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Linux 系统 inodes 资源耗尽</title>
-    <link href="http://yoursite.com/2020/12/27/Linux-inodes/"/>
-    <id>http://yoursite.com/2020/12/27/Linux-inodes/</id>
-    <published>2020-12-26T16:00:00.000Z</published>
-    <updated>2020-12-27T14:55:33.673Z</updated>
-    
-    <content type="html"><![CDATA[<p>inodes 资源耗尽处理</p><hr><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>可以看下阮老师的文章理解下，参见<a href="https://www.ruanyifeng.com/blog/2011/12/inode.html" target="_blank" rel="noopener">理解inode</a></p><h4 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h4><p>马哥Linux运维有介绍相关处理方法，参见<a href="https://mp.weixin.qq.com/s/9rfSsqZdZm8QmNYn3q19gA" target="_blank" rel="noopener">Linux系统inodes资源耗尽问题</a></p>]]></content>
-    
-    <summary type="html">
-    
-      Linux 系统 inodes 资源耗尽
-    
-    </summary>
-    
-    
-      <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
     
     
   </entry>
