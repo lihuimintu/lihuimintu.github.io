@@ -56,7 +56,7 @@
 <meta property="og:image" content="http://yoursite.com/images/blog/2021-08-11-2.png">
 <meta property="og:image" content="http://yoursite.com/images/blog/2021-08-11-1.png">
 <meta property="article:published_time" content="2021-08-10T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-08-11T15:43:57.154Z">
+<meta property="article:modified_time" content="2021-08-11T15:47:47.067Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Kafka">
 <meta name="twitter:card" content="summary">
@@ -233,7 +233,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-08-11 00:00:00 / 修改时间：23:43:57" itemprop="dateCreated datePublished" datetime="2021-08-11T00:00:00+08:00">2021-08-11</time>
+              <time title="创建时间：2021-08-11 00:00:00 / 修改时间：23:47:47" itemprop="dateCreated datePublished" datetime="2021-08-11T00:00:00+08:00">2021-08-11</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -273,9 +273,9 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>Apache Pulsar 项目的 CLI 工具</p>
+        <p>Kafka 重度依赖底层操作系统提供的 PageCache 功能</p>
 <hr>
-<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>Kafka重度依赖底层操作系统提供的PageCache功能。</p>
+<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>Kafka 重度依赖底层操作系统提供的 PageCache 功能。</p>
 <p>Kafka为什么不自己管理缓存，而非要用page cache？原因有如下三点</p>
 <ul>
 <li>JVM中一切皆对象，数据的对象存储会带来所谓object overhead，浪费空间；</li>
@@ -298,6 +298,12 @@
 <li>/proc/sys/vm/dirty_expire_centisecs：如果page cache中的页被标记为dirty的时间超过了这个值，就会被直接刷到磁盘。单位为0.01秒。默认值3000，即半分钟。</li>
 <li>/proc/sys/vm/dirty_background_ratio：如果dirty page的总大小占空闲内存量的比例超过了该值，就会在后台调度pdflush内核线程异步写磁盘，不会阻塞当前的write()操作。默认值为10%。</li>
 <li>/proc/sys/vm/dirty_ratio：如果dirty page的总大小占总内存量的比例超过了该值，就会阻塞所有进程的write()操作，并且强制每个进程将自己的文件写入磁盘。默认值为20%。</li>
+</ul>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/353304786" target="_blank" rel="noopener">2021-2-27：Linux 下如何优化 Java MMAP 写入</a></li>
+<li><a href="https://cloud.tencent.com/developer/article/1488144" target="_blank" rel="noopener">聊聊page cache与Kafka之间的事儿</a></li>
 </ul>
 
     </div>

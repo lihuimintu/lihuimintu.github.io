@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2021-08-11T15:43:57.154Z</updated>
+  <updated>2021-08-11T15:47:47.067Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,9 +21,9 @@
     <link href="http://yoursite.com/2021/08/11/kafka-pagecache/"/>
     <id>http://yoursite.com/2021/08/11/kafka-pagecache/</id>
     <published>2021-08-10T16:00:00.000Z</published>
-    <updated>2021-08-11T15:43:57.154Z</updated>
+    <updated>2021-08-11T15:47:47.067Z</updated>
     
-    <content type="html"><![CDATA[<p>Apache Pulsar 项目的 CLI 工具</p><hr><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>Kafka重度依赖底层操作系统提供的PageCache功能。</p><p>Kafka为什么不自己管理缓存，而非要用page cache？原因有如下三点</p><ul><li>JVM中一切皆对象，数据的对象存储会带来所谓object overhead，浪费空间；</li><li>如果由JVM来管理缓存，会受到GC的影响，并且过大的堆也会拖累GC的效率，降低吞吐量；</li><li>一旦程序崩溃，自己管理的缓存数据会全部丢失。</li></ul><p>Kafka三大件（broker、producer、consumer）与page cache的关系可以用下面的简图来表示。</p><p><img src="/images/blog/2021-08-11-2.png" alt></p><p>当上层有写操作时，操作系统只是将数据写入PageCache，同时标记Page属性为Dirty。当读操作发生时，先从PageCache中查找，如果发生缺页才进行磁盘调度，最终返回需要的数据。</p><p>来看美团详细版的图</p><p><img src="/images/blog/2021-08-11-1.png" alt></p><p>对于Produce请求：Server端的I/O线程统一将请求中的数据写入到操作系统的PageCache后立即返回，当消息条数到达一定阈值后，Kafka应用本身或操作系统内核会触发强制刷盘操作（如左侧流程图所示）。</p><p>对于Consume请求：主要利用了操作系统的ZeroCopy机制，当Kafka Broker接收到读数据请求时，会向操作系统发送sendfile系统调用，操作系统接收后，首先试图从PageCache中获取数据（如中间流程图所示）；如果数据不存在，会触发缺页异常中断将数据从磁盘读入到临时缓冲区中（如右侧流程图所示），随后将数据拷贝到网卡缓冲区中等待后续的TCP传输（数据拷贝利用DMA操作减少拷贝次数和上下文切换）。</p><p>由此我们可以得出重要的结论：如果Kafka producer的生产速率与consumer的消费速率相差不大，那么就能几乎只靠对broker page cache的读写完成整个生产-消费过程，磁盘访问非常少。并且Kafka持久化消息到各个topic的partition文件时，是只追加的顺序写，充分利用了磁盘顺序访问快的特性，效率高。</p><h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4><p>对于单纯运行Kafka的集群而言，首先要注意的就是为Kafka设置合适（不那么大）的JVM堆大小。从上面的分析可知，Kafka的性能与堆内存关系并不大，而对page cache需求巨大。根据经验值，为Kafka分配5~8GB的堆内存就已经足足够用了，将剩下的系统内存都作为page cache空间，可以最大化I/O效率。</p><p>另一个需要特别注意的问题是lagging consumer，即那些消费速率慢、明显落后的consumer。它们要读取的数据有较大概率不在broker page cache中，因此会增加很多不必要的读盘操作。比这更坏的是，lagging consumer读取的“冷”数据仍然会进入page cache，污染了多数正常consumer要读取的“热”数据，连带着正常consumer的性能变差。</p><p>在Linux操作系统中，写操作是异步的，即写操作返回的时候数据并没有真正写到磁盘上，而是先写到了系统cache里，随后由pdflush内核线程将系统中的脏页写到磁盘上</p><ul><li>/proc/sys/vm/dirty_writeback_centisecs：flush检查的周期。单位为0.01秒，默认值500，即5秒。每次检查都会按照以下三个参数控制的逻辑来处理。</li><li>/proc/sys/vm/dirty_expire_centisecs：如果page cache中的页被标记为dirty的时间超过了这个值，就会被直接刷到磁盘。单位为0.01秒。默认值3000，即半分钟。</li><li>/proc/sys/vm/dirty_background_ratio：如果dirty page的总大小占空闲内存量的比例超过了该值，就会在后台调度pdflush内核线程异步写磁盘，不会阻塞当前的write()操作。默认值为10%。</li><li>/proc/sys/vm/dirty_ratio：如果dirty page的总大小占总内存量的比例超过了该值，就会阻塞所有进程的write()操作，并且强制每个进程将自己的文件写入磁盘。默认值为20%。</li></ul>]]></content>
+    <content type="html"><![CDATA[<p>Kafka 重度依赖底层操作系统提供的 PageCache 功能</p><hr><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>Kafka 重度依赖底层操作系统提供的 PageCache 功能。</p><p>Kafka为什么不自己管理缓存，而非要用page cache？原因有如下三点</p><ul><li>JVM中一切皆对象，数据的对象存储会带来所谓object overhead，浪费空间；</li><li>如果由JVM来管理缓存，会受到GC的影响，并且过大的堆也会拖累GC的效率，降低吞吐量；</li><li>一旦程序崩溃，自己管理的缓存数据会全部丢失。</li></ul><p>Kafka三大件（broker、producer、consumer）与page cache的关系可以用下面的简图来表示。</p><p><img src="/images/blog/2021-08-11-2.png" alt></p><p>当上层有写操作时，操作系统只是将数据写入PageCache，同时标记Page属性为Dirty。当读操作发生时，先从PageCache中查找，如果发生缺页才进行磁盘调度，最终返回需要的数据。</p><p>来看美团详细版的图</p><p><img src="/images/blog/2021-08-11-1.png" alt></p><p>对于Produce请求：Server端的I/O线程统一将请求中的数据写入到操作系统的PageCache后立即返回，当消息条数到达一定阈值后，Kafka应用本身或操作系统内核会触发强制刷盘操作（如左侧流程图所示）。</p><p>对于Consume请求：主要利用了操作系统的ZeroCopy机制，当Kafka Broker接收到读数据请求时，会向操作系统发送sendfile系统调用，操作系统接收后，首先试图从PageCache中获取数据（如中间流程图所示）；如果数据不存在，会触发缺页异常中断将数据从磁盘读入到临时缓冲区中（如右侧流程图所示），随后将数据拷贝到网卡缓冲区中等待后续的TCP传输（数据拷贝利用DMA操作减少拷贝次数和上下文切换）。</p><p>由此我们可以得出重要的结论：如果Kafka producer的生产速率与consumer的消费速率相差不大，那么就能几乎只靠对broker page cache的读写完成整个生产-消费过程，磁盘访问非常少。并且Kafka持久化消息到各个topic的partition文件时，是只追加的顺序写，充分利用了磁盘顺序访问快的特性，效率高。</p><h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4><p>对于单纯运行Kafka的集群而言，首先要注意的就是为Kafka设置合适（不那么大）的JVM堆大小。从上面的分析可知，Kafka的性能与堆内存关系并不大，而对page cache需求巨大。根据经验值，为Kafka分配5~8GB的堆内存就已经足足够用了，将剩下的系统内存都作为page cache空间，可以最大化I/O效率。</p><p>另一个需要特别注意的问题是lagging consumer，即那些消费速率慢、明显落后的consumer。它们要读取的数据有较大概率不在broker page cache中，因此会增加很多不必要的读盘操作。比这更坏的是，lagging consumer读取的“冷”数据仍然会进入page cache，污染了多数正常consumer要读取的“热”数据，连带着正常consumer的性能变差。</p><p>在Linux操作系统中，写操作是异步的，即写操作返回的时候数据并没有真正写到磁盘上，而是先写到了系统cache里，随后由pdflush内核线程将系统中的脏页写到磁盘上</p><ul><li>/proc/sys/vm/dirty_writeback_centisecs：flush检查的周期。单位为0.01秒，默认值500，即5秒。每次检查都会按照以下三个参数控制的逻辑来处理。</li><li>/proc/sys/vm/dirty_expire_centisecs：如果page cache中的页被标记为dirty的时间超过了这个值，就会被直接刷到磁盘。单位为0.01秒。默认值3000，即半分钟。</li><li>/proc/sys/vm/dirty_background_ratio：如果dirty page的总大小占空闲内存量的比例超过了该值，就会在后台调度pdflush内核线程异步写磁盘，不会阻塞当前的write()操作。默认值为10%。</li><li>/proc/sys/vm/dirty_ratio：如果dirty page的总大小占总内存量的比例超过了该值，就会阻塞所有进程的write()操作，并且强制每个进程将自己的文件写入磁盘。默认值为20%。</li></ul><hr><p>参考链接</p><ul><li><a href="https://zhuanlan.zhihu.com/p/353304786" target="_blank" rel="noopener">2021-2-27：Linux 下如何优化 Java MMAP 写入</a></li><li><a href="https://cloud.tencent.com/developer/article/1488144" target="_blank" rel="noopener">聊聊page cache与Kafka之间的事儿</a></li></ul>]]></content>
     
     <summary type="html">
     
@@ -101,27 +101,6 @@
   </entry>
   
   <entry>
-    <title>Pulsar 消息确认（ACK）</title>
-    <link href="http://yoursite.com/2021/05/05/pulsar-ack/"/>
-    <id>http://yoursite.com/2021/05/05/pulsar-ack/</id>
-    <published>2021-05-04T16:00:00.000Z</published>
-    <updated>2021-05-05T07:20:32.858Z</updated>
-    
-    <content type="html"><![CDATA[<p>Apache Pulsar 消息确认（ACK）</p><hr><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>由于分布式系统的特性，当使用分布式消息系统时，可能会发生故障。比如在消费者从消息系统中的主题消费消息的过程中，消费消息的消费者和服务于主题分区的消息代理（Broker）都可能发生错误。消息确认（ACK）的目的就是保证当发生这样的故障后，消费者能够从上一次停止的地方恢复消费，保证既不会丢失消息，也不会重复处理已经确认（ACK）的消息。</p><p>在Apache Kafka中，恢复点通常称为Offset，更新恢复点的过程称为消息确认或提交Offset。</p><p>在Apache Pulsar中，每个订阅中都使用一个专门的数据结构–游标（Cursor）来跟踪订阅中的每条消息的确认（ACK）状态。每当消费者在主题分区上确认消息时，游标都会更新。更新游标可确保消费者不会再次收到消息。</p><h4 id="消息确认"><a href="#消息确认" class="headerlink" title="消息确认"></a>消息确认</h4><p>Pulsar 提供两种消息确认方法：</p><ul><li>单条确认（Individual Ack）: 单独确认一条消息。 被确认后的消息将不会被重新传递</li><li>累积确认（Cumulative Ack）: 通过累积确认，消费者只需要确认它收到的最后一条消息</li></ul><p>下图说明了单条确认和累积确认的差异（灰色框中的消息被确认并且不会被重新传递）。对于累计确认，M12 之前的消息被标记为 Acked。对于单独进行 ACK，仅确认消息 M7 和 M12， 在消费者失败的情况下，除了 M7 和 M12 之外，其他所有消息将被重新传送。</p><p><img src="/images/blog/2021-05-05-1.png" alt></p><p>Apache Pulsar可以支持消息的单条确认，也就是选择性确认。消费者可以单独确认一条消息。 被确认后的消息将不会被重新传递。</p><p>累积确认，消费者只需要确认它收到的最后一条消息。主题分区中的所有消息（包括）提供消息ID将被标记为已确认，并且不会再次传递给消费者。累积确认与Apache Kafka中的Offset更新类似。</p><h4 id="消费模式支持"><a href="#消费模式支持" class="headerlink" title="消费模式支持"></a>消费模式支持</h4><p>独占订阅或灾备订阅的消费者能够对消息进行单条确认和累积确认；共享订阅的消费者只允许对消息进行单条确认。</p><p>管理Ack的专门的数据结构–游标（Cursor），由Broker来管理，利用BookKeeper的Ledger提供存储</p><hr><p>参考链接</p><ul><li><a href="https://mp.weixin.qq.com/s/XJ3vj9xeDpdqZr-um8wBug" target="_blank" rel="noopener">Pulsar VS. Kafka（1）: 统一的消息消费模型（Queue + Stream）</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Pulsar 消息确认（ACK）
-    
-    </summary>
-    
-    
-      <category term="Pulsar" scheme="http://yoursite.com/categories/Pulsar/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>Pulsar 消息保留（Retention）</title>
     <link href="http://yoursite.com/2021/05/05/pulsar-retention/"/>
     <id>http://yoursite.com/2021/05/05/pulsar-retention/</id>
@@ -133,6 +112,27 @@
     <summary type="html">
     
       Pulsar 消息保留（Retention）
+    
+    </summary>
+    
+    
+      <category term="Pulsar" scheme="http://yoursite.com/categories/Pulsar/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Pulsar 消息确认（ACK）</title>
+    <link href="http://yoursite.com/2021/05/05/pulsar-ack/"/>
+    <id>http://yoursite.com/2021/05/05/pulsar-ack/</id>
+    <published>2021-05-04T16:00:00.000Z</published>
+    <updated>2021-05-05T07:20:32.858Z</updated>
+    
+    <content type="html"><![CDATA[<p>Apache Pulsar 消息确认（ACK）</p><hr><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>由于分布式系统的特性，当使用分布式消息系统时，可能会发生故障。比如在消费者从消息系统中的主题消费消息的过程中，消费消息的消费者和服务于主题分区的消息代理（Broker）都可能发生错误。消息确认（ACK）的目的就是保证当发生这样的故障后，消费者能够从上一次停止的地方恢复消费，保证既不会丢失消息，也不会重复处理已经确认（ACK）的消息。</p><p>在Apache Kafka中，恢复点通常称为Offset，更新恢复点的过程称为消息确认或提交Offset。</p><p>在Apache Pulsar中，每个订阅中都使用一个专门的数据结构–游标（Cursor）来跟踪订阅中的每条消息的确认（ACK）状态。每当消费者在主题分区上确认消息时，游标都会更新。更新游标可确保消费者不会再次收到消息。</p><h4 id="消息确认"><a href="#消息确认" class="headerlink" title="消息确认"></a>消息确认</h4><p>Pulsar 提供两种消息确认方法：</p><ul><li>单条确认（Individual Ack）: 单独确认一条消息。 被确认后的消息将不会被重新传递</li><li>累积确认（Cumulative Ack）: 通过累积确认，消费者只需要确认它收到的最后一条消息</li></ul><p>下图说明了单条确认和累积确认的差异（灰色框中的消息被确认并且不会被重新传递）。对于累计确认，M12 之前的消息被标记为 Acked。对于单独进行 ACK，仅确认消息 M7 和 M12， 在消费者失败的情况下，除了 M7 和 M12 之外，其他所有消息将被重新传送。</p><p><img src="/images/blog/2021-05-05-1.png" alt></p><p>Apache Pulsar可以支持消息的单条确认，也就是选择性确认。消费者可以单独确认一条消息。 被确认后的消息将不会被重新传递。</p><p>累积确认，消费者只需要确认它收到的最后一条消息。主题分区中的所有消息（包括）提供消息ID将被标记为已确认，并且不会再次传递给消费者。累积确认与Apache Kafka中的Offset更新类似。</p><h4 id="消费模式支持"><a href="#消费模式支持" class="headerlink" title="消费模式支持"></a>消费模式支持</h4><p>独占订阅或灾备订阅的消费者能够对消息进行单条确认和累积确认；共享订阅的消费者只允许对消息进行单条确认。</p><p>管理Ack的专门的数据结构–游标（Cursor），由Broker来管理，利用BookKeeper的Ledger提供存储</p><hr><p>参考链接</p><ul><li><a href="https://mp.weixin.qq.com/s/XJ3vj9xeDpdqZr-um8wBug" target="_blank" rel="noopener">Pulsar VS. Kafka（1）: 统一的消息消费模型（Queue + Stream）</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Pulsar 消息确认（ACK）
     
     </summary>
     
@@ -290,27 +290,6 @@
   </entry>
   
   <entry>
-    <title>Kafka 分区迁移</title>
-    <link href="http://yoursite.com/2021/02/14/kafka-partition-migration/"/>
-    <id>http://yoursite.com/2021/02/14/kafka-partition-migration/</id>
-    <published>2021-02-13T16:00:00.000Z</published>
-    <updated>2021-03-10T14:50:00.136Z</updated>
-    
-    <content type="html"><![CDATA[<p>Kafka集群扩容后将数据量大Topic迁移到新的Kafka节点上</p><hr><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近因数据量上涨，对Kafka集群进行扩容后，需将Topic量大的迁移到新Kafka节点上，缓解集群压力。</p><h4 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h4><p>Kafka系统提供了一个分区重新分配工具（kafka-reassign-partitions.sh），该工具可用于在Broker之间迁移分区。</p><h5 id="生成待迁移topic的json"><a href="#生成待迁移topic的json" class="headerlink" title="生成待迁移topic的json"></a>生成待迁移topic的json</h5><p>新建文件topics-to-move.json，包含要迁移到Topic 列表。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cat topic-to-move.json</span><br><span class="line">&#123;</span><br><span class="line">    &quot;topics&quot;: [&#123;&quot;topic&quot;: &quot;ke01&quot;&#125;,&#123;&quot;topic&quot;: &quot;ke02&quot;&#125;],</span><br><span class="line">    &quot;version&quot;:1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h5 id="generate生成迁移计划"><a href="#generate生成迁移计划" class="headerlink" title="generate生成迁移计划"></a>generate生成迁移计划</h5><p>需要指定topics-to-move.json 文件和迁移目标节点的broker id</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist --topics-to-move-json-file topics-to-move.json --broker-list &quot;$brokerlist&quot; --generate &gt; generate.json</span><br></pre></td></tr></table></figure><p>查看generate.json文件结果类似如下</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Current partition replica assignment</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[61,62]&#125;,&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[62,61]&#125;]&#125;</span><br><span class="line"></span><br><span class="line">Proposed partition reassignment configuration</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[140,141]&#125;,&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[141,140]&#125;]&#125;</span><br></pre></td></tr></table></figure><p>将Current partition replica assignment 的内容保存到rollback-cluster-reassignment.json，用于回滚操作。</p><p>将Proposed partition reassignment configuration 的内容保存到expand-cluster-reassignment.json，用于执行迁移操作。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat generate.json  |grep -A1 &quot;Proposed partition reassignment configuration&quot; |tail -1 &gt; expand-cluster-reassignment.json</span><br></pre></td></tr></table></figure><h5 id="迁移执行generate-prop-json"><a href="#迁移执行generate-prop-json" class="headerlink" title="迁移执行generate_prop.json"></a>迁移执行generate_prop.json</h5><p>限制带宽大小为500Mb/s</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist --reassignment-json-file generate_prop.json --execute --throttle 50000000</span><br></pre></td></tr></table></figure><p>迁移操作会将指定Topic 的数据文件移动到新的节点目录下，这个过程可能需要等待很长时间，视Topic 的数据量而定。</p><p>可以运行以下命令查看执行状态。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist  --reassignment-json-file generate_prop.json --verify</span><br></pre></td></tr></table></figure><p>状态有两种，in progress 表示正在迁移，completed successlly 表示已经成功完成迁移。迁移完成后，原先的节点下将不存在该Topic 的数据文件。</p><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>如果要迁移的Topic 有大量数据（Topic 默认保留1天的数据），可以在迁移之前临时动态地调整retention.ms 来减少数据。</p><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/626b147821cd" target="_blank" rel="noopener">Kafka扩容节点和分区迁移</a></li><li><a href="https://www.cnblogs.com/smartloli/p/10551165.html" target="_blank" rel="noopener">Kafka数据迁移</a></li><li><a href="https://objcoding.com/2019/10/26/kafka-expansion/" target="_blank" rel="noopener">记一次Kafka集群线上扩容</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Kafka 分区迁移
-    
-    </summary>
-    
-    
-      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
-    
-    
-  </entry>
-  
-  <entry>
     <title>Kafka 分区策略</title>
     <link href="http://yoursite.com/2021/02/14/kafka-partition-strategy/"/>
     <id>http://yoursite.com/2021/02/14/kafka-partition-strategy/</id>
@@ -322,6 +301,27 @@
     <summary type="html">
     
       Kafka 分区策略
+    
+    </summary>
+    
+    
+      <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka 分区迁移</title>
+    <link href="http://yoursite.com/2021/02/14/kafka-partition-migration/"/>
+    <id>http://yoursite.com/2021/02/14/kafka-partition-migration/</id>
+    <published>2021-02-13T16:00:00.000Z</published>
+    <updated>2021-03-10T14:50:00.136Z</updated>
+    
+    <content type="html"><![CDATA[<p>Kafka集群扩容后将数据量大Topic迁移到新的Kafka节点上</p><hr><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近因数据量上涨，对Kafka集群进行扩容后，需将Topic量大的迁移到新Kafka节点上，缓解集群压力。</p><h4 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h4><p>Kafka系统提供了一个分区重新分配工具（kafka-reassign-partitions.sh），该工具可用于在Broker之间迁移分区。</p><h5 id="生成待迁移topic的json"><a href="#生成待迁移topic的json" class="headerlink" title="生成待迁移topic的json"></a>生成待迁移topic的json</h5><p>新建文件topics-to-move.json，包含要迁移到Topic 列表。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cat topic-to-move.json</span><br><span class="line">&#123;</span><br><span class="line">    &quot;topics&quot;: [&#123;&quot;topic&quot;: &quot;ke01&quot;&#125;,&#123;&quot;topic&quot;: &quot;ke02&quot;&#125;],</span><br><span class="line">    &quot;version&quot;:1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h5 id="generate生成迁移计划"><a href="#generate生成迁移计划" class="headerlink" title="generate生成迁移计划"></a>generate生成迁移计划</h5><p>需要指定topics-to-move.json 文件和迁移目标节点的broker id</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist --topics-to-move-json-file topics-to-move.json --broker-list &quot;$brokerlist&quot; --generate &gt; generate.json</span><br></pre></td></tr></table></figure><p>查看generate.json文件结果类似如下</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Current partition replica assignment</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[61,62]&#125;,&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[62,61]&#125;]&#125;</span><br><span class="line"></span><br><span class="line">Proposed partition reassignment configuration</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[140,141]&#125;,&#123;&quot;topic&quot;:&quot;sdk_counters&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[141,140]&#125;]&#125;</span><br></pre></td></tr></table></figure><p>将Current partition replica assignment 的内容保存到rollback-cluster-reassignment.json，用于回滚操作。</p><p>将Proposed partition reassignment configuration 的内容保存到expand-cluster-reassignment.json，用于执行迁移操作。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat generate.json  |grep -A1 &quot;Proposed partition reassignment configuration&quot; |tail -1 &gt; expand-cluster-reassignment.json</span><br></pre></td></tr></table></figure><h5 id="迁移执行generate-prop-json"><a href="#迁移执行generate-prop-json" class="headerlink" title="迁移执行generate_prop.json"></a>迁移执行generate_prop.json</h5><p>限制带宽大小为500Mb/s</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist --reassignment-json-file generate_prop.json --execute --throttle 50000000</span><br></pre></td></tr></table></figure><p>迁移操作会将指定Topic 的数据文件移动到新的节点目录下，这个过程可能需要等待很长时间，视Topic 的数据量而定。</p><p>可以运行以下命令查看执行状态。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-reassign-partitions.sh --zookeeper $zklist  --reassignment-json-file generate_prop.json --verify</span><br></pre></td></tr></table></figure><p>状态有两种，in progress 表示正在迁移，completed successlly 表示已经成功完成迁移。迁移完成后，原先的节点下将不存在该Topic 的数据文件。</p><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>如果要迁移的Topic 有大量数据（Topic 默认保留1天的数据），可以在迁移之前临时动态地调整retention.ms 来减少数据。</p><hr><p>参考链接</p><ul><li><a href="https://www.jianshu.com/p/626b147821cd" target="_blank" rel="noopener">Kafka扩容节点和分区迁移</a></li><li><a href="https://www.cnblogs.com/smartloli/p/10551165.html" target="_blank" rel="noopener">Kafka数据迁移</a></li><li><a href="https://objcoding.com/2019/10/26/kafka-expansion/" target="_blank" rel="noopener">记一次Kafka集群线上扩容</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Kafka 分区迁移
     
     </summary>
     
