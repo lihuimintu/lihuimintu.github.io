@@ -55,7 +55,7 @@
 <meta property="og:description" content="Kafka 显示Leader不可用的分区">
 <meta property="og:image" content="http://yoursite.com/images/blog/2021-07-20-1.png">
 <meta property="article:published_time" content="2021-07-19T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-08-11T08:54:16.738Z">
+<meta property="article:modified_time" content="2021-09-07T07:22:38.612Z">
 <meta property="article:author" content="图">
 <meta property="article:tag" content="Kafka">
 <meta name="twitter:card" content="summary">
@@ -238,7 +238,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-08-11 16:54:16" itemprop="dateModified" datetime="2021-08-11T16:54:16+08:00">2021-08-11</time>
+                <time title="修改时间：2021-09-07 15:22:38" itemprop="dateModified" datetime="2021-09-07T15:22:38+08:00">2021-09-07</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -258,7 +258,7 @@
                 <i class="fa fa-file-word-o"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>509</span>
+              <span>529</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -291,10 +291,10 @@
 <h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>通过监控面板，可以知道有分区不同步</p>
 <p><img src="/images/blog/2021-07-20-1.png" alt></p>
 <p>这时，需要知道是哪些分区不同步</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --under-replicated-partitions</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --under-replicated-partitions --describe</span><br></pre></td></tr></table></figure>
 
 <p>同理对应想知道哪些分区leader不可用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --unavailable-partitions</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --unavailable-partitions --describe</span><br></pre></td></tr></table></figure>
 
 
 
@@ -397,7 +397,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">222</span>
+          <span class="site-state-item-count">223</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -449,12 +449,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">540k</span>
+    <span title="站点总字数">544k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">8:11</span>
+    <span title="站点阅读时长">8:14</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>

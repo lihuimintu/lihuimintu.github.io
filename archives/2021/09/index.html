@@ -47,22 +47,16 @@
   };
 </script>
 
-  <meta name="description" content="Apache Pulsar 架构与核心概念">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Pulsar 总览">
-<meta property="og:url" content="http://yoursite.com/2021/05/02/pulsar-overview/index.html">
+  <meta name="description" content="Life isn&#39;t always what one likes.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="lihuimintu">
+<meta property="og:url" content="http://yoursite.com/archives/2021/09/index.html">
 <meta property="og:site_name" content="lihuimintu">
-<meta property="og:description" content="Apache Pulsar 架构与核心概念">
-<meta property="og:image" content="http://yoursite.com/images/blog/2021-05-02-2.png">
-<meta property="og:image" content="http://yoursite.com/images/blog/2021-05-02-1.png">
-<meta property="article:published_time" content="2021-05-01T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-05-04T14:53:15.595Z">
+<meta property="og:description" content="Life isn&#39;t always what one likes.">
 <meta property="article:author" content="图">
-<meta property="article:tag" content="Pulsar">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/images/blog/2021-05-02-2.png">
 
-<link rel="canonical" href="http://yoursite.com/2021/05/02/pulsar-overview/">
+<link rel="canonical" href="http://yoursite.com/archives/2021/09/">
 
 
 <script id="page-configurations">
@@ -70,11 +64,11 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: true
+    isPost: false
   };
 </script>
 
-  <title>Pulsar 总览 | lihuimintu</title>
+  <title>归档 | lihuimintu</title>
   
 
 
@@ -204,135 +198,74 @@
           <div class="content">
             
 
-  <div class="posts-expand">
-      
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/05/02/pulsar-overview/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/zzh.jpg">
-      <meta itemprop="name" content="图">
-      <meta itemprop="description" content="Life isn't always what one likes.">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="lihuimintu">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Pulsar 总览
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-05-02 00:00:00" itemprop="dateCreated datePublished" datetime="2021-05-02T00:00:00+08:00">2021-05-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-05-04 22:53:15" itemprop="dateModified" datetime="2021-05-04T22:53:15+08:00">2021-05-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Pulsar/" itemprop="url" rel="index">
-                    <span itemprop="name">Pulsar</span>
-                  </a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>512</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-            <div class="post-description">Apache Pulsar 架构与核心概念</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
+  
+  <div class="post-block">
+    <div class="posts-collapse">
+      <div class="collection-title">
+        
+        <span class="collection-header">太棒了! 目前共计 223 篇日志。 继续努力。</span>
+      </div>
 
       
-        <p>Apache Pulsar 架构与核心概念</p>
-<hr>
-<h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p><a href="https://pulsar.apache.org" target="_blank" rel="noopener">Apache Pulsar</a> 是 Apache 软件基金会顶级项目，是下一代云原生分布式消息流平台，集消息、存储、轻量化函数式计算为一体，采用计算与存储分离架构设计，支持多租户、持久化存储、多机房跨区域数据复制，具有强一致性、高吞吐、低延时及高可扩展性等流数据存储特性。</p>
-<h4 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h4><p>Apache Pulsar 是 Pub/Sub 模型的消息系统，并且从设计上做了存储和计算的分离</p>
-<h5 id="存储计算分离"><a href="#存储计算分离" class="headerlink" title="存储计算分离"></a>存储计算分离</h5><p>Pulsar 集群由以下三部分组成</p>
-<ul>
-<li>Broker: 无状态服务层，负责接收和传递消息，集群负载均衡等工作，Broker 不会持久化保存元数据，因此可以快速的上、下线</li>
-<li>Apache BookKeeper: 有状态持久层，由一组名为 Bookie 的存储节点组成，持久化地存储消息</li>
-<li>Apache Zookeeper: 进行元数据存储，集群配置和协调</li>
-</ul>
-<p><img src="/images/blog/2021-05-02-2.png" alt></p>
-<p>与传统的消息系统相比，Apache Pulsar 在架构设计上采用了计算与存储分离的模式，Pub/Sub 相关的计算逻辑在 Broker 上完成，数据存储在 Apache BookKeeper 的 Bookie 节点上。</p>
-<h5 id="分片存储"><a href="#分片存储" class="headerlink" title="分片存储"></a>分片存储</h5><p><img src="/images/blog/2021-05-02-1.png" alt></p>
-<h4 id="消息的存储与过期"><a href="#消息的存储与过期" class="headerlink" title="消息的存储与过期"></a>消息的存储与过期</h4><h4 id="消息去重"><a href="#消息去重" class="headerlink" title="消息去重"></a>消息去重</h4><h4 id="消息存储"><a href="#消息存储" class="headerlink" title="消息存储"></a>消息存储</h4><hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://zhuanlan.zhihu.com/p/88618994" target="_blank" rel="noopener">新一代MQ apache pulsar的架构与核心概念</a></li>
-</ul>
-
+    <div class="collection-year">
+      <h1 class="collection-header">2021</h1>
     </div>
 
-    
-    
-    
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
 
-      <footer class="post-footer">
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2021-09-23T00:00:00+08:00"
+              content="2021-09-23">
+          09-23
+        </time>
+      </div>
 
-        
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2021/09/23/kafka-disk-balance/" itemprop="url">
+            <span itemprop="name">Kafka Broker节点磁盘数据Balance</span>
+          </a>
+      </h2>
 
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2021/04/26/kafkactl/" rel="prev" title="kafkactl">
-      <i class="fa fa-chevron-left"></i> kafkactl
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/05/03/pulsar-news-subscription/" rel="next" title="Pulsar 消息订阅">
-      Pulsar 消息订阅 <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
+    </header>
   </article>
+
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2021-09-01T00:00:00+08:00"
+              content="2021-09-01">
+          09-01
+        </time>
+      </div>
+
+      <h2 class="post-title">
+          <a class="post-title-link" href="/2021/09/01/maven-build/" itemprop="url">
+            <span itemprop="name">Maven 打包后jar中没有主清单属性</span>
+          </a>
+      </h2>
+
+    </header>
+  </article>
+
+
+    </div>
+  </div>
   
   
   
 
-  </div>
+  
+
 
 
           </div>
           
-    <div class="comments" id="gitalk-container"></div>
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -379,7 +312,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#架构"><span class="nav-number">2.</span> <span class="nav-text">架构</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#存储计算分离"><span class="nav-number">2.1.</span> <span class="nav-text">存储计算分离</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分片存储"><span class="nav-number">2.2.</span> <span class="nav-text">分片存储</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息的存储与过期"><span class="nav-number">3.</span> <span class="nav-text">消息的存储与过期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息去重"><span class="nav-number">4.</span> <span class="nav-text">消息去重</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息存储"><span class="nav-number">5.</span> <span class="nav-text">消息存储</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -395,7 +327,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">222</span>
+          <span class="site-state-item-count">223</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -447,12 +379,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">540k</span>
+    <span title="站点总字数">544k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">8:11</span>
+    <span title="站点阅读时长">8:14</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
   </div>
@@ -517,25 +449,6 @@
 
   
 
-<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
-
-<script>
-NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
-  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
-    var gitalk = new Gitalk({
-      clientID: '2099ede60a4e9fcf1a9b',
-      clientSecret: '9cc2ee09ee4a85b2781480ddb339b0f9354b84b4',
-      repo: 'lihuimintu.github.io',
-      owner: 'lihuimintu',
-      admin: ['lihuimintu'],
-      id: 'ce8f98dfd68778898bf374037187c4fb',
-        language: 'zh-CN',
-      distractionFreeMode: false
-    });
-    gitalk.render('gitalk-container');
-  }, window.Gitalk);
-});
-</script>
 
   <!-- 代码块复制功能 -->
   <script type="text/javascript" src="/js/clipboard.min.js"></script>	

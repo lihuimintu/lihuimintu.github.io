@@ -1,6 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Kafka Broker节点磁盘数据Balance</title>
+    <url>/2021/09/23/kafka-disk-balance/</url>
+    <content><![CDATA[<p>Kafka Broker节点磁盘数据Balance</p>
+<hr>
+<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>Kafka 的数据目录可以配置一个或多个，通常分区目录是分布在不同的磁盘上用于提高 Kafka 集群的读写性能，同时也可以提升消息的存储空间。</p>
+<p>在一些特殊场景下，存在大 topic 集中在某个磁盘上，导致该磁盘容易出现容量问题</p>
+<p>因此需要在 Broker 节点上做下分区</p>
+<h4 id="迁移"><a href="#迁移" class="headerlink" title="迁移"></a>迁移</h4><p>这里假设 Kafka broker 有两个数据目录 /data/kafka_logs, /data1/kafka_logs</p>
+<p>先将 Kafka 进程暂停</p>
+<p>将 Topic的 Parttion 从 /data1/kafka_logs 目录迁移 /data/kafka_logs 目录下</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mv test-0&#x2F; test-1&#x2F; &#x2F;data&#x2F;kafka_logs</span><br></pre></td></tr></table></figure>
+
+<p><strong>修改 /data1/kafka_logs 目录下 recovery-point-offset-checkpoint 文件内容</strong></p>
+<p>修改后，把第二行的分区数减2，因为迁移走了两个分区。然后把下面的test 1和test 2这两行删除</p>
+<p><strong>修改 /data/kafka_logs 目录下 recovery-point-offset-checkpoint 文件内容</strong></p>
+<p>这里加了2个分区，所以把分区数+2，然后最下面添加了test 1和test 2这两行，后面的数字跟  /data1/kafka_logs/recovery-point-offset-checkpoint 修改前的保持一致。</p>
+<p>启动Kafka服务</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>1.在操作期间需要停止Kafka的服务才可以进行。</p>
+<p>2.上面迁移步骤是做了一个broker上的迁移。如果其他broker也需要迁移，可以同样步骤进行操作，需要注意的是，每个broker上的partition不一定是固定的，需要根据实际情况进行操作。</p>
+<p>3.partition的迁移这里实际上做了物理的目录迁移之后，修改了迁移前和迁移后的磁盘目录下的recovery-point-offset-checkpoint和replication-offset-checkpoint这两个文件。相应的把文件中记录的总partition数和具体的每个partition的记录进行修改就可以了。</p>
+<p>4.在只扩容Kafka存储空间的情况下，建议优先对Kafka Broker的磁盘做Balance，而后再创建新的Topic，否则新建Topic的Partition会根据分配规则都创建到新挂载的磁盘上，导致数据不均衡及Topic吞吐性能问题等。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://cloud.tencent.com/developer/article/1588995" target="_blank" rel="noopener">0749-5.14.4-如何实现Kafka Broker节点磁盘数据Balance</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Kafka</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Maven 打包后jar中没有主清单属性</title>
+    <url>/2021/09/01/maven-build/</url>
+    <content><![CDATA[<p>两个问题，第一个是jar中没有主清单属性，第二个是jar 中缺少依赖</p>
+<hr>
+<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>写了一个Kafka的Java小工目，打包成jar包到服务器上执行，报错<code>kafkaTool-1.0-SNAPSHOT-jar-with-dependencies.jar中没有主清单属性</code></p>
+<p>解决后又遇到如下错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Error: A JNI error has occurred, please check your installation and try again</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: scala&#x2F;collection&#x2F;Map</span><br><span class="line">        at java.lang.Class.getDeclaredMethods0(Native Method)</span><br><span class="line">        at java.lang.Class.privateGetDeclaredMethods(Class.java:2701)</span><br><span class="line">        at java.lang.Class.privateGetMethodRecursive(Class.java:3048)</span><br><span class="line">        at java.lang.Class.getMethod0(Class.java:3018)</span><br><span class="line">        at java.lang.Class.getMethod(Class.java:1784)</span><br><span class="line">        at sun.launcher.LauncherHelper.validateMainClass(LauncherHelper.java:544)</span><br><span class="line">        at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:526)</span><br><span class="line">Caused by: java.lang.ClassNotFoundException: scala.collection.Map</span><br><span class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:382)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:424)</span><br><span class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:352)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:357)</span><br><span class="line">        ... 7 more</span><br></pre></td></tr></table></figure>
+
+<p>把问题记录下，下次查看也方便</p>
+<ol>
+<li>jar 中没有主清单属性</li>
+<li>jar 中缺少依赖</li>
+</ol>
+<h4 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h4><p><strong>执行没有主类处理</strong></p>
+<p>1.打包时指定了主类，可以直接用java -jar xxx.jar<br>2.打包时没有指定主类，可以用java -cp xxx.jar 主类名称（绝对路径）<br>3.要引用其他的jar包，可以用java -classpath $CLASSPATH:xxxx.jar 主类名称（绝对路径）。其中 -classpath 指定需要引入的类</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 指定主类时直接执行</span><br><span class="line">java -jar kafkaTool-1.0-SNAPSHOT-jar-with-dependencies.jar</span><br><span class="line"></span><br><span class="line"># 即没有指定mainClass时，用该命令</span><br><span class="line">java -cp kafkaTool-1.0-SNAPSHOT-jar-with-dependencies.jar org.tu.OpTool</span><br></pre></td></tr></table></figure>
+
+<p><strong>依赖处理</strong></p>
+<p>用maven导出的包中，如果没有在pom文件中将依赖包打进去，是没有依赖包。在pom中加入打包依赖的配置即可</p>
+<h4 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;plugins&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;groupId&gt;org.apache.maven.plugins&lt;&#x2F;groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;maven-compiler-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">            &lt;version&gt;3.8.0&lt;&#x2F;version&gt;</span><br><span class="line">            &lt;configuration&gt;</span><br><span class="line">                &lt;source&gt;1.8&lt;&#x2F;source&gt;</span><br><span class="line">                &lt;target&gt;1.8&lt;&#x2F;target&gt;</span><br><span class="line">                &lt;encoding&gt;UTF-8&lt;&#x2F;encoding&gt;</span><br><span class="line">            &lt;&#x2F;configuration&gt;</span><br><span class="line">        &lt;&#x2F;plugin&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;artifactId&gt;maven-assembly-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">            &lt;configuration&gt;</span><br><span class="line">                &lt;archive&gt;</span><br><span class="line">                    &lt;manifest&gt;</span><br><span class="line">                        &lt;mainClass&gt;com.tencent.kp.OpTool&lt;&#x2F;mainClass&gt;</span><br><span class="line">                    &lt;&#x2F;manifest&gt;</span><br><span class="line">                &lt;&#x2F;archive&gt;</span><br><span class="line">                &lt;descriptorRefs&gt;</span><br><span class="line">                    &lt;descriptorRef&gt;jar-with-dependencies&lt;&#x2F;descriptorRef&gt;</span><br><span class="line">                &lt;&#x2F;descriptorRefs&gt;</span><br><span class="line">            &lt;&#x2F;configuration&gt;</span><br><span class="line">            &lt;!--下面是为了使用 mvn package命令，如果不加则使用mvn assembly--&gt;</span><br><span class="line">            &lt;executions&gt;</span><br><span class="line">                &lt;execution&gt;</span><br><span class="line">                    &lt;phase&gt;package&lt;&#x2F;phase&gt;</span><br><span class="line">                    &lt;goals&gt;</span><br><span class="line">                        &lt;goal&gt;single&lt;&#x2F;goal&gt;</span><br><span class="line">                    &lt;&#x2F;goals&gt;</span><br><span class="line">                &lt;&#x2F;execution&gt;</span><br><span class="line">            &lt;&#x2F;executions&gt;</span><br><span class="line">        &lt;&#x2F;plugin&gt;</span><br><span class="line">    &lt;&#x2F;plugins&gt;</span><br><span class="line">&lt;&#x2F;build&gt;</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/klb561/p/10513575.html" target="_blank" rel="noopener">java -cp &amp; java jar的区别</a></li>
+<li><a href="https://www.cnblogs.com/east7/p/13363069.html" target="_blank" rel="noopener">Maven中配置maven-compiler-plugin 插件</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Kafka Pagecache 原理</title>
     <url>/2021/08/11/kafka-pagecache/</url>
     <content><![CDATA[<p>Kafka 重度依赖底层操作系统提供的 PageCache 功能</p>
@@ -56,10 +122,10 @@
 <h4 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h4><p>通过监控面板，可以知道有分区不同步</p>
 <p><img src="/images/blog/2021-07-20-1.png" alt></p>
 <p>这时，需要知道是哪些分区不同步</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --under-replicated-partitions</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --under-replicated-partitions --describe</span><br></pre></td></tr></table></figure>
 
 <p>同理对应想知道哪些分区leader不可用</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --unavailable-partitions</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bin&#x2F;kafka-topics.sh --bootstrap-server xxx:9092 --unavailable-partitions --describe</span><br></pre></td></tr></table></figure>
 
 
 
@@ -384,32 +450,6 @@
 <ul>
 <li><a href="https://pulsar.apache.org/docs/zh-CN/concepts-messaging/#%E8%AE%A2%E9%98%85" target="_blank" rel="noopener">Apache Pulsar Messaging#订阅</a></li>
 <li><a href="https://mp.weixin.qq.com/s/XJ3vj9xeDpdqZr-um8wBug" target="_blank" rel="noopener">Pulsar VS. Kafka（1）: 统一的消息消费模型（Queue + Stream）</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Pulsar</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Pulsar 总览</title>
-    <url>/2021/05/02/pulsar-overview/</url>
-    <content><![CDATA[<p>Apache Pulsar 架构与核心概念</p>
-<hr>
-<h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p><a href="https://pulsar.apache.org" target="_blank" rel="noopener">Apache Pulsar</a> 是 Apache 软件基金会顶级项目，是下一代云原生分布式消息流平台，集消息、存储、轻量化函数式计算为一体，采用计算与存储分离架构设计，支持多租户、持久化存储、多机房跨区域数据复制，具有强一致性、高吞吐、低延时及高可扩展性等流数据存储特性。</p>
-<h4 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h4><p>Apache Pulsar 是 Pub/Sub 模型的消息系统，并且从设计上做了存储和计算的分离</p>
-<h5 id="存储计算分离"><a href="#存储计算分离" class="headerlink" title="存储计算分离"></a>存储计算分离</h5><p>Pulsar 集群由以下三部分组成</p>
-<ul>
-<li>Broker: 无状态服务层，负责接收和传递消息，集群负载均衡等工作，Broker 不会持久化保存元数据，因此可以快速的上、下线</li>
-<li>Apache BookKeeper: 有状态持久层，由一组名为 Bookie 的存储节点组成，持久化地存储消息</li>
-<li>Apache Zookeeper: 进行元数据存储，集群配置和协调</li>
-</ul>
-<p><img src="/images/blog/2021-05-02-2.png" alt></p>
-<p>与传统的消息系统相比，Apache Pulsar 在架构设计上采用了计算与存储分离的模式，Pub/Sub 相关的计算逻辑在 Broker 上完成，数据存储在 Apache BookKeeper 的 Bookie 节点上。</p>
-<h5 id="分片存储"><a href="#分片存储" class="headerlink" title="分片存储"></a>分片存储</h5><p><img src="/images/blog/2021-05-02-1.png" alt></p>
-<h4 id="消息的存储与过期"><a href="#消息的存储与过期" class="headerlink" title="消息的存储与过期"></a>消息的存储与过期</h4><h4 id="消息去重"><a href="#消息去重" class="headerlink" title="消息去重"></a>消息去重</h4><h4 id="消息存储"><a href="#消息存储" class="headerlink" title="消息存储"></a>消息存储</h4><hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://zhuanlan.zhihu.com/p/88618994" target="_blank" rel="noopener">新一代MQ apache pulsar的架构与核心概念</a></li>
 </ul>
 ]]></content>
       <categories>
@@ -1024,60 +1064,6 @@
       </categories>
   </entry>
   <entry>
-    <title>async-profile 工具</title>
-    <url>/2020/05/23/async-profile/</url>
-    <content><![CDATA[<p>超好用的自带火焰图的 Java 性能分析工具</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>火焰图常用来进行性能分析，async-profiler 就是一种自带火焰图的 Java 性能分析工具</p>
-<blockquote>
-<p>最近 Arthas 性能分析工具上线了火焰图分析功能，Arthas 使用 async-profiler 生成 CPU/内存火焰图进行性能分析，弥补了之前内存分析的不足。在 Arthas 上使用还是比较方便的，使用方式可以看官方文档。<a href="https://alibaba.github.io/arthas/profiler.html" target="_blank" rel="noopener">Arthas 火焰图官方文档</a></p>
-</blockquote>
-<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>具体使用请跳转阅读<a href="https://juejin.im/post/5ded9ade6fb9a0164a10bcda#heading-1" target="_blank" rel="noopener">《超好用的自带火焰图的 Java 性能分析工具 Async-profiler 了解一下》</a>，该文章从安装、使用到案例都有介绍，适合入门了解。</p>
-]]></content>
-      <categories>
-        <category>Tools</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>火焰图</title>
-    <url>/2020/05/23/flame-graph/</url>
-    <content><![CDATA[<p>火焰图（flame graph）是性能分析的利器</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在涉猎运维知识时，多次看到大佬们使用火焰图来进行性能分析，因此跟着涨了下知识。</p>
-<h4 id="含义"><a href="#含义" class="headerlink" title="含义"></a>含义</h4><p>先来体验下火焰图 – <a href="https://queue.acm.org/downloads/2016/Gregg4.svg" target="_blank" rel="noopener">SVG 图片</a>，该图来自阮一峰老师的<a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">《如何读懂火焰图？》</a>，其用来展示 CPU 的调用栈。</p>
-<p>y 轴表示调用栈，每一层都是一个函数。调用栈越深，火焰就越高，顶部就是正在执行的函数，下方都是它的父函数。</p>
-<p>x 轴表示抽样数，如果一个函数在 x 轴占据的宽度越宽，就表示它被抽到的次数多，即执行的时间长。注意，x 轴不代表时间，而是所有的调用栈合并后，按字母顺序排列的。</p>
-<p>火焰图就是看顶层的哪个函数占据的宽度最大。只要有”平顶”（plateaus），就表示该函数可能存在性能问题，也是常说的”大平顶”问题</p>
-<p>颜色没有特殊含义，因为火焰图表示的是 CPU 的繁忙程度，所以一般选择暖色调。</p>
-<h4 id="互动"><a href="#互动" class="headerlink" title="互动"></a>互动</h4><p>火焰图是 SVG 图片，可以与用户互动。</p>
-<p><strong>鼠标悬浮</strong></p>
-<p>火焰的每一层都会标注函数名，鼠标悬浮时会显示完整的函数名、抽样抽中的次数、占据总抽样次数的百分比。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mysqld&#39;JOIN::exec (272,959 samples, 78.34 percent)</span><br></pre></td></tr></table></figure>
-
-<p><strong>点击放大</strong></p>
-<p>在某一层点击，火焰图会水平放大，该层会占据所有宽度，显示详细信息。左上角会同时显示”Reset Zoom”，点击该链接，图片就会恢复原样。</p>
-<p><img src="/images/blog/2020-05-23-1.png" alt></p>
-<p><strong>搜索</strong></p>
-<p>按下 Ctrl + F 会显示一个搜索框，用户可以输入关键词或正则表达式，所有符合条件的函数名会高亮显示。</p>
-<h4 id="生成工具"><a href="#生成工具" class="headerlink" title="生成工具"></a>生成工具</h4><p>以perf为例，看一下<code>flamegraph</code>的使用方法</p>
-<p>1、Flame Graph项目位于GitHub上：<a href="https://github.com/brendangregg/FlameGraph" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph</a></p>
-<p>2、可以用git将其clone下来：git clone <a href="https://github.com/brendangregg/FlameGraph.git" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph.git</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">1、第一步</span><br><span class="line"></span><br><span class="line">perf record -e cpu-clock -g -p 28591</span><br><span class="line"></span><br><span class="line">Ctrl+c结束执行后，在当前目录下会生成采样数据perf.data.</span><br><span class="line"></span><br><span class="line">2、第二步</span><br><span class="line"></span><br><span class="line">用perf script工具对perf.data进行解析</span><br><span class="line"></span><br><span class="line">perf script -i perf.data &amp;&gt; perf.unfold</span><br><span class="line"></span><br><span class="line">3、第三步</span><br><span class="line"></span><br><span class="line">将perf.unfold中的符号进行折叠：</span><br><span class="line"></span><br><span class="line">.&#x2F;stackcollapse-perf.pl perf.unfold &amp;&gt; perf.folded</span><br><span class="line"></span><br><span class="line">4、最后生成svg图：</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.&#x2F;flamegraph.pl perf.folded &gt; perf.svg</span><br></pre></td></tr></table></figure>
-
-<p>现在可以使用自带火焰图的 Java 性能分析工具 <a href="https://github.com/jvm-profiling-tools/async-profiler" target="_blank" rel="noopener">Async-profiler</a><br>，其已经内置了开箱即用的 SVG 文件生成功能。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">如何读懂火焰图？</a></li>
-<li><a href="https://juejin.im/post/5ded9ade6fb9a0164a10bcda#heading-2" target="_blank" rel="noopener">超好用的自带火焰图的 Java 性能分析工具 Async-profiler 了解一下</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/85654612" target="_blank" rel="noopener">Linux火焰图性能分析</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Distributed</category>
-      </categories>
-  </entry>
-  <entry>
     <title>perf 工具</title>
     <url>/2020/05/23/perf/</url>
     <content><![CDATA[<p>Linux 性能调优工具 perf 使用</p>
@@ -1147,41 +1133,57 @@
       </categories>
   </entry>
   <entry>
-    <title>安装 GitLab Runner</title>
-    <url>/2020/05/12/gitlab-runner/</url>
-    <content><![CDATA[<p>使用官方的 GitLab 存储库安装 GitLab Runner</p>
+    <title>async-profile 工具</title>
+    <url>/2020/05/23/async-profile/</url>
+    <content><![CDATA[<p>超好用的自带火焰图的 Java 性能分析工具</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>需要为项目实现基于 Gitlab 的 CI/CD。gitlab-runner 是具体执行 CI/CD 的核心。因此需要搭建一个 GitLab Runner</p>
-<p>文中大部分参考于官方的文档<a href="https://docs.gitlab.com/runner/install/linux-repository.html" target="_blank" rel="noopener">《Install GitLab Runner using the official GitLab repositories》</a></p>
-<h4 id="环境介绍"><a href="#环境介绍" class="headerlink" title="环境介绍"></a>环境介绍</h4><ul>
-<li>Linux 环境 Debian</li>
-<li>Docker 作为执行器</li>
-</ul>
-<h4 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h4><p>这边 Runner 需要支持 Docker 系列的执行器，也就是构建需要在容器里执行，那么需要先安装 Docker 环境</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl -sSL https:&#x2F;&#x2F;get.docker.com&#x2F; | sh</span><br><span class="line">&#x2F;etc&#x2F;init.d&#x2F;docker status</span><br><span class="line">[ ok ] Docker is running.</span><br></pre></td></tr></table></figure>
-
-<h4 id="安装-Runner"><a href="#安装-Runner" class="headerlink" title="安装 Runner"></a>安装 Runner</h4><p>GitLab Runner 支持多平台、多方式安装，包括GNU/Linux, macOS, FreeBSD 和Windows平台的安装，以及支持基于docker的自动扩展式安装</p>
-<p>下面使用官方的 GitLab 存储库在 Debian 平台安装GitLab Runner</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 添加GitLab的官方存储库</span><br><span class="line"># For Debian&#x2F;Ubuntu&#x2F;Mint</span><br><span class="line">$ curl -L https:&#x2F;&#x2F;packages.gitlab.com&#x2F;install&#x2F;repositories&#x2F;runner&#x2F;gitlab-runner&#x2F;script.deb.sh | sudo bash</span><br><span class="line"></span><br><span class="line"># 安装特定版本的 GitLab Runner</span><br><span class="line"># for DEB based systems</span><br><span class="line">$ apt-cache madison gitlab-runner</span><br><span class="line">$ apt-get install gitlab-runner&#x3D;11.11.4</span><br><span class="line"></span><br><span class="line"># 确认安装成功</span><br><span class="line">$ gitlab-runner --version</span><br><span class="line">Version:      11.11.4</span><br><span class="line">Git revision: e828d3bc</span><br><span class="line">Git branch:</span><br><span class="line">GO version:   go1.8.7</span><br><span class="line">Built:        2019-07-07T00:29:25+0000</span><br><span class="line">OS&#x2F;Arch:      linux&#x2F;amd64</span><br></pre></td></tr></table></figure>
-
-<h4 id="注册-Runner"><a href="#注册-Runner" class="headerlink" title="注册 Runner"></a>注册 Runner</h4><p>注册 Runner 是将 Runner 与 GitLab 实例绑定的过程</p>
-<p>注册 Specific Runnersr 到 GitLab 之前，需要在 Settings 中拿到 Gitlab 实例 URL 和注册 token</p>
-<p>Settings-&gt;CI/CD-&gt;Runners-&gt;Specific Runners</p>
-<p><img src="/images/blog/2020-05-12-4.png" alt></p>
-<p>接着执行下方命令会进入一个交互式的配置流程</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 运行以下命令注册Runner</span><br><span class="line">$ gitlab-runner register</span><br><span class="line"></span><br><span class="line"># 输入GitLab实例URL</span><br><span class="line">Please enter the gitlab-ci coordinator URL (e.g. https:&#x2F;&#x2F;gitlab.com )</span><br><span class="line">https:&#x2F;&#x2F;git-sa.nie.netease.com&#x2F;</span><br><span class="line"></span><br><span class="line"># 输入token来注册</span><br><span class="line">Please enter the gitlab-ci token for this runner</span><br><span class="line">xxx</span><br><span class="line"></span><br><span class="line"># 输入Runner的描述，稍后可以在GitLab的UI中进行更改</span><br><span class="line">Please enter the gitlab-ci description for this runner</span><br><span class="line">alpha-runner</span><br><span class="line"></span><br><span class="line"># 输入与Runner关联的标签，稍后可以在GitLab的UI中进行更改（在.gitlab-ci.yml中使用tags来指定相关标签的runner运行）</span><br><span class="line">Please enter the gitlab-ci tags for this runner (comma separated):</span><br><span class="line">alpha</span><br><span class="line"></span><br><span class="line"># 输入Runner执行者（需要使用docker来部署服务，因此这里选择Docker作为执行程序）</span><br><span class="line">Please enter the executor: ssh, docker+machine, docker-ssh+machine, kubernetes, docker, parallels, virtualbox, docker-ssh, shell:</span><br><span class="line">docker</span><br><span class="line"></span><br><span class="line"># 如果选择Docker作为执行程序，则会要求定义默认映像，用于在.gitlab-ci.yml中未指定镜像使用默认镜像</span><br><span class="line">Please enter the Docker image (eg. ruby:2.6):</span><br><span class="line">dockerhub.nie.netease.com&#x2F;library&#x2F;debian_ci</span><br></pre></td></tr></table></figure>
-
-<h4 id="配置-Docker"><a href="#配置-Docker" class="headerlink" title="配置 Docker"></a>配置 Docker</h4><p>注册一个 Docker 类型的 Runner 后，如果要在该 Runner 中使用 Docker 进行构建等任务，则需要增加以下配置，以支持 docker in docker</p>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>火焰图常用来进行性能分析，async-profiler 就是一种自带火焰图的 Java 性能分析工具</p>
 <blockquote>
-<p>安装好runner后，即会生成一份runner的配置文件，不同系统平台配置文件路径为：<br>  以root用户安装的，且为 *nix 类系统（如Debian）配置文件路径为/etc/gitlab-runner/config.toml<br>  以非root用户安装的，且为 *nix 类系统（如Debian）配置文件路径为~/.gitlab-runner/config.toml<br>  其他系统 ./config.toml</p>
+<p>最近 Arthas 性能分析工具上线了火焰图分析功能，Arthas 使用 async-profiler 生成 CPU/内存火焰图进行性能分析，弥补了之前内存分析的不足。在 Arthas 上使用还是比较方便的，使用方式可以看官方文档。<a href="https://alibaba.github.io/arthas/profiler.html" target="_blank" rel="noopener">Arthas 火焰图官方文档</a></p>
 </blockquote>
-<p>挂载宿主docker.sock到容器内，挂载镜像registry的认证文件到容器内（如果要拉取私有镜像，则需要在容器内部署认证配置，或者在宿主配置，然后挂入容器内），修改 Docker 为 host 网络</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 修改对应runner的volumes配置</span><br><span class="line">volumes &#x3D; [&quot;&#x2F;cache&quot;, &quot;&#x2F;var&#x2F;run&#x2F;docker.sock:&#x2F;var&#x2F;run&#x2F;docker.sock&quot;, &quot;&#x2F;root&#x2F;.docker&#x2F;config.json:&#x2F;root&#x2F;.docker&#x2F;config.json&quot;]</span><br><span class="line"># 在volums下添加如下一行</span><br><span class="line">network_mode &#x3D; &quot;host&quot;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/images/blog/2020-05-12-3.png" alt></p>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>具体使用请跳转阅读<a href="https://juejin.im/post/5ded9ade6fb9a0164a10bcda#heading-1" target="_blank" rel="noopener">《超好用的自带火焰图的 Java 性能分析工具 Async-profiler 了解一下》</a>，该文章从安装、使用到案例都有介绍，适合入门了解。</p>
 ]]></content>
       <categories>
         <category>Tools</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>火焰图</title>
+    <url>/2020/05/23/flame-graph/</url>
+    <content><![CDATA[<p>火焰图（flame graph）是性能分析的利器</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在涉猎运维知识时，多次看到大佬们使用火焰图来进行性能分析，因此跟着涨了下知识。</p>
+<h4 id="含义"><a href="#含义" class="headerlink" title="含义"></a>含义</h4><p>先来体验下火焰图 – <a href="https://queue.acm.org/downloads/2016/Gregg4.svg" target="_blank" rel="noopener">SVG 图片</a>，该图来自阮一峰老师的<a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">《如何读懂火焰图？》</a>，其用来展示 CPU 的调用栈。</p>
+<p>y 轴表示调用栈，每一层都是一个函数。调用栈越深，火焰就越高，顶部就是正在执行的函数，下方都是它的父函数。</p>
+<p>x 轴表示抽样数，如果一个函数在 x 轴占据的宽度越宽，就表示它被抽到的次数多，即执行的时间长。注意，x 轴不代表时间，而是所有的调用栈合并后，按字母顺序排列的。</p>
+<p>火焰图就是看顶层的哪个函数占据的宽度最大。只要有”平顶”（plateaus），就表示该函数可能存在性能问题，也是常说的”大平顶”问题</p>
+<p>颜色没有特殊含义，因为火焰图表示的是 CPU 的繁忙程度，所以一般选择暖色调。</p>
+<h4 id="互动"><a href="#互动" class="headerlink" title="互动"></a>互动</h4><p>火焰图是 SVG 图片，可以与用户互动。</p>
+<p><strong>鼠标悬浮</strong></p>
+<p>火焰的每一层都会标注函数名，鼠标悬浮时会显示完整的函数名、抽样抽中的次数、占据总抽样次数的百分比。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">mysqld&#39;JOIN::exec (272,959 samples, 78.34 percent)</span><br></pre></td></tr></table></figure>
+
+<p><strong>点击放大</strong></p>
+<p>在某一层点击，火焰图会水平放大，该层会占据所有宽度，显示详细信息。左上角会同时显示”Reset Zoom”，点击该链接，图片就会恢复原样。</p>
+<p><img src="/images/blog/2020-05-23-1.png" alt></p>
+<p><strong>搜索</strong></p>
+<p>按下 Ctrl + F 会显示一个搜索框，用户可以输入关键词或正则表达式，所有符合条件的函数名会高亮显示。</p>
+<h4 id="生成工具"><a href="#生成工具" class="headerlink" title="生成工具"></a>生成工具</h4><p>以perf为例，看一下<code>flamegraph</code>的使用方法</p>
+<p>1、Flame Graph项目位于GitHub上：<a href="https://github.com/brendangregg/FlameGraph" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph</a></p>
+<p>2、可以用git将其clone下来：git clone <a href="https://github.com/brendangregg/FlameGraph.git" target="_blank" rel="noopener">https://github.com/brendangregg/FlameGraph.git</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">1、第一步</span><br><span class="line"></span><br><span class="line">perf record -e cpu-clock -g -p 28591</span><br><span class="line"></span><br><span class="line">Ctrl+c结束执行后，在当前目录下会生成采样数据perf.data.</span><br><span class="line"></span><br><span class="line">2、第二步</span><br><span class="line"></span><br><span class="line">用perf script工具对perf.data进行解析</span><br><span class="line"></span><br><span class="line">perf script -i perf.data &amp;&gt; perf.unfold</span><br><span class="line"></span><br><span class="line">3、第三步</span><br><span class="line"></span><br><span class="line">将perf.unfold中的符号进行折叠：</span><br><span class="line"></span><br><span class="line">.&#x2F;stackcollapse-perf.pl perf.unfold &amp;&gt; perf.folded</span><br><span class="line"></span><br><span class="line">4、最后生成svg图：</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.&#x2F;flamegraph.pl perf.folded &gt; perf.svg</span><br></pre></td></tr></table></figure>
+
+<p>现在可以使用自带火焰图的 Java 性能分析工具 <a href="https://github.com/jvm-profiling-tools/async-profiler" target="_blank" rel="noopener">Async-profiler</a><br>，其已经内置了开箱即用的 SVG 文件生成功能。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.ruanyifeng.com/blog/2017/09/flame-graph.html" target="_blank" rel="noopener">如何读懂火焰图？</a></li>
+<li><a href="https://juejin.im/post/5ded9ade6fb9a0164a10bcda#heading-2" target="_blank" rel="noopener">超好用的自带火焰图的 Java 性能分析工具 Async-profiler 了解一下</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/85654612" target="_blank" rel="noopener">Linux火焰图性能分析</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Distributed</category>
       </categories>
   </entry>
   <entry>
@@ -1934,6 +1936,44 @@
       </categories>
   </entry>
   <entry>
+    <title>安装 GitLab Runner</title>
+    <url>/2020/05/12/gitlab-runner/</url>
+    <content><![CDATA[<p>使用官方的 GitLab 存储库安装 GitLab Runner</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>需要为项目实现基于 Gitlab 的 CI/CD。gitlab-runner 是具体执行 CI/CD 的核心。因此需要搭建一个 GitLab Runner</p>
+<p>文中大部分参考于官方的文档<a href="https://docs.gitlab.com/runner/install/linux-repository.html" target="_blank" rel="noopener">《Install GitLab Runner using the official GitLab repositories》</a></p>
+<h4 id="环境介绍"><a href="#环境介绍" class="headerlink" title="环境介绍"></a>环境介绍</h4><ul>
+<li>Linux 环境 Debian</li>
+<li>Docker 作为执行器</li>
+</ul>
+<h4 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h4><p>这边 Runner 需要支持 Docker 系列的执行器，也就是构建需要在容器里执行，那么需要先安装 Docker 环境</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl -sSL https:&#x2F;&#x2F;get.docker.com&#x2F; | sh</span><br><span class="line">&#x2F;etc&#x2F;init.d&#x2F;docker status</span><br><span class="line">[ ok ] Docker is running.</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装-Runner"><a href="#安装-Runner" class="headerlink" title="安装 Runner"></a>安装 Runner</h4><p>GitLab Runner 支持多平台、多方式安装，包括GNU/Linux, macOS, FreeBSD 和Windows平台的安装，以及支持基于docker的自动扩展式安装</p>
+<p>下面使用官方的 GitLab 存储库在 Debian 平台安装GitLab Runner</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 添加GitLab的官方存储库</span><br><span class="line"># For Debian&#x2F;Ubuntu&#x2F;Mint</span><br><span class="line">$ curl -L https:&#x2F;&#x2F;packages.gitlab.com&#x2F;install&#x2F;repositories&#x2F;runner&#x2F;gitlab-runner&#x2F;script.deb.sh | sudo bash</span><br><span class="line"></span><br><span class="line"># 安装特定版本的 GitLab Runner</span><br><span class="line"># for DEB based systems</span><br><span class="line">$ apt-cache madison gitlab-runner</span><br><span class="line">$ apt-get install gitlab-runner&#x3D;11.11.4</span><br><span class="line"></span><br><span class="line"># 确认安装成功</span><br><span class="line">$ gitlab-runner --version</span><br><span class="line">Version:      11.11.4</span><br><span class="line">Git revision: e828d3bc</span><br><span class="line">Git branch:</span><br><span class="line">GO version:   go1.8.7</span><br><span class="line">Built:        2019-07-07T00:29:25+0000</span><br><span class="line">OS&#x2F;Arch:      linux&#x2F;amd64</span><br></pre></td></tr></table></figure>
+
+<h4 id="注册-Runner"><a href="#注册-Runner" class="headerlink" title="注册 Runner"></a>注册 Runner</h4><p>注册 Runner 是将 Runner 与 GitLab 实例绑定的过程</p>
+<p>注册 Specific Runnersr 到 GitLab 之前，需要在 Settings 中拿到 Gitlab 实例 URL 和注册 token</p>
+<p>Settings-&gt;CI/CD-&gt;Runners-&gt;Specific Runners</p>
+<p><img src="/images/blog/2020-05-12-4.png" alt></p>
+<p>接着执行下方命令会进入一个交互式的配置流程</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 运行以下命令注册Runner</span><br><span class="line">$ gitlab-runner register</span><br><span class="line"></span><br><span class="line"># 输入GitLab实例URL</span><br><span class="line">Please enter the gitlab-ci coordinator URL (e.g. https:&#x2F;&#x2F;gitlab.com )</span><br><span class="line">https:&#x2F;&#x2F;git-sa.nie.netease.com&#x2F;</span><br><span class="line"></span><br><span class="line"># 输入token来注册</span><br><span class="line">Please enter the gitlab-ci token for this runner</span><br><span class="line">xxx</span><br><span class="line"></span><br><span class="line"># 输入Runner的描述，稍后可以在GitLab的UI中进行更改</span><br><span class="line">Please enter the gitlab-ci description for this runner</span><br><span class="line">alpha-runner</span><br><span class="line"></span><br><span class="line"># 输入与Runner关联的标签，稍后可以在GitLab的UI中进行更改（在.gitlab-ci.yml中使用tags来指定相关标签的runner运行）</span><br><span class="line">Please enter the gitlab-ci tags for this runner (comma separated):</span><br><span class="line">alpha</span><br><span class="line"></span><br><span class="line"># 输入Runner执行者（需要使用docker来部署服务，因此这里选择Docker作为执行程序）</span><br><span class="line">Please enter the executor: ssh, docker+machine, docker-ssh+machine, kubernetes, docker, parallels, virtualbox, docker-ssh, shell:</span><br><span class="line">docker</span><br><span class="line"></span><br><span class="line"># 如果选择Docker作为执行程序，则会要求定义默认映像，用于在.gitlab-ci.yml中未指定镜像使用默认镜像</span><br><span class="line">Please enter the Docker image (eg. ruby:2.6):</span><br><span class="line">dockerhub.nie.netease.com&#x2F;library&#x2F;debian_ci</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置-Docker"><a href="#配置-Docker" class="headerlink" title="配置 Docker"></a>配置 Docker</h4><p>注册一个 Docker 类型的 Runner 后，如果要在该 Runner 中使用 Docker 进行构建等任务，则需要增加以下配置，以支持 docker in docker</p>
+<blockquote>
+<p>安装好runner后，即会生成一份runner的配置文件，不同系统平台配置文件路径为：<br>  以root用户安装的，且为 *nix 类系统（如Debian）配置文件路径为/etc/gitlab-runner/config.toml<br>  以非root用户安装的，且为 *nix 类系统（如Debian）配置文件路径为~/.gitlab-runner/config.toml<br>  其他系统 ./config.toml</p>
+</blockquote>
+<p>挂载宿主docker.sock到容器内，挂载镜像registry的认证文件到容器内（如果要拉取私有镜像，则需要在容器内部署认证配置，或者在宿主配置，然后挂入容器内），修改 Docker 为 host 网络</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 修改对应runner的volumes配置</span><br><span class="line">volumes &#x3D; [&quot;&#x2F;cache&quot;, &quot;&#x2F;var&#x2F;run&#x2F;docker.sock:&#x2F;var&#x2F;run&#x2F;docker.sock&quot;, &quot;&#x2F;root&#x2F;.docker&#x2F;config.json:&#x2F;root&#x2F;.docker&#x2F;config.json&quot;]</span><br><span class="line"># 在volums下添加如下一行</span><br><span class="line">network_mode &#x3D; &quot;host&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/blog/2020-05-12-3.png" alt></p>
+]]></content>
+      <categories>
+        <category>Tools</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Socket 通信原理</title>
     <url>/2020/04/19/Socket/</url>
     <content><![CDATA[<p>网络套接字（Socket）</p>
@@ -2198,75 +2238,6 @@
       </categories>
   </entry>
   <entry>
-    <title>ZooKeeper 客户端连接数</title>
-    <url>/2020/03/05/Zookeeper-maxClientCnxns/</url>
-    <content><![CDATA[<p>配置参数将限制连接到 ZooKeeper 的客户端的数量，限制并发连接的数量</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Zookeeper 容易出现连接数暴增事件，因此可以通过相应的配置来限制某 IP 的连接数</p>
-<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p><strong>maxClientCnxns</strong></p>
-<p>Limits the number of concurrent connections (at the socket level) that a single client, identified by IP address, may make to a single member of the ZooKeeper ensemble. This is used to prevent certain classes of DoS attacks, including file descriptor exhaustion. The default is 60. Setting this to 0 entirely removes the limit on concurrent connections.</p>
-<blockquote>
-<p>翻译过来就是将单个客户端（通过IP地址标识）可以与ZooKeeper集成中的单个成员建立的并发连接数（在套接字级别）受到限制。 这用于防止某些类的DoS攻击，包括文件描述符耗尽。 默认值为60。将其设置为0将完全消除并发连接的限制。</p>
-</blockquote>
-<p>需要明确地是这个限制的使用范围，仅仅是单台客户端机器与单台ZK服务器之间的连接数限制，不是针对指定客户端ID，也不是ZK集群的连接数限制，也不是单台ZK对所有客户端的连接数限制。</p>
-<p>如果某 IP 连接数过多会报如下错误</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">2011-10-28 09:39:44,856 – WARN  [NIOServerCxn.Factory:0.0.0.0&#x2F;0.0.0.0:5858:NIOServerCnxn$Factory@253] – Too many connections from &#x2F;172.*.*.* – max is 60</span><br></pre></td></tr></table></figure>
-
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://blog.51cto.com/zlfwmm/1712403" target="_blank" rel="noopener">ZooKeeper客户端连接数过多</a></li>
-<li><a href="https://blog.csdn.net/weixin_34238633/article/details/92595022" target="_blank" rel="noopener">记一次zookeeper连接数暴增事件</a></li>
-<li><a href="https://www.jianshu.com/p/63f147de795b" target="_blank" rel="noopener">集群 zk 连接数过多问题排查</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Zookeeper</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>NameNode 在高可用中防止脑裂</title>
-    <url>/2020/03/05/NameNode-HA-fencing/</url>
-    <content><![CDATA[<p>CDH 从图表生成器添加图表</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在分布式系统中脑裂又称为双主现象，由于网络问题可能会导致出现两个 NameNode 同时为 Active 状态，此时两个 NameNode 都可以对外提供服务，无法保证数据一致性。ActiveStandbyElector 通过 Fencing 机制防止脑裂现象。</p>
-<h4 id="机制"><a href="#机制" class="headerlink" title="机制"></a>机制</h4><p>当某个 NameNode 竞选成功，成功创建 ActiveStandbyElectorLock 临时节点后会创建另一个名为 ActiveBreadCrumb 的持久节点，该节点保存了 NameNode 的地址信息，正常情况下删除 ActiveStandbyElectorLock 节点时会主动删除 ActiveBreadCrumb，但如果由于异常情况导致 Zookeeper Session关闭，此时临时节点 ActiveStandbyElectorLock 会被删除，但持久节点 ActiveBreadCrumb 并不会删除，当有新的 NameNode 竞选成功后它会发现已经存在一个旧的 NameNode 遗留下来的 ActiveBreadCrumb 节点，此时会通知 ZKFC 对旧的 ANN 进行 fencing，</p>
-<p>在进行 fencing 的时候，会执行以下的操作:</p>
-<ul>
-<li>首先尝试调用这个旧 Active NameNode 的 HAServiceProtocol RPC 接口的 transitionToStandby 方法，看能不能把它转换为 Standby 状态。</li>
-<li>如果 transitionToStandby 方法调用失败，那么就执行 Hadoop 配置文件之中预定义的隔离措施，Hadoop 目前主要提供两种隔离措施，通常会选择 sshfence：<ul>
-<li>sshfence: 通过 SSH 登录到目标机器上，执行命令 fuser 将对应的进程杀死；</li>
-<li>shellfence: 执行一个用户自定义的 shell 脚本来将对应的进程隔离；</li>
-</ul>
-</li>
-</ul>
-<p>具体如何使用可以参阅<a href="https://blog.csdn.net/tom_fans/article/details/89677681" target="_blank" rel="noopener">Hadoop NameNode HA fencing</a></p>
-<p>只有在成功地执行完成 fencing 之后，选主成功的 ActiveStandbyElector 才会回调 ZKFailoverController 的 becomeActive 方法将对应的 NameNode 转换为 Active 状态，开始对外提供服务</p>
-<p><img src="/images/blog/2020-03-05-1.png" alt></p>
-<p><img src="/images/blog/2020-03-05-2.png" alt></p>
-<h4 id="JournalNode-方面"><a href="#JournalNode-方面" class="headerlink" title="JournalNode 方面"></a>JournalNode 方面</h4><p>同一时刻只有一个 NameNode 可以写入 QJM, 这样就不担心脑裂问题。</p>
-<p>Epoch 是一个单调递增的整数，用来标识每一次 Active NameNode 的生命周期，每发生一次 NameNode 的主备切换，Epoch 就会加 1。这实际上是一种 fencing 机制。</p>
-<p>Epoch 的过程完全类似:</p>
-<ol>
-<li>Active NameNode 首先向 JournalNode 集群发送 getJournalState RPC 请求，每个 JournalNode 会返回自己保存的最近的那个 Epoch(代码中叫 lastPromisedEpoch)。</li>
-<li>NameNode 收到大多数的 JournalNode 返回的 Epoch 之后，在其中选择最大的一个加 1 作为当前的新 Epoch，然后向各个 JournalNode 发送 newEpoch RPC 请求，把这个新的 Epoch 发给各个 JournalNode。</li>
-<li>每一个 JournalNode 在收到新的 Epoch 之后，首先检查这个新的 Epoch 是否比它本地保存的 lastPromisedEpoch 大，如果大的话就把 lastPromisedEpoch 更新为这个新的 Epoch，并且向 NameNode 返回它自己的本地磁盘上最新的一个 EditLogSegment 的起始事务 id，为后面的数据恢复过程做好准备。如果小于或等于的话就向 NameNode 返回错误。</li>
-<li>NameNode 收到大多数 JournalNode 对 newEpoch 的成功响应之后，就会认为生成新的 Epoch 成功</li>
-</ol>
-<p>在生成新的 Epoch 之后，每次 NameNode 在向 JournalNode 集群提交 EditLog 的时候，都会把这个 Epoch 作为参数传递过去。每个 JournalNode 会比较传过来的 Epoch 和它自己保存的 lastPromisedEpoch 的大小，如果传过来的 epoch 的值比它自己保存的 lastPromisedEpoch 小的话，那么这次写相关操作会被拒绝。一旦大多数 JournalNode 都拒绝了这次写操作，那么这次写操作就失败了。如果原来的 Active NameNode 恢复正常之后再向 JournalNode 写 EditLog，那么因为它的 Epoch 肯定比新生成的 Epoch 小，并且大多数的 JournalNode 都接受了这个新生成的 Epoch，所以拒绝写入的 JournalNode 数目至少是大多数，这样原来的 Active NameNode 写 EditLog 就肯定会失败，失败之后这个 NameNode 进程会直接退出，这样就实现了对原来的 Active NameNode 的隔离了。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.jianshu.com/p/139fb06bea48" target="_blank" rel="noopener">NameNode在高可用中的防止脑裂</a></li>
-<li><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/index.html" target="_blank" rel="noopener">Hadoop NameNode 高可用 (High Availability) 实现解析</a></li>
-<li><a href="https://blog.csdn.net/tom_fans/article/details/89677681" target="_blank" rel="noopener">Hadoop NameNode HA fencing</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>HDFS</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HBase 读取性能优化</title>
     <url>/2020/03/05/HBase-read-optimization/</url>
     <content><![CDATA[<p>HBase 读取性能优化</p>
@@ -2344,6 +2315,75 @@
 ]]></content>
       <categories>
         <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>NameNode 在高可用中防止脑裂</title>
+    <url>/2020/03/05/NameNode-HA-fencing/</url>
+    <content><![CDATA[<p>CDH 从图表生成器添加图表</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在分布式系统中脑裂又称为双主现象，由于网络问题可能会导致出现两个 NameNode 同时为 Active 状态，此时两个 NameNode 都可以对外提供服务，无法保证数据一致性。ActiveStandbyElector 通过 Fencing 机制防止脑裂现象。</p>
+<h4 id="机制"><a href="#机制" class="headerlink" title="机制"></a>机制</h4><p>当某个 NameNode 竞选成功，成功创建 ActiveStandbyElectorLock 临时节点后会创建另一个名为 ActiveBreadCrumb 的持久节点，该节点保存了 NameNode 的地址信息，正常情况下删除 ActiveStandbyElectorLock 节点时会主动删除 ActiveBreadCrumb，但如果由于异常情况导致 Zookeeper Session关闭，此时临时节点 ActiveStandbyElectorLock 会被删除，但持久节点 ActiveBreadCrumb 并不会删除，当有新的 NameNode 竞选成功后它会发现已经存在一个旧的 NameNode 遗留下来的 ActiveBreadCrumb 节点，此时会通知 ZKFC 对旧的 ANN 进行 fencing，</p>
+<p>在进行 fencing 的时候，会执行以下的操作:</p>
+<ul>
+<li>首先尝试调用这个旧 Active NameNode 的 HAServiceProtocol RPC 接口的 transitionToStandby 方法，看能不能把它转换为 Standby 状态。</li>
+<li>如果 transitionToStandby 方法调用失败，那么就执行 Hadoop 配置文件之中预定义的隔离措施，Hadoop 目前主要提供两种隔离措施，通常会选择 sshfence：<ul>
+<li>sshfence: 通过 SSH 登录到目标机器上，执行命令 fuser 将对应的进程杀死；</li>
+<li>shellfence: 执行一个用户自定义的 shell 脚本来将对应的进程隔离；</li>
+</ul>
+</li>
+</ul>
+<p>具体如何使用可以参阅<a href="https://blog.csdn.net/tom_fans/article/details/89677681" target="_blank" rel="noopener">Hadoop NameNode HA fencing</a></p>
+<p>只有在成功地执行完成 fencing 之后，选主成功的 ActiveStandbyElector 才会回调 ZKFailoverController 的 becomeActive 方法将对应的 NameNode 转换为 Active 状态，开始对外提供服务</p>
+<p><img src="/images/blog/2020-03-05-1.png" alt></p>
+<p><img src="/images/blog/2020-03-05-2.png" alt></p>
+<h4 id="JournalNode-方面"><a href="#JournalNode-方面" class="headerlink" title="JournalNode 方面"></a>JournalNode 方面</h4><p>同一时刻只有一个 NameNode 可以写入 QJM, 这样就不担心脑裂问题。</p>
+<p>Epoch 是一个单调递增的整数，用来标识每一次 Active NameNode 的生命周期，每发生一次 NameNode 的主备切换，Epoch 就会加 1。这实际上是一种 fencing 机制。</p>
+<p>Epoch 的过程完全类似:</p>
+<ol>
+<li>Active NameNode 首先向 JournalNode 集群发送 getJournalState RPC 请求，每个 JournalNode 会返回自己保存的最近的那个 Epoch(代码中叫 lastPromisedEpoch)。</li>
+<li>NameNode 收到大多数的 JournalNode 返回的 Epoch 之后，在其中选择最大的一个加 1 作为当前的新 Epoch，然后向各个 JournalNode 发送 newEpoch RPC 请求，把这个新的 Epoch 发给各个 JournalNode。</li>
+<li>每一个 JournalNode 在收到新的 Epoch 之后，首先检查这个新的 Epoch 是否比它本地保存的 lastPromisedEpoch 大，如果大的话就把 lastPromisedEpoch 更新为这个新的 Epoch，并且向 NameNode 返回它自己的本地磁盘上最新的一个 EditLogSegment 的起始事务 id，为后面的数据恢复过程做好准备。如果小于或等于的话就向 NameNode 返回错误。</li>
+<li>NameNode 收到大多数 JournalNode 对 newEpoch 的成功响应之后，就会认为生成新的 Epoch 成功</li>
+</ol>
+<p>在生成新的 Epoch 之后，每次 NameNode 在向 JournalNode 集群提交 EditLog 的时候，都会把这个 Epoch 作为参数传递过去。每个 JournalNode 会比较传过来的 Epoch 和它自己保存的 lastPromisedEpoch 的大小，如果传过来的 epoch 的值比它自己保存的 lastPromisedEpoch 小的话，那么这次写相关操作会被拒绝。一旦大多数 JournalNode 都拒绝了这次写操作，那么这次写操作就失败了。如果原来的 Active NameNode 恢复正常之后再向 JournalNode 写 EditLog，那么因为它的 Epoch 肯定比新生成的 Epoch 小，并且大多数的 JournalNode 都接受了这个新生成的 Epoch，所以拒绝写入的 JournalNode 数目至少是大多数，这样原来的 Active NameNode 写 EditLog 就肯定会失败，失败之后这个 NameNode 进程会直接退出，这样就实现了对原来的 Active NameNode 的隔离了。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/139fb06bea48" target="_blank" rel="noopener">NameNode在高可用中的防止脑裂</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/index.html" target="_blank" rel="noopener">Hadoop NameNode 高可用 (High Availability) 实现解析</a></li>
+<li><a href="https://blog.csdn.net/tom_fans/article/details/89677681" target="_blank" rel="noopener">Hadoop NameNode HA fencing</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>HDFS</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>ZooKeeper 客户端连接数</title>
+    <url>/2020/03/05/Zookeeper-maxClientCnxns/</url>
+    <content><![CDATA[<p>配置参数将限制连接到 ZooKeeper 的客户端的数量，限制并发连接的数量</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>Zookeeper 容易出现连接数暴增事件，因此可以通过相应的配置来限制某 IP 的连接数</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p><strong>maxClientCnxns</strong></p>
+<p>Limits the number of concurrent connections (at the socket level) that a single client, identified by IP address, may make to a single member of the ZooKeeper ensemble. This is used to prevent certain classes of DoS attacks, including file descriptor exhaustion. The default is 60. Setting this to 0 entirely removes the limit on concurrent connections.</p>
+<blockquote>
+<p>翻译过来就是将单个客户端（通过IP地址标识）可以与ZooKeeper集成中的单个成员建立的并发连接数（在套接字级别）受到限制。 这用于防止某些类的DoS攻击，包括文件描述符耗尽。 默认值为60。将其设置为0将完全消除并发连接的限制。</p>
+</blockquote>
+<p>需要明确地是这个限制的使用范围，仅仅是单台客户端机器与单台ZK服务器之间的连接数限制，不是针对指定客户端ID，也不是ZK集群的连接数限制，也不是单台ZK对所有客户端的连接数限制。</p>
+<p>如果某 IP 连接数过多会报如下错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">2011-10-28 09:39:44,856 – WARN  [NIOServerCxn.Factory:0.0.0.0&#x2F;0.0.0.0:5858:NIOServerCnxn$Factory@253] – Too many connections from &#x2F;172.*.*.* – max is 60</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.51cto.com/zlfwmm/1712403" target="_blank" rel="noopener">ZooKeeper客户端连接数过多</a></li>
+<li><a href="https://blog.csdn.net/weixin_34238633/article/details/92595022" target="_blank" rel="noopener">记一次zookeeper连接数暴增事件</a></li>
+<li><a href="https://www.jianshu.com/p/63f147de795b" target="_blank" rel="noopener">集群 zk 连接数过多问题排查</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Zookeeper</category>
       </categories>
   </entry>
   <entry>
@@ -2932,25 +2972,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Hive set 命令使用</title>
-    <url>/2020/01/27/Hive-set/</url>
-    <content><![CDATA[<p>Hive set 命令使用</p>
-<hr>
-<h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">作者：lwf006164</span><br><span class="line">链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lwf006164&#x2F;article&#x2F;details&#x2F;96754526</span><br><span class="line">来源：Hive篇.set命令使用</span><br></pre></td></tr></table></figure>
-
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>Hive 命令行下执行 set 命令，仅当前会话有效</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line">#  设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure>
-
-<p>Hive 脚本中配置 set 命令，当前机器用户有效   </p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 进入编辑模式，在执行 hive 命令进入 shell 命令行的时候默认会加载这个脚本</span><br><span class="line">vi ~&#x2F;.hiverc</span><br><span class="line"></span><br><span class="line"># 将下面的两行命令添加到该文件中</span><br><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line"># 设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure>
-
-<p>查看 Hive 历史操作命令集可以浏览 <code>~/.hivehistory</code></p>
-]]></content>
-      <categories>
-        <category>Hive</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HDFS 中 atime 与 mtime 解析</title>
     <url>/2020/01/27/HDFS-atime-ctime/</url>
     <content><![CDATA[<p>HDFS 中 atime 和 mtime</p>
@@ -3017,6 +3038,25 @@
 ]]></content>
       <categories>
         <category>HDFS</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Hive set 命令使用</title>
+    <url>/2020/01/27/Hive-set/</url>
+    <content><![CDATA[<p>Hive set 命令使用</p>
+<hr>
+<h4 id="转载来源"><a href="#转载来源" class="headerlink" title="转载来源"></a>转载来源</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">作者：lwf006164</span><br><span class="line">链接：https:&#x2F;&#x2F;blog.csdn.net&#x2F;lwf006164&#x2F;article&#x2F;details&#x2F;96754526</span><br><span class="line">来源：Hive篇.set命令使用</span><br></pre></td></tr></table></figure>
+
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>Hive 命令行下执行 set 命令，仅当前会话有效</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line">#  设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure>
+
+<p>Hive 脚本中配置 set 命令，当前机器用户有效   </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 进入编辑模式，在执行 hive 命令进入 shell 命令行的时候默认会加载这个脚本</span><br><span class="line">vi ~&#x2F;.hiverc</span><br><span class="line"></span><br><span class="line"># 将下面的两行命令添加到该文件中</span><br><span class="line"># 设置显示当前使用的数据库</span><br><span class="line">set hive.cli.print.current.db&#x3D;true;</span><br><span class="line"></span><br><span class="line"># 设置显示表名</span><br><span class="line">set hive.cli.print.header&#x3D;true;</span><br></pre></td></tr></table></figure>
+
+<p>查看 Hive 历史操作命令集可以浏览 <code>~/.hivehistory</code></p>
+]]></content>
+      <categories>
+        <category>Hive</category>
       </categories>
   </entry>
   <entry>
@@ -4454,6 +4494,17 @@
       </categories>
   </entry>
   <entry>
+    <title>牛逼的 Bitmap 算法</title>
+    <url>/2019/12/09/bitmap/</url>
+    <content><![CDATA[<p>牛逼的 Bitmap 算法</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前就知道位图很牛逼，感兴趣的可以看玻璃猫的文章<a href="https://mp.weixin.qq.com/s/XqRYoSmRFguVgdGx9WvPDQ" target="_blank" rel="noopener">【漫画】牛逼的Bitmap算法</a>，我只是个技术搬运工</p>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Cloudera Manager 中 Event Server 报 No such file or directory</title>
     <url>/2019/12/09/CM-Event-Server-NoSuchFileOrDirectory/</url>
     <content><![CDATA[<p>Cloudera Manager 中 Event Server 报 No such file or directory</p>
@@ -4472,17 +4523,6 @@
 ]]></content>
       <categories>
         <category>CDH</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>牛逼的 Bitmap 算法</title>
-    <url>/2019/12/09/bitmap/</url>
-    <content><![CDATA[<p>牛逼的 Bitmap 算法</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前就知道位图很牛逼，感兴趣的可以看玻璃猫的文章<a href="https://mp.weixin.qq.com/s/XqRYoSmRFguVgdGx9WvPDQ" target="_blank" rel="noopener">【漫画】牛逼的Bitmap算法</a>，我只是个技术搬运工</p>
-]]></content>
-      <categories>
-        <category>Algorithm</category>
       </categories>
   </entry>
   <entry>
@@ -4865,17 +4905,6 @@
       </categories>
   </entry>
   <entry>
-    <title>CDH 如何给 Hadoop 集群划分角色</title>
-    <url>/2019/11/26/CDH-Assign-Roles/</url>
-    <content><![CDATA[<p>介绍由Cloudera Manager管理的CDH集群的角色划分</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>请自行参阅 Fayson 的文章<a href="https://mp.weixin.qq.com/s/KcTAAo4nrMw-xKCZiChK_w" target="_blank" rel="noopener">如何给Hadoop集群划分角色</a></p>
-]]></content>
-      <categories>
-        <category>CDH</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HBase 场景</title>
     <url>/2019/11/26/HBase-scene/</url>
     <content><![CDATA[<p>HBase 场景梳理</p>
@@ -4899,6 +4928,17 @@
 ]]></content>
       <categories>
         <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>CDH 如何给 Hadoop 集群划分角色</title>
+    <url>/2019/11/26/CDH-Assign-Roles/</url>
+    <content><![CDATA[<p>介绍由Cloudera Manager管理的CDH集群的角色划分</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>请自行参阅 Fayson 的文章<a href="https://mp.weixin.qq.com/s/KcTAAo4nrMw-xKCZiChK_w" target="_blank" rel="noopener">如何给Hadoop集群划分角色</a></p>
+]]></content>
+      <categories>
+        <category>CDH</category>
       </categories>
   </entry>
   <entry>
@@ -5454,53 +5494,6 @@
       </categories>
   </entry>
   <entry>
-    <title>JVM 堆内存 heap 详解</title>
-    <url>/2019/11/04/Java-heap/</url>
-    <content><![CDATA[<p>JAVA堆内存管理是影响性能主要因素之一</p>
-<hr>
-<h4 id="堆划分"><a href="#堆划分" class="headerlink" title="堆划分"></a>堆划分</h4><p><img src="/images/blog/2019-11-05-1.png" alt></p>
-<ul>
-<li>JVM内存划分为堆内存和非堆内存，堆内存分为年轻代（Young Generation）、老年代（Old Generation），非堆内存就一个永久代（Permanent Generation）</li>
-<li>年轻代又分为 Eden 和 Survivor 区。Survivor区由 FromSpace 和 ToSpace 组成。Eden区占大容量，Survivor 两个区占小容量，默认比例是8:1:1</li>
-<li>堆内存用途: 存放的是对象，垃圾收集器就是收集这些对象，然后根据GC算法回收</li>
-<li>非堆内存用途: 永久代，也称为方法区，存储程序运行时长期存活的对象，比如类的元数据、方法、常量、属性等</li>
-</ul>
-<blockquote>
-<p>年轻代（New）: 年轻代用来存放JVM刚分配的Java对象<br>年老代（Tenured）: 年轻代中经过垃圾回收没有回收掉的对象将被Copy到年老代<br>永久代（Perm）: 永久代存放Class、Method元信息，其大小跟项目的规模、类、方法的量有关，一般设置为128M就足够，设置原则是预留30%的空间</p>
-</blockquote>
-<p><strong>在JDK1.8版本废弃了永久代，替代的是元空间（MetaSpace），元空间与永久代上类似，都是方法区的实现，他们最大区别是：元空间并不在JVM中，而是使用本地内存。</strong></p>
-<p>永久代有两个参数</p>
-<ul>
-<li>-XX:PermSize: 永久代初始大小</li>
-<li>-XX:MaxPermSize: 永久代最大允许大小</li>
-</ul>
-<p>元空间也有两个参数: </p>
-<ul>
-<li>-XX:MetaspaceSize: 初始化元空间大小，控制发生GC阈值</li>
-<li>-XX:MaxMetaspaceSize: 限制元空间大小上限，防止异常占用过多物理内存</li>
-</ul>
-<h4 id="堆内存溢出"><a href="#堆内存溢出" class="headerlink" title="堆内存溢出"></a>堆内存溢出</h4><p>在年轻代中经过GC后还存活的对象会被复制到老年代中。当老年代空间不足时，JVM会对老年代进行完全的垃圾回收（Full GC）</p>
-<p>如果GC后，还是无法存放从Survivor区复制过来的对象，就会出现OOM（Out of Memory）</p>
-<p>OOM（Out of Memory）异常常见有以下几个原因</p>
-<ul>
-<li>老年代内存不足: java.lang.OutOfMemoryError:Javaheapspace</li>
-<li>永久代内存不足: java.lang.OutOfMemoryError:PermGenspace</li>
-<li>代码bug，占用内存无法及时回收</li>
-</ul>
-<p>OOM在这几个内存区都有可能出现，实际遇到OOM时，能根据异常信息定位到哪个区的内存溢出</p>
-<p>可以通过添加个参数-XX:+HeapDumpOnOutMemoryError，让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便事后分析。 -XX:HeapDumpPath=${目录} 表示生成DUMP文件的路径，也可以指定文件名称，例-XX:HeapDumpPath=${目录}/java_heapdump.hprof</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/UncleWang001/articles/10422289.html" target="_blank" rel="noopener">JVM堆内存(heap)详解</a></li>
-<li><a href="https://juejin.im/post/5b8d2a5551882542ba1ddcf8" target="_blank" rel="noopener">JVM 系列文章之 Full GC 和 Minor GC</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>JVM</category>
-      </categories>
-  </entry>
-  <entry>
     <title>CDH 6.3.1 安装</title>
     <url>/2019/11/04/CDH-6.3.1/</url>
     <content><![CDATA[<p>CDH 6.3.1 安装</p>
@@ -5684,6 +5677,53 @@
       </categories>
   </entry>
   <entry>
+    <title>JVM 堆内存 heap 详解</title>
+    <url>/2019/11/04/Java-heap/</url>
+    <content><![CDATA[<p>JAVA堆内存管理是影响性能主要因素之一</p>
+<hr>
+<h4 id="堆划分"><a href="#堆划分" class="headerlink" title="堆划分"></a>堆划分</h4><p><img src="/images/blog/2019-11-05-1.png" alt></p>
+<ul>
+<li>JVM内存划分为堆内存和非堆内存，堆内存分为年轻代（Young Generation）、老年代（Old Generation），非堆内存就一个永久代（Permanent Generation）</li>
+<li>年轻代又分为 Eden 和 Survivor 区。Survivor区由 FromSpace 和 ToSpace 组成。Eden区占大容量，Survivor 两个区占小容量，默认比例是8:1:1</li>
+<li>堆内存用途: 存放的是对象，垃圾收集器就是收集这些对象，然后根据GC算法回收</li>
+<li>非堆内存用途: 永久代，也称为方法区，存储程序运行时长期存活的对象，比如类的元数据、方法、常量、属性等</li>
+</ul>
+<blockquote>
+<p>年轻代（New）: 年轻代用来存放JVM刚分配的Java对象<br>年老代（Tenured）: 年轻代中经过垃圾回收没有回收掉的对象将被Copy到年老代<br>永久代（Perm）: 永久代存放Class、Method元信息，其大小跟项目的规模、类、方法的量有关，一般设置为128M就足够，设置原则是预留30%的空间</p>
+</blockquote>
+<p><strong>在JDK1.8版本废弃了永久代，替代的是元空间（MetaSpace），元空间与永久代上类似，都是方法区的实现，他们最大区别是：元空间并不在JVM中，而是使用本地内存。</strong></p>
+<p>永久代有两个参数</p>
+<ul>
+<li>-XX:PermSize: 永久代初始大小</li>
+<li>-XX:MaxPermSize: 永久代最大允许大小</li>
+</ul>
+<p>元空间也有两个参数: </p>
+<ul>
+<li>-XX:MetaspaceSize: 初始化元空间大小，控制发生GC阈值</li>
+<li>-XX:MaxMetaspaceSize: 限制元空间大小上限，防止异常占用过多物理内存</li>
+</ul>
+<h4 id="堆内存溢出"><a href="#堆内存溢出" class="headerlink" title="堆内存溢出"></a>堆内存溢出</h4><p>在年轻代中经过GC后还存活的对象会被复制到老年代中。当老年代空间不足时，JVM会对老年代进行完全的垃圾回收（Full GC）</p>
+<p>如果GC后，还是无法存放从Survivor区复制过来的对象，就会出现OOM（Out of Memory）</p>
+<p>OOM（Out of Memory）异常常见有以下几个原因</p>
+<ul>
+<li>老年代内存不足: java.lang.OutOfMemoryError:Javaheapspace</li>
+<li>永久代内存不足: java.lang.OutOfMemoryError:PermGenspace</li>
+<li>代码bug，占用内存无法及时回收</li>
+</ul>
+<p>OOM在这几个内存区都有可能出现，实际遇到OOM时，能根据异常信息定位到哪个区的内存溢出</p>
+<p>可以通过添加个参数-XX:+HeapDumpOnOutMemoryError，让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便事后分析。 -XX:HeapDumpPath=${目录} 表示生成DUMP文件的路径，也可以指定文件名称，例-XX:HeapDumpPath=${目录}/java_heapdump.hprof</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/UncleWang001/articles/10422289.html" target="_blank" rel="noopener">JVM堆内存(heap)详解</a></li>
+<li><a href="https://juejin.im/post/5b8d2a5551882542ba1ddcf8" target="_blank" rel="noopener">JVM 系列文章之 Full GC 和 Minor GC</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>JVM</category>
+      </categories>
+  </entry>
+  <entry>
     <title>CMS 原理</title>
     <url>/2019/10/29/CMS/</url>
     <content><![CDATA[<p>CMS(Concurrent Mark and Swee 并发-标记-清除)</p>
@@ -5805,53 +5845,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Java内存分析工具 jmap</title>
-    <url>/2019/10/24/jmap/</url>
-    <content><![CDATA[<p>使用 jmap 分析JVM内存状态</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><h4 id="heap"><a href="#heap" class="headerlink" title="heap"></a>heap</h4><p>查看整个JVM内存状态 </p>
-<p>打印 heap 的概要信息，GC使用的算法，heap 的配置和使用情况，可以用此来判断内存目前的使用情况以及垃圾回收情况。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jmap -heap 1234</span><br><span class="line"></span><br><span class="line">Attaching to process ID 13497, please wait...</span><br><span class="line">Debugger attached successfully.</span><br><span class="line">Server compiler detected.</span><br><span class="line">JVM version is 25.201-b09</span><br><span class="line"></span><br><span class="line">using thread-local object allocation.</span><br><span class="line">Parallel GC with 2 thread(s)</span><br><span class="line"></span><br><span class="line">Heap Configuration:</span><br><span class="line">   MinHeapFreeRatio         &#x3D; 0</span><br><span class="line">   MaxHeapFreeRatio         &#x3D; 100</span><br><span class="line">   MaxHeapSize              &#x3D; 1048576000 (1000.0MB)</span><br><span class="line">   NewSize                  &#x3D; 87031808 (83.0MB)</span><br><span class="line">   MaxNewSize               &#x3D; 349175808 (333.0MB)</span><br><span class="line">   OldSize                  &#x3D; 175112192 (167.0MB)</span><br><span class="line">   NewRatio                 &#x3D; 2</span><br><span class="line">   SurvivorRatio            &#x3D; 8</span><br><span class="line">   MetaspaceSize            &#x3D; 21807104 (20.796875MB)</span><br><span class="line">   CompressedClassSpaceSize &#x3D; 1073741824 (1024.0MB)</span><br><span class="line">   MaxMetaspaceSize         &#x3D; 17592186044415 MB</span><br><span class="line">   G1HeapRegionSize         &#x3D; 0 (0.0MB)</span><br><span class="line"></span><br><span class="line">Heap Usage:</span><br><span class="line">PS Young Generation</span><br><span class="line">Eden Space:</span><br><span class="line">   capacity &#x3D; 35127296 (33.5MB)</span><br><span class="line">   used     &#x3D; 31401816 (29.947105407714844MB)</span><br><span class="line">   free     &#x3D; 3725480 (3.5528945922851562MB)</span><br><span class="line">   89.39434450064132% used</span><br><span class="line">From Space:</span><br><span class="line">   capacity &#x3D; 524288 (0.5MB)</span><br><span class="line">   used     &#x3D; 131072 (0.125MB)</span><br><span class="line">   free     &#x3D; 393216 (0.375MB)</span><br><span class="line">   25.0% used</span><br><span class="line">To Space:</span><br><span class="line">   capacity &#x3D; 524288 (0.5MB)</span><br><span class="line">   used     &#x3D; 0 (0.0MB)</span><br><span class="line">   free     &#x3D; 524288 (0.5MB)</span><br><span class="line">   0.0% used</span><br><span class="line">PS Old Generation</span><br><span class="line">   capacity &#x3D; 92798976 (88.5MB)</span><br><span class="line">   used     &#x3D; 11140584 (10.624488830566406MB)</span><br><span class="line">   free     &#x3D; 81658392 (77.8755111694336MB)</span><br><span class="line">   12.005072124933791% used</span><br><span class="line"></span><br><span class="line">12155 interned Strings occupying 1063376 bytes.</span><br></pre></td></tr></table></figure>
-
-<h4 id="histo"><a href="#histo" class="headerlink" title="histo"></a>histo</h4><p>查看JVM堆中对象详细占用情况</p>
-<p>打印堆的对象统计，包括对象数、内存大小等。jmap -histo:live 这个命令执行，JVM会先触发gc，然后再统计信息。</p>
-<p>列对应信息为编号id、实例个数、所有实例大小、类名</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jmap -histo 783</span><br><span class="line"></span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:        286511        9516456  [Ljava.lang.Object;</span><br><span class="line">   2:        113692        9458248  [C</span><br><span class="line">   3:         31510        6249248  [B</span><br><span class="line">   4:        132529        4240928  java.io.ObjectStreamClass$WeakClassKey</span><br><span class="line">   5:         95868        3834720  java.util.TreeMap$Entry</span><br><span class="line">   6:         14097        3740048  [I</span><br><span class="line">   7:         60312        1447488  java.lang.String</span><br><span class="line">   8:         25273        1213104  java.util.HashMap</span><br><span class="line">   9:         46425        1114200  java.lang.Long</span><br><span class="line">  10:         10056        1045824  java.io.ObjectStreamClass</span><br><span class="line">  11:         10429         500592  java.util.TreeMap</span><br><span class="line">  12:          7332         470824  [Ljava.util.Hashtable$Entry;</span><br><span class="line">  13:         14637         468384  java.util.Vector</span><br><span class="line">  14:          4609         442464  java.lang.management.ThreadInfo</span><br><span class="line">  15:         12704         406528  java.util.TreeMap$KeyIterator</span><br><span class="line">  16:         15719         377256  java.io.SerialCallbackContext</span><br><span class="line">  17:          7325         351600  java.util.Hashtable</span><br></pre></td></tr></table></figure>
-
-<h4 id="dump"><a href="#dump" class="headerlink" title="dump"></a>dump</h4><p>dump堆到文件，format指定输出格式，live指明是活着的对象，file指定文件名</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jmap -dump:live,format&#x3D;b,file&#x3D;&#x2F;lihm.hprof 129665</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>这个命令执行，JVM会将整个heap的信息dump写入到一个文件，heap如果比较大的话，就会导致这个过程比较耗时，并且执行的过程中为了保证dump的信息是可靠的，所以会暂停应用， 线上系统慎用。</p>
-</blockquote>
-<p>lihm.hprof 为二进制文件，<code>less</code> 命令查看不了，得用分析工具分析，比如jhat、MAT</p>
-<p>jhat 查看</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jhat -J-Xmx1024M lihm.hprof</span><br><span class="line">Reading from lihm.txt...</span><br><span class="line">Dump file created Thu Oct 24 16:26:47 CST 2019</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 104381 objects...</span><br><span class="line">Chasing references, expect 20 dots....................</span><br><span class="line">Eliminating duplicate references....................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 7000</span><br><span class="line">Server is ready.</span><br></pre></td></tr></table></figure>
-
-<p>访问7000端口, 可以统计实例总数、占用大小</p>
-<p><img src="/images/blog/2019-10-24-1.png" alt></p>
-<p><img src="/images/blog/2019-10-24-2.png" alt></p>
-<p>MAT工具的下载和安装</p>
-<blockquote>
-<p>MAT(Memory Analyzer Tool)工具是eclipse的一个插件(MAT也可以单独使用)，使用起来非常方便，尤其是在分析大内存的dump文件时，可以非常直观的看到各个对象在堆空间中所占用的内存大小、类实例数量、对象引用关系、利用OQL对象查询，以及可以很方便的找出对象GC Roots的相关信息，当然最吸引人的还是能够快速为开发人员生成内存泄露报表，方便定位问题和分析问题。</p>
-</blockquote>
-<p>MAT工具的<a href="http://www.eclipse.org/mat/downloads.php" target="_blank" rel="noopener">下载地址</a>, 具体参考<a href="https://blog.csdn.net/Jin_Kwok/article/details/80326088" target="_blank" rel="noopener">Java内存分析工具MAT(Memory Analyzer Tool)安装使用实例</a></p>
-<h4 id="F"><a href="#F" class="headerlink" title="-F"></a>-F</h4><p>强制模式。如果指定的pid没有响应，请使用jmap -dump或jmap -histo选项。此模式下，不支持live子选项。</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/lujiango/p/9002270.html" target="_blank" rel="noopener">Java内存分析工具jmap</a></li>
-<li><a href="https://blog.csdn.net/xidiancoder/article/details/70948569" target="_blank" rel="noopener">使用jmap dump 分析JVM内存状态</a></li>
-<li><a href="https://www.cnblogs.com/luao/p/10622220.html" target="_blank" rel="noopener">通过jstack与jmap分析一次线上故障</a></li>
-<li><a href="https://www.jianshu.com/p/067216f780e4" target="_blank" rel="noopener">jmap - JVM堆内存分析</a></li>
-<li><a href="https://blog.csdn.net/Jin_Kwok/article/details/80326088" target="_blank" rel="noopener">Java内存分析工具MAT(Memory Analyzer Tool)安装使用实例</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>JVM</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HDFS 文件读写流程</title>
     <url>/2019/10/24/HDFS-RW/</url>
     <content><![CDATA[<p>HDFS 文件读写流程 </p>
@@ -5899,6 +5892,53 @@
 ]]></content>
       <categories>
         <category>HDFS</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Java内存分析工具 jmap</title>
+    <url>/2019/10/24/jmap/</url>
+    <content><![CDATA[<p>使用 jmap 分析JVM内存状态</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><h4 id="heap"><a href="#heap" class="headerlink" title="heap"></a>heap</h4><p>查看整个JVM内存状态 </p>
+<p>打印 heap 的概要信息，GC使用的算法，heap 的配置和使用情况，可以用此来判断内存目前的使用情况以及垃圾回收情况。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jmap -heap 1234</span><br><span class="line"></span><br><span class="line">Attaching to process ID 13497, please wait...</span><br><span class="line">Debugger attached successfully.</span><br><span class="line">Server compiler detected.</span><br><span class="line">JVM version is 25.201-b09</span><br><span class="line"></span><br><span class="line">using thread-local object allocation.</span><br><span class="line">Parallel GC with 2 thread(s)</span><br><span class="line"></span><br><span class="line">Heap Configuration:</span><br><span class="line">   MinHeapFreeRatio         &#x3D; 0</span><br><span class="line">   MaxHeapFreeRatio         &#x3D; 100</span><br><span class="line">   MaxHeapSize              &#x3D; 1048576000 (1000.0MB)</span><br><span class="line">   NewSize                  &#x3D; 87031808 (83.0MB)</span><br><span class="line">   MaxNewSize               &#x3D; 349175808 (333.0MB)</span><br><span class="line">   OldSize                  &#x3D; 175112192 (167.0MB)</span><br><span class="line">   NewRatio                 &#x3D; 2</span><br><span class="line">   SurvivorRatio            &#x3D; 8</span><br><span class="line">   MetaspaceSize            &#x3D; 21807104 (20.796875MB)</span><br><span class="line">   CompressedClassSpaceSize &#x3D; 1073741824 (1024.0MB)</span><br><span class="line">   MaxMetaspaceSize         &#x3D; 17592186044415 MB</span><br><span class="line">   G1HeapRegionSize         &#x3D; 0 (0.0MB)</span><br><span class="line"></span><br><span class="line">Heap Usage:</span><br><span class="line">PS Young Generation</span><br><span class="line">Eden Space:</span><br><span class="line">   capacity &#x3D; 35127296 (33.5MB)</span><br><span class="line">   used     &#x3D; 31401816 (29.947105407714844MB)</span><br><span class="line">   free     &#x3D; 3725480 (3.5528945922851562MB)</span><br><span class="line">   89.39434450064132% used</span><br><span class="line">From Space:</span><br><span class="line">   capacity &#x3D; 524288 (0.5MB)</span><br><span class="line">   used     &#x3D; 131072 (0.125MB)</span><br><span class="line">   free     &#x3D; 393216 (0.375MB)</span><br><span class="line">   25.0% used</span><br><span class="line">To Space:</span><br><span class="line">   capacity &#x3D; 524288 (0.5MB)</span><br><span class="line">   used     &#x3D; 0 (0.0MB)</span><br><span class="line">   free     &#x3D; 524288 (0.5MB)</span><br><span class="line">   0.0% used</span><br><span class="line">PS Old Generation</span><br><span class="line">   capacity &#x3D; 92798976 (88.5MB)</span><br><span class="line">   used     &#x3D; 11140584 (10.624488830566406MB)</span><br><span class="line">   free     &#x3D; 81658392 (77.8755111694336MB)</span><br><span class="line">   12.005072124933791% used</span><br><span class="line"></span><br><span class="line">12155 interned Strings occupying 1063376 bytes.</span><br></pre></td></tr></table></figure>
+
+<h4 id="histo"><a href="#histo" class="headerlink" title="histo"></a>histo</h4><p>查看JVM堆中对象详细占用情况</p>
+<p>打印堆的对象统计，包括对象数、内存大小等。jmap -histo:live 这个命令执行，JVM会先触发gc，然后再统计信息。</p>
+<p>列对应信息为编号id、实例个数、所有实例大小、类名</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jmap -histo 783</span><br><span class="line"></span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:        286511        9516456  [Ljava.lang.Object;</span><br><span class="line">   2:        113692        9458248  [C</span><br><span class="line">   3:         31510        6249248  [B</span><br><span class="line">   4:        132529        4240928  java.io.ObjectStreamClass$WeakClassKey</span><br><span class="line">   5:         95868        3834720  java.util.TreeMap$Entry</span><br><span class="line">   6:         14097        3740048  [I</span><br><span class="line">   7:         60312        1447488  java.lang.String</span><br><span class="line">   8:         25273        1213104  java.util.HashMap</span><br><span class="line">   9:         46425        1114200  java.lang.Long</span><br><span class="line">  10:         10056        1045824  java.io.ObjectStreamClass</span><br><span class="line">  11:         10429         500592  java.util.TreeMap</span><br><span class="line">  12:          7332         470824  [Ljava.util.Hashtable$Entry;</span><br><span class="line">  13:         14637         468384  java.util.Vector</span><br><span class="line">  14:          4609         442464  java.lang.management.ThreadInfo</span><br><span class="line">  15:         12704         406528  java.util.TreeMap$KeyIterator</span><br><span class="line">  16:         15719         377256  java.io.SerialCallbackContext</span><br><span class="line">  17:          7325         351600  java.util.Hashtable</span><br></pre></td></tr></table></figure>
+
+<h4 id="dump"><a href="#dump" class="headerlink" title="dump"></a>dump</h4><p>dump堆到文件，format指定输出格式，live指明是活着的对象，file指定文件名</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jmap -dump:live,format&#x3D;b,file&#x3D;&#x2F;lihm.hprof 129665</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这个命令执行，JVM会将整个heap的信息dump写入到一个文件，heap如果比较大的话，就会导致这个过程比较耗时，并且执行的过程中为了保证dump的信息是可靠的，所以会暂停应用， 线上系统慎用。</p>
+</blockquote>
+<p>lihm.hprof 为二进制文件，<code>less</code> 命令查看不了，得用分析工具分析，比如jhat、MAT</p>
+<p>jhat 查看</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; jhat -J-Xmx1024M lihm.hprof</span><br><span class="line">Reading from lihm.txt...</span><br><span class="line">Dump file created Thu Oct 24 16:26:47 CST 2019</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 104381 objects...</span><br><span class="line">Chasing references, expect 20 dots....................</span><br><span class="line">Eliminating duplicate references....................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 7000</span><br><span class="line">Server is ready.</span><br></pre></td></tr></table></figure>
+
+<p>访问7000端口, 可以统计实例总数、占用大小</p>
+<p><img src="/images/blog/2019-10-24-1.png" alt></p>
+<p><img src="/images/blog/2019-10-24-2.png" alt></p>
+<p>MAT工具的下载和安装</p>
+<blockquote>
+<p>MAT(Memory Analyzer Tool)工具是eclipse的一个插件(MAT也可以单独使用)，使用起来非常方便，尤其是在分析大内存的dump文件时，可以非常直观的看到各个对象在堆空间中所占用的内存大小、类实例数量、对象引用关系、利用OQL对象查询，以及可以很方便的找出对象GC Roots的相关信息，当然最吸引人的还是能够快速为开发人员生成内存泄露报表，方便定位问题和分析问题。</p>
+</blockquote>
+<p>MAT工具的<a href="http://www.eclipse.org/mat/downloads.php" target="_blank" rel="noopener">下载地址</a>, 具体参考<a href="https://blog.csdn.net/Jin_Kwok/article/details/80326088" target="_blank" rel="noopener">Java内存分析工具MAT(Memory Analyzer Tool)安装使用实例</a></p>
+<h4 id="F"><a href="#F" class="headerlink" title="-F"></a>-F</h4><p>强制模式。如果指定的pid没有响应，请使用jmap -dump或jmap -histo选项。此模式下，不支持live子选项。</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/lujiango/p/9002270.html" target="_blank" rel="noopener">Java内存分析工具jmap</a></li>
+<li><a href="https://blog.csdn.net/xidiancoder/article/details/70948569" target="_blank" rel="noopener">使用jmap dump 分析JVM内存状态</a></li>
+<li><a href="https://www.cnblogs.com/luao/p/10622220.html" target="_blank" rel="noopener">通过jstack与jmap分析一次线上故障</a></li>
+<li><a href="https://www.jianshu.com/p/067216f780e4" target="_blank" rel="noopener">jmap - JVM堆内存分析</a></li>
+<li><a href="https://blog.csdn.net/Jin_Kwok/article/details/80326088" target="_blank" rel="noopener">Java内存分析工具MAT(Memory Analyzer Tool)安装使用实例</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>JVM</category>
       </categories>
   </entry>
   <entry>
@@ -6419,55 +6459,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Linux 内存</title>
-    <url>/2019/08/28/Linux-Memory/</url>
-    <content><![CDATA[<p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。阅读<a href="https://www.jellythink.com/archives/462" target="_blank" rel="noopener">Linux性能监测：内存篇</a></p>
-<h4 id="物理内存和虚拟内存"><a href="#物理内存和虚拟内存" class="headerlink" title="物理内存和虚拟内存"></a>物理内存和虚拟内存</h4><p>说到内存，我们都会说到物理内存和虚拟内存的</p>
-<p>物理内存就是真实的硬件设备，也就是咱们的内存条</p>
-<p>虚拟内存（Virtual Memory）是把计算机的内存空间扩展到硬盘，物理内存（RAM）和硬盘的一部分空间（SWAP）组合在一起作为虚拟内存为计算机提供了一个连贯的虚拟内存空间</p>
-<p>好处是我们拥有的内存“变多了”，可以运行更多、更大的程序，坏处是把部分硬盘当内存用整体性能受到影响，硬盘读写速度要比内存慢几个数量级，并且RAM和SWAP之间的交换增加了系统的负担</p>
-<p>需要记住的一点是Linux会在物理内存不足时，使用交换分区的虚拟内存</p>
-<p>关于虚拟内存更多跳转<a href="https://www.cnblogs.com/yitianyouyitian/p/9603390.html" target="_blank" rel="noopener">内存参数</a></p>
-<p>关于物理内存和虚拟内存的释放参阅<a href="https://www.cnblogs.com/bymo/p/7569281.html" target="_blank" rel="noopener">Linux 释放物理内存和虚拟内存</a></p>
-<p>物理内存释放有坑。。。。 <a href="http://www.51niux.com/?id=76" target="_blank" rel="noopener">Linux 清除内存中的cache</a> 内核2.6的版本执行上述的操作都没问题的，但是到了内核3系列，就不能执行echo 0 &gt;/proc/sys/vm/drop_caches的操作了，这是一个坑，重启才能改回去</p>
-<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>请跳转阅读<a href="https://www.cnblogs.com/operationhome/p/10362776.html" target="_blank" rel="noopener">centos6 free 和 centos 7的free 的差异与对比</a></p>
-<p>free命令可以显示Linux系统中空闲的、已用的物理内存及swap内存，及被内核使用的buffer</p>
-<p>free命令习惯上有以下几种形式</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">free -k # 以KB为单位显示内存使用情况</span><br><span class="line">free -m # 以MB为单位显示内存使用情况</span><br><span class="line">free -g # 以GB为单位显示内存使用情况</span><br><span class="line">free -h # 以人类友好的方式显示内存使用情况</span><br></pre></td></tr></table></figure>
-
-<p>输入free -m时，系统就会输出以下内容</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# free -g</span><br><span class="line">             total       used       free     shared    buffers     cached</span><br><span class="line">Mem:            61         19         41          0          0         10</span><br><span class="line">-&#x2F;+ buffers&#x2F;cache:          8         52</span><br><span class="line">Swap:            4          0          4</span><br></pre></td></tr></table></figure>
-
-<p>输出解释<br>total: 内存总数，物理内存总数<br>used: 已经使用的内存数<br>free: 空闲的内存数<br>shared: 多个进程共享的内存总额<br>buffers: 缓冲内存数<br>cached: 缓存内存数<br>- buffers/cached: 应用使用内存数<br>+ buffers/cached: 应用可用内存数<br>Swap: 交换分区，虚拟内存  </p>
-<p>通过free命令查看机器空闲内存时，会发现free的值很小。<br>这主要是因为，在Linux系统中有这么一种思想，内存不用白不用，因此它尽可能的cache和buffer一些数据，以方便下次使用。<br>但实际上这些内存也是可以立刻拿来使用</p>
-<p>在使用free命令时，都是需要重点关注 <code>- buffers/cached</code>和 + <code>buffers/cached</code>。</p>
-<p>- buffers/cached，即used - buffers/cached，表示应用程序实际使用的内存<br>+ buffers/cached，即free + buffers/cached，表示理论上都可以被使用的内存    </p>
-<p>可见-buffers/cache反映的是被程序实实在在吃掉的内存，而+buffers/cache反映的是可以挪用的内存总数。</p>
-<h4 id="cache、buffer"><a href="#cache、buffer" class="headerlink" title="cache、buffer"></a>cache、buffer</h4><p>buffer和cache是两个在计算机技术中被用滥的名词，放在不通语境下会有不同的意义</p>
-<p>在Linux的内存管理中，这里的buffer指Linux内存的：Buffer cache。这里的cache指Linux内存中的：Page cache。翻译成中文可以叫做缓冲区缓存和页面缓存</p>
-<p><strong>cached</strong></p>
-<p>当程序启动的时候，Linux内核首先检查CPU的缓存和物理内存，如果数据已经在内存里就忽略，如果数据不在内存里就引起一个缺页中断（Page Fault），然后从硬盘读取缺页，并把缺页缓存到物理内存里。</p>
-<p>缺页中断可分为主缺页中断（Major Page Fault）和次缺页中断（Minor Page Fault），要从磁盘读取数据而产生的中断是主缺页中断；数据已经被读入内存并被缓存起来，但是没有向MMU注册的情况，操作系统只需要在MMU中注册相关页对应的物理地址即可，从内存缓存区中而不是直接从硬盘中读取数据而产生的中断是次缺页中断。</p>
-<p>内存缓存区起到了预读硬盘的作用，内核先在物理内存里寻找缺页，没有的话产生次缺页中断从内存缓存里找，如果还没有发现的话就从硬盘读取。</p>
-<p>这里说的内存缓存区即为cached，主要用于提升读取相关页面的效率，内核会将经常访问的页面放到cached中，这样就提高了页面的命中率，cached越大，命中率就越高，就减少了I/O读请求</p>
-<p>如果 cache 的值很大，说明cache住的文件数很多。如果频繁访问到的文件都能被cache住，那么磁盘的读IO 必会非常小</p>
-<p>所以cached是用来给文件做缓冲。cached直接用来记忆我们打开的文件</p>
-<p><strong>buffers</strong></p>
-<p>Buffer cache则主要是设计用来在系统对块设备进行读写的时候，对块进行数据缓存的系统来使用</p>
-<p>buffers 主要用于I/O写，将应用程序的多次零碎写事件，集中到一个缓冲区(即buffers)，然后再一次性写入磁盘中，这样就提高了写磁盘的效率</p>
-<blockquote>
-<p>来自马哥Linux运维对Buffer和Cache解读</p>
-<p>Cache（缓存）位于CPU与内存之间的临时存储器，缓存容量比内存小的多但交换速度比内存要快得多。Cache通过缓存文件数据块，解决CPU运算速度与内存读写速度不匹配的矛盾，提高CPU和内存之间的数据交换速度。Cache缓存越大，CPU处理速度越快。</p>
-<p>Buffer（缓冲）高速缓冲存储器，通过缓存磁盘（I/O设备）数据块，加快对磁盘上数据的访问，减少I/O，提高内存和硬盘（或其他I/O设备）之间的数据交换速度。Buffer是即将要被写入磁盘的，而Cache是被从磁盘中读出来的。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Linux 网络</title>
     <url>/2019/08/28/Linux-Network/</url>
     <content><![CDATA[<p>Linux 网络</p>
@@ -6554,6 +6545,55 @@
       </categories>
   </entry>
   <entry>
+    <title>Linux 内存</title>
+    <url>/2019/08/28/Linux-Memory/</url>
+    <content><![CDATA[<p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>内存是评判服务器的一个非常重要的指标。内存的多少，可能会直接影响着服务器的整体性能。阅读<a href="https://www.jellythink.com/archives/462" target="_blank" rel="noopener">Linux性能监测：内存篇</a></p>
+<h4 id="物理内存和虚拟内存"><a href="#物理内存和虚拟内存" class="headerlink" title="物理内存和虚拟内存"></a>物理内存和虚拟内存</h4><p>说到内存，我们都会说到物理内存和虚拟内存的</p>
+<p>物理内存就是真实的硬件设备，也就是咱们的内存条</p>
+<p>虚拟内存（Virtual Memory）是把计算机的内存空间扩展到硬盘，物理内存（RAM）和硬盘的一部分空间（SWAP）组合在一起作为虚拟内存为计算机提供了一个连贯的虚拟内存空间</p>
+<p>好处是我们拥有的内存“变多了”，可以运行更多、更大的程序，坏处是把部分硬盘当内存用整体性能受到影响，硬盘读写速度要比内存慢几个数量级，并且RAM和SWAP之间的交换增加了系统的负担</p>
+<p>需要记住的一点是Linux会在物理内存不足时，使用交换分区的虚拟内存</p>
+<p>关于虚拟内存更多跳转<a href="https://www.cnblogs.com/yitianyouyitian/p/9603390.html" target="_blank" rel="noopener">内存参数</a></p>
+<p>关于物理内存和虚拟内存的释放参阅<a href="https://www.cnblogs.com/bymo/p/7569281.html" target="_blank" rel="noopener">Linux 释放物理内存和虚拟内存</a></p>
+<p>物理内存释放有坑。。。。 <a href="http://www.51niux.com/?id=76" target="_blank" rel="noopener">Linux 清除内存中的cache</a> 内核2.6的版本执行上述的操作都没问题的，但是到了内核3系列，就不能执行echo 0 &gt;/proc/sys/vm/drop_caches的操作了，这是一个坑，重启才能改回去</p>
+<h4 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h4><p>请跳转阅读<a href="https://www.cnblogs.com/operationhome/p/10362776.html" target="_blank" rel="noopener">centos6 free 和 centos 7的free 的差异与对比</a></p>
+<p>free命令可以显示Linux系统中空闲的、已用的物理内存及swap内存，及被内核使用的buffer</p>
+<p>free命令习惯上有以下几种形式</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">free -k # 以KB为单位显示内存使用情况</span><br><span class="line">free -m # 以MB为单位显示内存使用情况</span><br><span class="line">free -g # 以GB为单位显示内存使用情况</span><br><span class="line">free -h # 以人类友好的方式显示内存使用情况</span><br></pre></td></tr></table></figure>
+
+<p>输入free -m时，系统就会输出以下内容</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@massive-dataset-new-002 ~]# free -g</span><br><span class="line">             total       used       free     shared    buffers     cached</span><br><span class="line">Mem:            61         19         41          0          0         10</span><br><span class="line">-&#x2F;+ buffers&#x2F;cache:          8         52</span><br><span class="line">Swap:            4          0          4</span><br></pre></td></tr></table></figure>
+
+<p>输出解释<br>total: 内存总数，物理内存总数<br>used: 已经使用的内存数<br>free: 空闲的内存数<br>shared: 多个进程共享的内存总额<br>buffers: 缓冲内存数<br>cached: 缓存内存数<br>- buffers/cached: 应用使用内存数<br>+ buffers/cached: 应用可用内存数<br>Swap: 交换分区，虚拟内存  </p>
+<p>通过free命令查看机器空闲内存时，会发现free的值很小。<br>这主要是因为，在Linux系统中有这么一种思想，内存不用白不用，因此它尽可能的cache和buffer一些数据，以方便下次使用。<br>但实际上这些内存也是可以立刻拿来使用</p>
+<p>在使用free命令时，都是需要重点关注 <code>- buffers/cached</code>和 + <code>buffers/cached</code>。</p>
+<p>- buffers/cached，即used - buffers/cached，表示应用程序实际使用的内存<br>+ buffers/cached，即free + buffers/cached，表示理论上都可以被使用的内存    </p>
+<p>可见-buffers/cache反映的是被程序实实在在吃掉的内存，而+buffers/cache反映的是可以挪用的内存总数。</p>
+<h4 id="cache、buffer"><a href="#cache、buffer" class="headerlink" title="cache、buffer"></a>cache、buffer</h4><p>buffer和cache是两个在计算机技术中被用滥的名词，放在不通语境下会有不同的意义</p>
+<p>在Linux的内存管理中，这里的buffer指Linux内存的：Buffer cache。这里的cache指Linux内存中的：Page cache。翻译成中文可以叫做缓冲区缓存和页面缓存</p>
+<p><strong>cached</strong></p>
+<p>当程序启动的时候，Linux内核首先检查CPU的缓存和物理内存，如果数据已经在内存里就忽略，如果数据不在内存里就引起一个缺页中断（Page Fault），然后从硬盘读取缺页，并把缺页缓存到物理内存里。</p>
+<p>缺页中断可分为主缺页中断（Major Page Fault）和次缺页中断（Minor Page Fault），要从磁盘读取数据而产生的中断是主缺页中断；数据已经被读入内存并被缓存起来，但是没有向MMU注册的情况，操作系统只需要在MMU中注册相关页对应的物理地址即可，从内存缓存区中而不是直接从硬盘中读取数据而产生的中断是次缺页中断。</p>
+<p>内存缓存区起到了预读硬盘的作用，内核先在物理内存里寻找缺页，没有的话产生次缺页中断从内存缓存里找，如果还没有发现的话就从硬盘读取。</p>
+<p>这里说的内存缓存区即为cached，主要用于提升读取相关页面的效率，内核会将经常访问的页面放到cached中，这样就提高了页面的命中率，cached越大，命中率就越高，就减少了I/O读请求</p>
+<p>如果 cache 的值很大，说明cache住的文件数很多。如果频繁访问到的文件都能被cache住，那么磁盘的读IO 必会非常小</p>
+<p>所以cached是用来给文件做缓冲。cached直接用来记忆我们打开的文件</p>
+<p><strong>buffers</strong></p>
+<p>Buffer cache则主要是设计用来在系统对块设备进行读写的时候，对块进行数据缓存的系统来使用</p>
+<p>buffers 主要用于I/O写，将应用程序的多次零碎写事件，集中到一个缓冲区(即buffers)，然后再一次性写入磁盘中，这样就提高了写磁盘的效率</p>
+<blockquote>
+<p>来自马哥Linux运维对Buffer和Cache解读</p>
+<p>Cache（缓存）位于CPU与内存之间的临时存储器，缓存容量比内存小的多但交换速度比内存要快得多。Cache通过缓存文件数据块，解决CPU运算速度与内存读写速度不匹配的矛盾，提高CPU和内存之间的数据交换速度。Cache缓存越大，CPU处理速度越快。</p>
+<p>Buffer（缓冲）高速缓冲存储器，通过缓存磁盘（I/O设备）数据块，加快对磁盘上数据的访问，减少I/O，提高内存和硬盘（或其他I/O设备）之间的数据交换速度。Buffer是即将要被写入磁盘的，而Cache是被从磁盘中读出来的。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Linux IO</title>
     <url>/2019/08/28/Linux-IO/</url>
     <content><![CDATA[<p>I/O相关的应用通常用来处理大量数据，需要大量内存和存储，频繁I/O操作读、写数据</p>
@@ -6587,6 +6627,27 @@
 ]]></content>
       <categories>
         <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>使用 Flink 时遇到的问题</title>
+    <url>/2019/08/20/Flink-Problem/</url>
+    <content><![CDATA[<p>使用Flink时遇到的问题（不断更新中）</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>作为公司第一个吃 Flink 这支螃蟹的人肯定免不了踩坑，因此通过文字记录的方式记录踩坑经历</p>
+<h4 id="Could-not-build-the-program-from-JAR-file"><a href="#Could-not-build-the-program-from-JAR-file" class="headerlink" title="Could not build the program from JAR file."></a>Could not build the program from JAR file.</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报错</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Could not build the program from JAR file.</span><br><span class="line"></span><br><span class="line">Use the help option (-h or --help) to get help on the command.</span><br></pre></td></tr></table></figure>
+
+<p>这是需要配置 Hadoop Classpaths。 <a href="https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/hadoop.html#configuring-flink-with-hadoop-classpaths" target="_blank" rel="noopener">Configuring Flink with Hadoop Classpaths</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export HADOOP_CLASSPATH&#x3D;&#96;hadoop classpath&#96;</span><br></pre></td></tr></table></figure>
+
+<h4 id="UnsupportedClassVersionError"><a href="#UnsupportedClassVersionError" class="headerlink" title="UnsupportedClassVersionError"></a>UnsupportedClassVersionError</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报 UnsupportedClassVersionError 错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.UnsupportedClassVersionError: org&#x2F;apache&#x2F;flink&#x2F;client&#x2F;cli&#x2F;CliFrontend : Unsupported major.minor version 52.0</span><br><span class="line">        at java.lang.ClassLoader.defineClass1(Native Method)</span><br><span class="line">        at java.lang.ClassLoader.defineClass(ClassLoader.java:800)</span><br><span class="line">        at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)</span><br><span class="line">        at java.net.URLClassLoader.defineClass(URLClassLoader.java:449)</span><br><span class="line">        at java.net.URLClassLoader.access$100(URLClassLoader.java:71)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:361)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:355)</span><br><span class="line">        at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:354)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:425)</span><br><span class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:308)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)</span><br><span class="line">        at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:482)</span><br></pre></td></tr></table></figure>
+
+<p>Java 版本不对, Flink1.8 需要 JDK1.8 以上。修改环境变量 JAVA_HOME</p>
+]]></content>
+      <categories>
+        <category>Flink</category>
       </categories>
   </entry>
   <entry>
@@ -6629,27 +6690,6 @@
 ]]></content>
       <categories>
         <category>HBase</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>使用 Flink 时遇到的问题</title>
-    <url>/2019/08/20/Flink-Problem/</url>
-    <content><![CDATA[<p>使用Flink时遇到的问题（不断更新中）</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>作为公司第一个吃 Flink 这支螃蟹的人肯定免不了踩坑，因此通过文字记录的方式记录踩坑经历</p>
-<h4 id="Could-not-build-the-program-from-JAR-file"><a href="#Could-not-build-the-program-from-JAR-file" class="headerlink" title="Could not build the program from JAR file."></a>Could not build the program from JAR file.</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报错</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Could not build the program from JAR file.</span><br><span class="line"></span><br><span class="line">Use the help option (-h or --help) to get help on the command.</span><br></pre></td></tr></table></figure>
-
-<p>这是需要配置 Hadoop Classpaths。 <a href="https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/hadoop.html#configuring-flink-with-hadoop-classpaths" target="_blank" rel="noopener">Configuring Flink with Hadoop Classpaths</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">export HADOOP_CLASSPATH&#x3D;&#96;hadoop classpath&#96;</span><br></pre></td></tr></table></figure>
-
-<h4 id="UnsupportedClassVersionError"><a href="#UnsupportedClassVersionError" class="headerlink" title="UnsupportedClassVersionError"></a>UnsupportedClassVersionError</h4><p>用 Flink1.8 提交 jar 包到 Yarn 集群运行时报 UnsupportedClassVersionError 错误</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.UnsupportedClassVersionError: org&#x2F;apache&#x2F;flink&#x2F;client&#x2F;cli&#x2F;CliFrontend : Unsupported major.minor version 52.0</span><br><span class="line">        at java.lang.ClassLoader.defineClass1(Native Method)</span><br><span class="line">        at java.lang.ClassLoader.defineClass(ClassLoader.java:800)</span><br><span class="line">        at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)</span><br><span class="line">        at java.net.URLClassLoader.defineClass(URLClassLoader.java:449)</span><br><span class="line">        at java.net.URLClassLoader.access$100(URLClassLoader.java:71)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:361)</span><br><span class="line">        at java.net.URLClassLoader$1.run(URLClassLoader.java:355)</span><br><span class="line">        at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:354)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:425)</span><br><span class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:308)</span><br><span class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)</span><br><span class="line">        at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:482)</span><br></pre></td></tr></table></figure>
-
-<p>Java 版本不对, Flink1.8 需要 JDK1.8 以上。修改环境变量 JAVA_HOME</p>
-]]></content>
-      <categories>
-        <category>Flink</category>
       </categories>
   </entry>
   <entry>
@@ -6926,6 +6966,48 @@
       </categories>
   </entry>
   <entry>
+    <title>HBase 预分区</title>
+    <url>/2019/08/09/HBase-Prepartition/</url>
+    <content><![CDATA[<p>HBase 提供了预分区功能，即用户可以在创建表的时候对表按照一定的规则分区</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 存在热点问题。热点问题首选解决方法是 Rowkey 的散列与预分区设计</p>
+<p>Rowkey 散列可以参看<a href="https://lihuimintu.github.io/2019/08/07/HBase-Rowkey/" target="_blank" rel="noopener">HBase Rowkey 设计指南</a></p>
+<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p><strong>什么是预分区？</strong></p>
+<p>初次接触HBase的玩家，在创建HBase表的时候，不指分区的数目，另外就是 rowkey 设计不合理，导致热点。</p>
+<p>另外随着表越来越大，表将会进行split，分裂为2个分区。表在进行split的时候，会耗费大量的资源，频繁的分区对HBase的性能有巨大的影响。</p>
+<p>HBase提供了预分区功能，即用户可以在创建表的时候对表按照一定的规则分区。</p>
+<p><strong>预分区的目的是什么？</strong></p>
+<p>减少由于 region split 带来的资源消耗。从而提高HBase的性能。</p>
+<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><h5 id="shell"><a href="#shell" class="headerlink" title="shell"></a>shell</h5><p>通过 HBase shell 来创建</p>
+<p>在命令中指定分区的 Rowkey</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create &#39;t1&#39;, &#39;f1&#39;, SPLITS &#x3D;&gt; [&#39;10&#39;, &#39;20&#39;, &#39;30&#39;, &#39;40&#39;]</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, SPLITS &#x3D;&gt; [&#39;10&#39;, &#39;20&#39;, &#39;30&#39;, &#39;40&#39;]</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, &#123;NAME &#x3D;&gt; &#39;f2&#39;, TTL &#x3D;&gt; 240&#125;, SPLITS &#x3D;&gt; [&#39;10&#39;, &#39;20&#39;, &#39;30&#39;, &#39;40&#39;]</span><br></pre></td></tr></table></figure>
+
+<p>还可以通过 HBase shell 指定文件来创建</p>
+<p>在任意路径下创建一个保存分区 key 的文件，一行代表一个 Rowkey</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create &#39;t1&#39;, &#39;f1&#39;, SPLITS_FILE &#x3D;&gt; &#39;&#x2F;home&#x2F;hadmin&#x2F;hbase-1.3.1&#x2F;txt&#x2F;splits.txt&#39;</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, SPLITS_FILE &#x3D;&gt; &#39;&#x2F;home&#x2F;hadmin&#x2F;hbase-1.3.1&#x2F;txt&#x2F;splits.txt&#39;</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, &#123;NAME &#x3D;&gt; &#39;f2&#39;, TTL &#x3D;&gt; 240&#125;, SPLITS_FILE &#x3D;&gt; &#39;&#x2F;home&#x2F;hadmin&#x2F;hbase-1.3.1&#x2F;txt&#x2F;splits.txt&#39;</span><br></pre></td></tr></table></figure>
+
+<p>通过 HBase 自带三种 pre-split 的算法，分别是 <code>HexStringSplit</code>、<code>DecimalStringSplit</code> 和 <code>UniformSplit</code></p>
+<p>各种Split算法适用场景</p>
+<ul>
+<li>HexStringSplit: rowkey是十六进制的字符串作为前缀的。<a href="https://www.jianshu.com/p/d67a58eed1f1" target="_blank" rel="noopener">HexStringSplit预分区表</a></li>
+<li>DecimalStringSplit: rowkey是10进制数字字符串作为前缀的</li>
+<li>UniformSplit: rowkey前缀完全随机</li>
+</ul>
+<h5 id="api"><a href="#api" class="headerlink" title="api"></a>api</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">package api;</span><br><span class="line"></span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.hbase.HBaseConfiguration;</span><br><span class="line">import org.apache.hadoop.hbase.HColumnDescriptor;</span><br><span class="line">import org.apache.hadoop.hbase.HTableDescriptor;</span><br><span class="line">import org.apache.hadoop.hbase.TableName;</span><br><span class="line">import org.apache.hadoop.hbase.client.Admin;</span><br><span class="line">import org.apache.hadoop.hbase.client.Connection;</span><br><span class="line">import org.apache.hadoop.hbase.client.ConnectionFactory;</span><br><span class="line">import org.apache.hadoop.hbase.util.Bytes;</span><br><span class="line"></span><br><span class="line">public class create_table_sample2 &#123;</span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        Configuration conf &#x3D; HBaseConfiguration.create();</span><br><span class="line">        conf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;192.168.1.80,192.168.1.81,192.168.1.82&quot;);</span><br><span class="line">        Connection connection &#x3D; ConnectionFactory.createConnection(conf);</span><br><span class="line">        Admin admin &#x3D; connection.getAdmin();</span><br><span class="line"></span><br><span class="line">        TableName table_name &#x3D; TableName.valueOf(&quot;TEST1&quot;);</span><br><span class="line">        if (admin.tableExists(table_name)) &#123;</span><br><span class="line">            admin.disableTable(table_name);</span><br><span class="line">            admin.deleteTable(table_name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        HTableDescriptor desc &#x3D; new HTableDescriptor(table_name);</span><br><span class="line">        HColumnDescriptor family1 &#x3D; new HColumnDescriptor(constants.COLUMN_FAMILY_DF.getBytes());</span><br><span class="line">        family1.setTimeToLive(3 * 60 * 60 * 24);     &#x2F;&#x2F;过期时间</span><br><span class="line">        family1.setMaxVersions(3);                   &#x2F;&#x2F;版本数</span><br><span class="line">        desc.addFamily(family1);</span><br><span class="line"></span><br><span class="line">        byte[][] splitKeys &#x3D; &#123;</span><br><span class="line">            Bytes.toBytes(&quot;row01&quot;),</span><br><span class="line">            Bytes.toBytes(&quot;row02&quot;)</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        admin.createTable(desc, splitKeys);</span><br><span class="line">        admin.close();</span><br><span class="line">        connection.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/quchunhui/p/7543385.html" target="_blank" rel="noopener">HBase预分区方法</a></li>
+<li><a href="https://www.cnblogs.com/bdifn/p/3801737.html" target="_blank" rel="noopener">HBase Rowkey的散列与预分区设计</a></li>
+<li><a href="https://help.aliyun.com/document_detail/71787.html?spm=a2c6h.13066369.0.0.7aec487crCTfhS" target="_blank" rel="noopener">预分区</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Yarn 认识</title>
     <url>/2019/08/09/Yarn/</url>
     <content><![CDATA[<p>Apache Hadoop YARN 是一种新的 Hadoop 资源管理器，它是一个通用资源管理系统，可为上层应用提供统一的资源管理和调度</p>
@@ -7005,48 +7087,6 @@
 ]]></content>
       <categories>
         <category>Yarn</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>HBase 预分区</title>
-    <url>/2019/08/09/HBase-Prepartition/</url>
-    <content><![CDATA[<p>HBase 提供了预分区功能，即用户可以在创建表的时候对表按照一定的规则分区</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>HBase 存在热点问题。热点问题首选解决方法是 Rowkey 的散列与预分区设计</p>
-<p>Rowkey 散列可以参看<a href="https://lihuimintu.github.io/2019/08/07/HBase-Rowkey/" target="_blank" rel="noopener">HBase Rowkey 设计指南</a></p>
-<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p><strong>什么是预分区？</strong></p>
-<p>初次接触HBase的玩家，在创建HBase表的时候，不指分区的数目，另外就是 rowkey 设计不合理，导致热点。</p>
-<p>另外随着表越来越大，表将会进行split，分裂为2个分区。表在进行split的时候，会耗费大量的资源，频繁的分区对HBase的性能有巨大的影响。</p>
-<p>HBase提供了预分区功能，即用户可以在创建表的时候对表按照一定的规则分区。</p>
-<p><strong>预分区的目的是什么？</strong></p>
-<p>减少由于 region split 带来的资源消耗。从而提高HBase的性能。</p>
-<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><h5 id="shell"><a href="#shell" class="headerlink" title="shell"></a>shell</h5><p>通过 HBase shell 来创建</p>
-<p>在命令中指定分区的 Rowkey</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create &#39;t1&#39;, &#39;f1&#39;, SPLITS &#x3D;&gt; [&#39;10&#39;, &#39;20&#39;, &#39;30&#39;, &#39;40&#39;]</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, SPLITS &#x3D;&gt; [&#39;10&#39;, &#39;20&#39;, &#39;30&#39;, &#39;40&#39;]</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, &#123;NAME &#x3D;&gt; &#39;f2&#39;, TTL &#x3D;&gt; 240&#125;, SPLITS &#x3D;&gt; [&#39;10&#39;, &#39;20&#39;, &#39;30&#39;, &#39;40&#39;]</span><br></pre></td></tr></table></figure>
-
-<p>还可以通过 HBase shell 指定文件来创建</p>
-<p>在任意路径下创建一个保存分区 key 的文件，一行代表一个 Rowkey</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">create &#39;t1&#39;, &#39;f1&#39;, SPLITS_FILE &#x3D;&gt; &#39;&#x2F;home&#x2F;hadmin&#x2F;hbase-1.3.1&#x2F;txt&#x2F;splits.txt&#39;</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, SPLITS_FILE &#x3D;&gt; &#39;&#x2F;home&#x2F;hadmin&#x2F;hbase-1.3.1&#x2F;txt&#x2F;splits.txt&#39;</span><br><span class="line"></span><br><span class="line">create &#39;t1&#39;, &#123;NAME &#x3D;&gt;&#39;f1&#39;, TTL &#x3D;&gt; 180&#125;, &#123;NAME &#x3D;&gt; &#39;f2&#39;, TTL &#x3D;&gt; 240&#125;, SPLITS_FILE &#x3D;&gt; &#39;&#x2F;home&#x2F;hadmin&#x2F;hbase-1.3.1&#x2F;txt&#x2F;splits.txt&#39;</span><br></pre></td></tr></table></figure>
-
-<p>通过 HBase 自带三种 pre-split 的算法，分别是 <code>HexStringSplit</code>、<code>DecimalStringSplit</code> 和 <code>UniformSplit</code></p>
-<p>各种Split算法适用场景</p>
-<ul>
-<li>HexStringSplit: rowkey是十六进制的字符串作为前缀的。<a href="https://www.jianshu.com/p/d67a58eed1f1" target="_blank" rel="noopener">HexStringSplit预分区表</a></li>
-<li>DecimalStringSplit: rowkey是10进制数字字符串作为前缀的</li>
-<li>UniformSplit: rowkey前缀完全随机</li>
-</ul>
-<h5 id="api"><a href="#api" class="headerlink" title="api"></a>api</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">package api;</span><br><span class="line"></span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.hbase.HBaseConfiguration;</span><br><span class="line">import org.apache.hadoop.hbase.HColumnDescriptor;</span><br><span class="line">import org.apache.hadoop.hbase.HTableDescriptor;</span><br><span class="line">import org.apache.hadoop.hbase.TableName;</span><br><span class="line">import org.apache.hadoop.hbase.client.Admin;</span><br><span class="line">import org.apache.hadoop.hbase.client.Connection;</span><br><span class="line">import org.apache.hadoop.hbase.client.ConnectionFactory;</span><br><span class="line">import org.apache.hadoop.hbase.util.Bytes;</span><br><span class="line"></span><br><span class="line">public class create_table_sample2 &#123;</span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        Configuration conf &#x3D; HBaseConfiguration.create();</span><br><span class="line">        conf.set(&quot;hbase.zookeeper.quorum&quot;, &quot;192.168.1.80,192.168.1.81,192.168.1.82&quot;);</span><br><span class="line">        Connection connection &#x3D; ConnectionFactory.createConnection(conf);</span><br><span class="line">        Admin admin &#x3D; connection.getAdmin();</span><br><span class="line"></span><br><span class="line">        TableName table_name &#x3D; TableName.valueOf(&quot;TEST1&quot;);</span><br><span class="line">        if (admin.tableExists(table_name)) &#123;</span><br><span class="line">            admin.disableTable(table_name);</span><br><span class="line">            admin.deleteTable(table_name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        HTableDescriptor desc &#x3D; new HTableDescriptor(table_name);</span><br><span class="line">        HColumnDescriptor family1 &#x3D; new HColumnDescriptor(constants.COLUMN_FAMILY_DF.getBytes());</span><br><span class="line">        family1.setTimeToLive(3 * 60 * 60 * 24);     &#x2F;&#x2F;过期时间</span><br><span class="line">        family1.setMaxVersions(3);                   &#x2F;&#x2F;版本数</span><br><span class="line">        desc.addFamily(family1);</span><br><span class="line"></span><br><span class="line">        byte[][] splitKeys &#x3D; &#123;</span><br><span class="line">            Bytes.toBytes(&quot;row01&quot;),</span><br><span class="line">            Bytes.toBytes(&quot;row02&quot;)</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        admin.createTable(desc, splitKeys);</span><br><span class="line">        admin.close();</span><br><span class="line">        connection.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.cnblogs.com/quchunhui/p/7543385.html" target="_blank" rel="noopener">HBase预分区方法</a></li>
-<li><a href="https://www.cnblogs.com/bdifn/p/3801737.html" target="_blank" rel="noopener">HBase Rowkey的散列与预分区设计</a></li>
-<li><a href="https://help.aliyun.com/document_detail/71787.html?spm=a2c6h.13066369.0.0.7aec487crCTfhS" target="_blank" rel="noopener">预分区</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>HBase</category>
       </categories>
   </entry>
   <entry>
@@ -7307,17 +7347,6 @@
       </categories>
   </entry>
   <entry>
-    <title>Kafka 认识</title>
-    <url>/2019/08/05/Kafka-Introduction/</url>
-    <content><![CDATA[<p>Kafka 消息系统</p>
-<hr>
-<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p><a href="https://mp.weixin.qq.com/s/opAYVXIJoy4tCWaPcX5u6g" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/opAYVXIJoy4tCWaPcX5u6g</a></p>
-]]></content>
-      <categories>
-        <category>Kafka</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Filebeat 采集日志到 Kafka 配置及使用</title>
     <url>/2019/08/05/Filebeat-Kafka/</url>
     <content><![CDATA[<p>Filebeat 采集日志到 Kafka 配置及使用</p>
@@ -7361,6 +7390,17 @@
 ]]></content>
       <categories>
         <category>Hadoop</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Kafka 认识</title>
+    <url>/2019/08/05/Kafka-Introduction/</url>
+    <content><![CDATA[<p>Kafka 消息系统</p>
+<hr>
+<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p><a href="https://mp.weixin.qq.com/s/opAYVXIJoy4tCWaPcX5u6g" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/opAYVXIJoy4tCWaPcX5u6g</a></p>
+]]></content>
+      <categories>
+        <category>Kafka</category>
       </categories>
   </entry>
   <entry>
@@ -8588,33 +8628,6 @@ HBase 在 HDFS 上存储 region 的路径就是 region encoded。</code></p>
       </categories>
   </entry>
   <entry>
-    <title>GC 日志详解</title>
-    <url>/2019/06/24/GC-Log-Detailed/</url>
-    <content><![CDATA[<p>Java GC 日志详解</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>GC日志是一个很重要的工具，它准确记录了每一次的GC的执行时间和执行结果，通过分析GC日志可以调优堆设置和GC设置，或者改进应用程序的对象分配模式</p>
-<p>开启的JVM启动参数参考<a href="https://lihuimintu.github.io/2019/02/19/gcLog/" target="_blank" rel="noopener">JVM 配置GC日志</a></p>
-<h4 id="图解"><a href="#图解" class="headerlink" title="图解"></a>图解</h4><p>以 ParallelGC 为例</p>
-<p>YoungGC 日志解释如下（图片源地址：<a href="http://ww4.sinaimg.cn/large/6c8effc1tw1dmbux7knpoj.jpg" target="_blank" rel="noopener">这里</a>）</p>
-<p><img src="/images/blog/2019-06-24-2.png" alt="YoungGC"></p>
-<p>FullGC（图片源地址：<a href="http://ww1.sinaimg.cn/large/6c8effc1tw1dmc55axrbsj.jpg" target="_blank" rel="noopener">这里</a>）:</p>
-<p><img src="/images/blog/2019-06-24-3.png" alt="FullGC"></p>
-<p>图来源于网络，侵删。</p>
-<h4 id="图解2"><a href="#图解2" class="headerlink" title="图解2"></a>图解2</h4><p>常见的Young GC、Full GC日志含义如下</p>
-<p><img src="/images/blog/2019-09-29-2.png" alt></p>
-<p><img src="/images/blog/2019-09-29-3.png" alt></p>
-<p>免费的GC日志图形分析工具推荐 <a href="https://gceasy.io" target="_blank" rel="noopener">gceasy</a> </p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://www.jianshu.com/p/ade514d7c56b" target="_blank" rel="noopener">Java GC 日志详解（一图读懂）</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>JVM</category>
-      </categories>
-  </entry>
-  <entry>
     <title>记一次 RegionServer 宕机排查过程</title>
     <url>/2019/06/24/HBase-RS-shutdown/</url>
     <content><![CDATA[<p>记一次 RegionServer 宕机排查过程</p>
@@ -8702,6 +8715,33 @@ HBase 在 HDFS 上存储 region 的路径就是 region encoded。</code></p>
 ]]></content>
       <categories>
         <category>Linux</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>GC 日志详解</title>
+    <url>/2019/06/24/GC-Log-Detailed/</url>
+    <content><![CDATA[<p>Java GC 日志详解</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>GC日志是一个很重要的工具，它准确记录了每一次的GC的执行时间和执行结果，通过分析GC日志可以调优堆设置和GC设置，或者改进应用程序的对象分配模式</p>
+<p>开启的JVM启动参数参考<a href="https://lihuimintu.github.io/2019/02/19/gcLog/" target="_blank" rel="noopener">JVM 配置GC日志</a></p>
+<h4 id="图解"><a href="#图解" class="headerlink" title="图解"></a>图解</h4><p>以 ParallelGC 为例</p>
+<p>YoungGC 日志解释如下（图片源地址：<a href="http://ww4.sinaimg.cn/large/6c8effc1tw1dmbux7knpoj.jpg" target="_blank" rel="noopener">这里</a>）</p>
+<p><img src="/images/blog/2019-06-24-2.png" alt="YoungGC"></p>
+<p>FullGC（图片源地址：<a href="http://ww1.sinaimg.cn/large/6c8effc1tw1dmc55axrbsj.jpg" target="_blank" rel="noopener">这里</a>）:</p>
+<p><img src="/images/blog/2019-06-24-3.png" alt="FullGC"></p>
+<p>图来源于网络，侵删。</p>
+<h4 id="图解2"><a href="#图解2" class="headerlink" title="图解2"></a>图解2</h4><p>常见的Young GC、Full GC日志含义如下</p>
+<p><img src="/images/blog/2019-09-29-2.png" alt></p>
+<p><img src="/images/blog/2019-09-29-3.png" alt></p>
+<p>免费的GC日志图形分析工具推荐 <a href="https://gceasy.io" target="_blank" rel="noopener">gceasy</a> </p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/ade514d7c56b" target="_blank" rel="noopener">Java GC 日志详解（一图读懂）</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>JVM</category>
       </categories>
   </entry>
   <entry>
@@ -9429,6 +9469,30 @@ Table Znode选项
       </categories>
   </entry>
   <entry>
+    <title>HBase 表信息解析</title>
+    <url>/2019/06/03/Analysis-of-metadata-information-in-HBase-tables/</url>
+    <content><![CDATA[<p>HBase 表元数据信息解析</p>
+<hr>
+<h4 id="表元数据"><a href="#表元数据" class="headerlink" title="表元数据"></a>表元数据</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">desc &#39;dimensoft:user&#39;, &#x2F;&#x2F;namespace:tableName</span><br><span class="line">    &#123;</span><br><span class="line">        NAME &#x3D;&gt; &#39;info&#39;, &#x2F;&#x2F;列族</span><br><span class="line"> </span><br><span class="line">        DATA_BLOCK_ENCODING &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;数据块编码方式设置</span><br><span class="line">        &#x2F;&#x2F;参见: http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#compression</span><br><span class="line">        &#x2F;&#x2F;http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#data.block.encoding.enable</span><br><span class="line"> </span><br><span class="line">        BLOOMFILT &#x3D;&gt; &#39;ROW&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#bloom.filters.when</span><br><span class="line"> </span><br><span class="line">        REPLICATION_SCOPE &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;配置HBase集群replication时需要将该参数设置为1.</span><br><span class="line"> </span><br><span class="line">        &#x2F;&#x2F;参见：http:&#x2F;&#x2F;blog.cloudera.com&#x2F;blog&#x2F;2012&#x2F;08&#x2F;hbase-replication-operational-overview&#x2F;?utm_source&#x3D;tuicool</span><br><span class="line">        &#39;REPLICATION_SCOPE is a column-family level attribute</span><br><span class="line">user has to alter each column family with the alter command as</span><br><span class="line">shown above, for all the column families he wants to replicate.&#39;</span><br><span class="line"> </span><br><span class="line">        VERSIONS &#x3D;&gt; &#39;1&#39;, &#x2F;&#x2F;设置保存的最大版本数</span><br><span class="line"> </span><br><span class="line">        COMPRESSION &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;设置压缩算法</span><br><span class="line"> </span><br><span class="line">        MIN_VERSIONS &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;最小存储版本数</span><br><span class="line"> </span><br><span class="line">        TTL &#x3D;&gt; &#39;FOREVER&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#ttl</span><br><span class="line">        &#39;ColumnFamilies can set a TTL length in seconds, and HBase</span><br><span class="line">        reached. This applies to all versions of a row - even the current one.</span><br><span class="line">        The TTL time encoded in the HBase for the row is specified in</span><br><span class="line">        UTC.&#39;</span><br><span class="line"> </span><br><span class="line">        KEEP_DELETED_CELLS &#x3D;&gt; &#39;false&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#cf.keep.deleted</span><br><span class="line"> </span><br><span class="line">        BLOCKSIZE &#x3D;&gt; &#39;65536&#39;, &#x2F;&#x2F;设置HFile数据块大小（默认64kb）</span><br><span class="line"> </span><br><span class="line">        IN_MEMORY &#x3D;&gt; &#39;false&#39;,&#x2F;&#x2F;设置激进缓存，优先考虑将该列族放入块缓存中,即放入BlockCache，</span><br><span class="line">                             &#x2F;&#x2F;针对随机读操作相对较多的列族可以设置该属性为true，不能设置meta为false，因为meta表经常使用</span><br><span class="line"> </span><br><span class="line">        BLOCKCACHE &#x3D;&gt; &#39;true&#39; &#x2F;&#x2F;数据块缓存属性</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="TTL"><a href="#TTL" class="headerlink" title="TTL"></a>TTL</h4><p>在minor compaction时删除仅包含过期行的存储文件。设置hbase.store.delete.expired.storefile为false禁用此功能。将最小版本数设置为0以外也会禁用此功能。</p>
+<h4 id="数据块编码"><a href="#数据块编码" class="headerlink" title="数据块编码"></a>数据块编码</h4><p>数据块编码是 HBase 的一个特性，即 key 会根据前一个 key 进行编码和压缩。</p>
+<p>其中一个编码选项（FAST_DIFF）让hbase 只存储当前 key 和前一个 key 不同的地方。</p>
+<p>HBase 独立存储每个单元，包括 key 和 value。当一行有多个 cell 时，为每个 cell 写入相同的 key 将会消耗大量空间，启用数据块编码可以节省大量空间。</p>
+<p>多数情况下启动数据块编码是有用的。</p>
+<h4 id="MinVersion"><a href="#MinVersion" class="headerlink" title="MinVersion"></a>MinVersion</h4><p>used when timeToLive is set</p>
+<p>如果HBase中的表设置了TTL的时候，MinVersion才会起作用。</p>
+<p>a）MIN_VERSION &gt; 0时：</p>
+<p>Cell至少有MIN_VERSION个最新版本会保留下来。这样确保在你的查询以及数据早于TTL时有结果返回。</p>
+<p>b）MIN_VERSION = 0时：</p>
+<p>Cell中的数据超过TTL时间时，全部清空，不保留最低版本。</p>
+]]></content>
+      <categories>
+        <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Linux 用户态 CPU 使用率高</title>
     <url>/2019/06/03/Occupying-CPU-high/</url>
     <content><![CDATA[<p>使用堆栈进行问题排查，如机器占用 CPU 高问题排查、死锁</p>
@@ -9469,30 +9533,6 @@ Table Znode选项
 ]]></content>
       <categories>
         <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>HBase 表信息解析</title>
-    <url>/2019/06/03/Analysis-of-metadata-information-in-HBase-tables/</url>
-    <content><![CDATA[<p>HBase 表元数据信息解析</p>
-<hr>
-<h4 id="表元数据"><a href="#表元数据" class="headerlink" title="表元数据"></a>表元数据</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">desc &#39;dimensoft:user&#39;, &#x2F;&#x2F;namespace:tableName</span><br><span class="line">    &#123;</span><br><span class="line">        NAME &#x3D;&gt; &#39;info&#39;, &#x2F;&#x2F;列族</span><br><span class="line"> </span><br><span class="line">        DATA_BLOCK_ENCODING &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;数据块编码方式设置</span><br><span class="line">        &#x2F;&#x2F;参见: http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#compression</span><br><span class="line">        &#x2F;&#x2F;http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#data.block.encoding.enable</span><br><span class="line"> </span><br><span class="line">        BLOOMFILT &#x3D;&gt; &#39;ROW&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#bloom.filters.when</span><br><span class="line"> </span><br><span class="line">        REPLICATION_SCOPE &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;配置HBase集群replication时需要将该参数设置为1.</span><br><span class="line"> </span><br><span class="line">        &#x2F;&#x2F;参见：http:&#x2F;&#x2F;blog.cloudera.com&#x2F;blog&#x2F;2012&#x2F;08&#x2F;hbase-replication-operational-overview&#x2F;?utm_source&#x3D;tuicool</span><br><span class="line">        &#39;REPLICATION_SCOPE is a column-family level attribute</span><br><span class="line">user has to alter each column family with the alter command as</span><br><span class="line">shown above, for all the column families he wants to replicate.&#39;</span><br><span class="line"> </span><br><span class="line">        VERSIONS &#x3D;&gt; &#39;1&#39;, &#x2F;&#x2F;设置保存的最大版本数</span><br><span class="line"> </span><br><span class="line">        COMPRESSION &#x3D;&gt; &#39;NONE&#39;, &#x2F;&#x2F;设置压缩算法</span><br><span class="line"> </span><br><span class="line">        MIN_VERSIONS &#x3D;&gt; &#39;0&#39;, &#x2F;&#x2F;最小存储版本数</span><br><span class="line"> </span><br><span class="line">        TTL &#x3D;&gt; &#39;FOREVER&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#ttl</span><br><span class="line">        &#39;ColumnFamilies can set a TTL length in seconds, and HBase</span><br><span class="line">        reached. This applies to all versions of a row - even the current one.</span><br><span class="line">        The TTL time encoded in the HBase for the row is specified in</span><br><span class="line">        UTC.&#39;</span><br><span class="line"> </span><br><span class="line">        KEEP_DELETED_CELLS &#x3D;&gt; &#39;false&#39;, &#x2F;&#x2F;参见：http:&#x2F;&#x2F;hbase.apache.org&#x2F;book.html#cf.keep.deleted</span><br><span class="line"> </span><br><span class="line">        BLOCKSIZE &#x3D;&gt; &#39;65536&#39;, &#x2F;&#x2F;设置HFile数据块大小（默认64kb）</span><br><span class="line"> </span><br><span class="line">        IN_MEMORY &#x3D;&gt; &#39;false&#39;,&#x2F;&#x2F;设置激进缓存，优先考虑将该列族放入块缓存中,即放入BlockCache，</span><br><span class="line">                             &#x2F;&#x2F;针对随机读操作相对较多的列族可以设置该属性为true，不能设置meta为false，因为meta表经常使用</span><br><span class="line"> </span><br><span class="line">        BLOCKCACHE &#x3D;&gt; &#39;true&#39; &#x2F;&#x2F;数据块缓存属性</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-
-<h4 id="TTL"><a href="#TTL" class="headerlink" title="TTL"></a>TTL</h4><p>在minor compaction时删除仅包含过期行的存储文件。设置hbase.store.delete.expired.storefile为false禁用此功能。将最小版本数设置为0以外也会禁用此功能。</p>
-<h4 id="数据块编码"><a href="#数据块编码" class="headerlink" title="数据块编码"></a>数据块编码</h4><p>数据块编码是 HBase 的一个特性，即 key 会根据前一个 key 进行编码和压缩。</p>
-<p>其中一个编码选项（FAST_DIFF）让hbase 只存储当前 key 和前一个 key 不同的地方。</p>
-<p>HBase 独立存储每个单元，包括 key 和 value。当一行有多个 cell 时，为每个 cell 写入相同的 key 将会消耗大量空间，启用数据块编码可以节省大量空间。</p>
-<p>多数情况下启动数据块编码是有用的。</p>
-<h4 id="MinVersion"><a href="#MinVersion" class="headerlink" title="MinVersion"></a>MinVersion</h4><p>used when timeToLive is set</p>
-<p>如果HBase中的表设置了TTL的时候，MinVersion才会起作用。</p>
-<p>a）MIN_VERSION &gt; 0时：</p>
-<p>Cell至少有MIN_VERSION个最新版本会保留下来。这样确保在你的查询以及数据早于TTL时有结果返回。</p>
-<p>b）MIN_VERSION = 0时：</p>
-<p>Cell中的数据超过TTL时间时，全部清空，不保留最低版本。</p>
-]]></content>
-      <categories>
-        <category>HBase</category>
       </categories>
   </entry>
   <entry>
@@ -10310,6 +10350,79 @@ Table Znode选项
       </categories>
   </entry>
   <entry>
+    <title>基数排序</title>
+    <url>/2019/05/01/radix-sort/</url>
+    <content><![CDATA[<p>基数排序(Radix Sort)是时间复杂度为O(n)的排序</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>时间复杂度为O(n)的排序，常见的有三种：</p>
+<p>基数排序(Radix Sort)</p>
+<p>计数排序(Counting Sort)</p>
+<p>桶排序(Bucket Sort)</p>
+<p>计数排序－＞桶排序－＞基数排序，三者的排序思想是相通的，是逐渐复杂，使用性更广的。</p>
+<p>基数排序分为两类:</p>
+<blockquote>
+<ul>
+<li>最低位优先法，简称LSD法</li>
+<li>最高位优先法，简称MSD法</li>
+</ul>
+</blockquote>
+<h4 id="适用范围"><a href="#适用范围" class="headerlink" title="适用范围"></a>适用范围</h4><p>整数、字符串。</p>
+<h4 id="空间复杂度"><a href="#空间复杂度" class="headerlink" title="空间复杂度"></a>空间复杂度</h4><p>O(n)</p>
+<h4 id="关键步骤"><a href="#关键步骤" class="headerlink" title="关键步骤"></a>关键步骤</h4><p>LSD 先从最低位开始排序，再对次低位排序，直到对最高位排序后得到一个有序序列。</p>
+<p>两个关键要点：</p>
+<p>(1) 基: 被排序的元素的“个位”“十位”“百位”，暂且叫“基”；</p>
+<p>(2) 桶: “基”的每一位，都有一个取值范围，例子中“基”的取值范围是0-9共10种，所以需要10个桶（bucket），来存放被排序的元素；</p>
+<p>LSD 步骤为：</p>
+<p>FOR (每一个基) {</p>
+<p>//循环内，以某一个“基”为依据<br>第一步：遍历数据集arr，将元素放入对应的桶bucket<br>第二步：遍历桶bucket，将元素放回数据集arr</p>
+<p>}</p>
+<p>举个例子</p>
+<p>假设待排序的数组arr={72, 11, 82, 32, 44, 13, 17, 95, 54, 28, 79, 56}</p>
+<p><img src="/images/blog/2019-05-01-4.png" alt></p>
+<p>例子中“基”的个数是2（个位和十位）, 所以  FOR循环会执行两次。</p>
+<p>【第一次：以“个位”为依据】</p>
+<p><img src="/images/blog/2019-05-01-5.png" alt></p>
+<p>上图中标红的部分，个位为“基”。</p>
+<p>第一步：遍历数据集arr，将元素放入对应的桶bucket；</p>
+<p><img src="/images/blog/2019-05-01-6.png" alt></p>
+<p>操作完成之后，各个桶会变成上面这个样子，即：个位数相同的元素，会在同一个桶里。</p>
+<p>第二步：遍历桶bucket，将元素放回数据集arr；需要注意，先入桶的元素要先出桶。</p>
+<p><img src="/images/blog/2019-05-01-10.png" alt></p>
+<p>操作完成之后，数据集会变成上面这个样子，即：整体按照个位数排序了, 个位数小的在前面，个位数大的在后面。</p>
+<p>【第二次：以“十位”为依据】</p>
+<p><img src="/images/blog/2019-05-01-7.png" alt></p>
+<p>上图中标红的部分，十位为“基”。</p>
+<p>第一步：依然遍历数据集arr，将元素放入对应的桶bucket；</p>
+<p><img src="/images/blog/2019-05-01-8.png" alt></p>
+<p>操作完成之后，各个桶会变成上面这个样子，即：十位数相同的元素，会在同一个桶里。</p>
+<p>第二步：依然遍历桶bucket，将元素放回数据集arr；</p>
+<p>操作完成之后，数据集会变成上面这个样子，即：整体按照十位数也排序了。</p>
+<p>十位数小的在前面，十位数大的在后面。</p>
+<p><img src="/images/blog/2019-05-01-9.png" alt></p>
+<p>首次按照个位从小到大，第二次按照十位从小到大，即：排序结束。</p>
+<p>MSD 与LSD相反，从高位向地位开始比较，是由高位数为基底开始进行分配，<br>但在分配之后并不马上合并回一个数组中，<br>而是在每个“桶子”中建立“子桶”，<br>将每个桶子中的数值按照下一数位的值分配到“子桶”中,在进行完最低位数的分配后再合并回单一的数组中。</p>
+<p>举个例子</p>
+<p>假设待排序的数组arr={15, 25, 105, 78, 34, 21, 32, 41}</p>
+<p>从最高位百位依次入桶，只有105有百位，其他百位按0算；</p>
+<p>检测每个桶中的数据。当桶中的元素个数多于1个的时候，要对这个桶递归进行下一位的分组。</p>
+<p><img src="/images/blog/2019-05-01-11.png" alt></p>
+<p>如果使用词典排序来对可变长度整数表示进行排序，则从1到10的数字的表示将被输出为1,10,2,3,4,5,6,7,8,9，<br>如同较短的按键左对齐，并在右侧用空白字符填充以使短按键与最长按键一样长，以确定排序顺序。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>基的选取，可以先从个位开始，也可以先从十位开始，结果是一样的；</p>
+<p>基数排序，是一种稳定的排序；</p>
+<p>时间复杂度，可以认为是线性的O(n)；</p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/Z8gU9QLpMnA-zoMc9ZeR2w" target="_blank" rel="noopener">拜托，面试别再问我基数排序了！！！</a></li>
+<li><a href="https://blog.csdn.net/sb985/article/details/79921571" target="_blank" rel="noopener">计数排序，桶排序，基数排序</a></li>
+<li><a href="https://blog.csdn.net/u011948899/article/details/78027838" target="_blank" rel="noopener">基数排序（LSD+MSD）详解</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+  </entry>
+  <entry>
     <title>计数排序</title>
     <url>/2019/05/01/counting-sort/</url>
     <content><![CDATA[<p>计数排序(Counting Sort)是时间复杂度为O(n)的排序</p>
@@ -10400,79 +10513,6 @@ Table Znode选项
 <p>参考链接</p>
 <ul>
 <li><a href="https://mp.weixin.qq.com/s/r8mArZzAJ-uC002z48HWJw" target="_blank" rel="noopener">拜托，面试别再问我桶排序了！！！</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Algorithm</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>基数排序</title>
-    <url>/2019/05/01/radix-sort/</url>
-    <content><![CDATA[<p>基数排序(Radix Sort)是时间复杂度为O(n)的排序</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>时间复杂度为O(n)的排序，常见的有三种：</p>
-<p>基数排序(Radix Sort)</p>
-<p>计数排序(Counting Sort)</p>
-<p>桶排序(Bucket Sort)</p>
-<p>计数排序－＞桶排序－＞基数排序，三者的排序思想是相通的，是逐渐复杂，使用性更广的。</p>
-<p>基数排序分为两类:</p>
-<blockquote>
-<ul>
-<li>最低位优先法，简称LSD法</li>
-<li>最高位优先法，简称MSD法</li>
-</ul>
-</blockquote>
-<h4 id="适用范围"><a href="#适用范围" class="headerlink" title="适用范围"></a>适用范围</h4><p>整数、字符串。</p>
-<h4 id="空间复杂度"><a href="#空间复杂度" class="headerlink" title="空间复杂度"></a>空间复杂度</h4><p>O(n)</p>
-<h4 id="关键步骤"><a href="#关键步骤" class="headerlink" title="关键步骤"></a>关键步骤</h4><p>LSD 先从最低位开始排序，再对次低位排序，直到对最高位排序后得到一个有序序列。</p>
-<p>两个关键要点：</p>
-<p>(1) 基: 被排序的元素的“个位”“十位”“百位”，暂且叫“基”；</p>
-<p>(2) 桶: “基”的每一位，都有一个取值范围，例子中“基”的取值范围是0-9共10种，所以需要10个桶（bucket），来存放被排序的元素；</p>
-<p>LSD 步骤为：</p>
-<p>FOR (每一个基) {</p>
-<p>//循环内，以某一个“基”为依据<br>第一步：遍历数据集arr，将元素放入对应的桶bucket<br>第二步：遍历桶bucket，将元素放回数据集arr</p>
-<p>}</p>
-<p>举个例子</p>
-<p>假设待排序的数组arr={72, 11, 82, 32, 44, 13, 17, 95, 54, 28, 79, 56}</p>
-<p><img src="/images/blog/2019-05-01-4.png" alt></p>
-<p>例子中“基”的个数是2（个位和十位）, 所以  FOR循环会执行两次。</p>
-<p>【第一次：以“个位”为依据】</p>
-<p><img src="/images/blog/2019-05-01-5.png" alt></p>
-<p>上图中标红的部分，个位为“基”。</p>
-<p>第一步：遍历数据集arr，将元素放入对应的桶bucket；</p>
-<p><img src="/images/blog/2019-05-01-6.png" alt></p>
-<p>操作完成之后，各个桶会变成上面这个样子，即：个位数相同的元素，会在同一个桶里。</p>
-<p>第二步：遍历桶bucket，将元素放回数据集arr；需要注意，先入桶的元素要先出桶。</p>
-<p><img src="/images/blog/2019-05-01-10.png" alt></p>
-<p>操作完成之后，数据集会变成上面这个样子，即：整体按照个位数排序了, 个位数小的在前面，个位数大的在后面。</p>
-<p>【第二次：以“十位”为依据】</p>
-<p><img src="/images/blog/2019-05-01-7.png" alt></p>
-<p>上图中标红的部分，十位为“基”。</p>
-<p>第一步：依然遍历数据集arr，将元素放入对应的桶bucket；</p>
-<p><img src="/images/blog/2019-05-01-8.png" alt></p>
-<p>操作完成之后，各个桶会变成上面这个样子，即：十位数相同的元素，会在同一个桶里。</p>
-<p>第二步：依然遍历桶bucket，将元素放回数据集arr；</p>
-<p>操作完成之后，数据集会变成上面这个样子，即：整体按照十位数也排序了。</p>
-<p>十位数小的在前面，十位数大的在后面。</p>
-<p><img src="/images/blog/2019-05-01-9.png" alt></p>
-<p>首次按照个位从小到大，第二次按照十位从小到大，即：排序结束。</p>
-<p>MSD 与LSD相反，从高位向地位开始比较，是由高位数为基底开始进行分配，<br>但在分配之后并不马上合并回一个数组中，<br>而是在每个“桶子”中建立“子桶”，<br>将每个桶子中的数值按照下一数位的值分配到“子桶”中,在进行完最低位数的分配后再合并回单一的数组中。</p>
-<p>举个例子</p>
-<p>假设待排序的数组arr={15, 25, 105, 78, 34, 21, 32, 41}</p>
-<p>从最高位百位依次入桶，只有105有百位，其他百位按0算；</p>
-<p>检测每个桶中的数据。当桶中的元素个数多于1个的时候，要对这个桶递归进行下一位的分组。</p>
-<p><img src="/images/blog/2019-05-01-11.png" alt></p>
-<p>如果使用词典排序来对可变长度整数表示进行排序，则从1到10的数字的表示将被输出为1,10,2,3,4,5,6,7,8,9，<br>如同较短的按键左对齐，并在右侧用空白字符填充以使短按键与最长按键一样长，以确定排序顺序。</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>基的选取，可以先从个位开始，也可以先从十位开始，结果是一样的；</p>
-<p>基数排序，是一种稳定的排序；</p>
-<p>时间复杂度，可以认为是线性的O(n)；</p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://mp.weixin.qq.com/s/Z8gU9QLpMnA-zoMc9ZeR2w" target="_blank" rel="noopener">拜托，面试别再问我基数排序了！！！</a></li>
-<li><a href="https://blog.csdn.net/sb985/article/details/79921571" target="_blank" rel="noopener">计数排序，桶排序，基数排序</a></li>
-<li><a href="https://blog.csdn.net/u011948899/article/details/78027838" target="_blank" rel="noopener">基数排序（LSD+MSD）详解</a></li>
 </ul>
 ]]></content>
       <categories>
@@ -11249,6 +11289,32 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
+    <title>PostMan 的基本使用汇总</title>
+    <url>/2019/04/10/postman-post-put/</url>
+    <content><![CDATA[<p>PostMan 发送 JSON 格式的 POST/PUT 请求</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>用 POSTMAN 发送 JSON 格式的 POST/PUT 请求</p>
+<h4 id="设置Header"><a href="#设置Header" class="headerlink" title="设置Header"></a>设置Header</h4><p>Content-Type  application/json</p>
+<p><img src="/images/blog/2019-04-10-5.png" alt></p>
+<h4 id="设置Body"><a href="#设置Body" class="headerlink" title="设置Body"></a>设置Body</h4><p>选择 raw</p>
+<p><img src="/images/blog/2019-04-10-6.png" alt></p>
+<h4 id="PUT-请求"><a href="#PUT-请求" class="headerlink" title="PUT 请求"></a>PUT 请求</h4><p>把请求方式改为 PUT即可</p>
+<p><img src="/images/blog/2019-04-10-7.png" alt></p>
+<h4 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h4><p>GET 请求选择是 Params 面板填写参数</p>
+<p><img src="/images/blog/2019-04-10-8.png" alt></p>
+<h4 id="登录鉴权"><a href="#登录鉴权" class="headerlink" title="登录鉴权"></a>登录鉴权</h4><p>有时候需要登陆鉴权的需求。 这里不重复写了。移步 落落殿下的 <a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></p>
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://blog.csdn.net/rziqq/article/details/77715085#commentBox" target="_blank" rel="noopener">用POSTMAN发送JSON格式的POST请求</a></li>
+<li><a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Tools</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Curl 模拟 GET\POST 请求</title>
     <url>/2019/04/10/linux-curl/</url>
     <content><![CDATA[<p>Curl 模拟 GET\POST 请求，以及 curl post 上传文件</p>
@@ -11296,32 +11362,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>PostMan 的基本使用汇总</title>
-    <url>/2019/04/10/postman-post-put/</url>
-    <content><![CDATA[<p>PostMan 发送 JSON 格式的 POST/PUT 请求</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>用 POSTMAN 发送 JSON 格式的 POST/PUT 请求</p>
-<h4 id="设置Header"><a href="#设置Header" class="headerlink" title="设置Header"></a>设置Header</h4><p>Content-Type  application/json</p>
-<p><img src="/images/blog/2019-04-10-5.png" alt></p>
-<h4 id="设置Body"><a href="#设置Body" class="headerlink" title="设置Body"></a>设置Body</h4><p>选择 raw</p>
-<p><img src="/images/blog/2019-04-10-6.png" alt></p>
-<h4 id="PUT-请求"><a href="#PUT-请求" class="headerlink" title="PUT 请求"></a>PUT 请求</h4><p>把请求方式改为 PUT即可</p>
-<p><img src="/images/blog/2019-04-10-7.png" alt></p>
-<h4 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h4><p>GET 请求选择是 Params 面板填写参数</p>
-<p><img src="/images/blog/2019-04-10-8.png" alt></p>
-<h4 id="登录鉴权"><a href="#登录鉴权" class="headerlink" title="登录鉴权"></a>登录鉴权</h4><p>有时候需要登陆鉴权的需求。 这里不重复写了。移步 落落殿下的 <a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://blog.csdn.net/rziqq/article/details/77715085#commentBox" target="_blank" rel="noopener">用POSTMAN发送JSON格式的POST请求</a></li>
-<li><a href="https://blog.csdn.net/qq_42512064/article/details/81034744" target="_blank" rel="noopener">postman登录鉴权，获取token后进行其他接口测试</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>Tools</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Google 三驾马车</title>
     <url>/2019/04/05/google-paper/</url>
     <content><![CDATA[<p>Google 三驾马车</p>
@@ -11332,27 +11372,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>Hadoop</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>SpringBoot 启动方式</title>
-    <url>/2019/04/04/springboot-start/</url>
-    <content><![CDATA[<p>SpringBoot 启动方式</p>
-<hr>
-<h4 id="IDEA"><a href="#IDEA" class="headerlink" title="IDEA"></a>IDEA</h4><p>启动类必须包含 @SpringBootApplication 这个注解</p>
-<p>其他类目录要么跟Application同级，要么在其下级目录</p>
-<p><img src="/images/blog/2019-04-04-1.png" alt></p>
-<h4 id="MAVEN"><a href="#MAVEN" class="headerlink" title="MAVEN"></a>MAVEN</h4><p>进入到项目的pom.xml 层级，输入图中命令即可</p>
-<p><img src="/images/blog/2019-04-04-2.png" alt></p>
-<h4 id="JAR"><a href="#JAR" class="headerlink" title="JAR"></a>JAR</h4><p>maven 打包</p>
-<p><img src="/images/blog/2019-04-04-3.png" alt></p>
-<p>编译成功后进入target 目录下可以看到有个jar包</p>
-<p><img src="/images/blog/2019-04-04-4.png" alt></p>
-<p>jar 命令启动jar包</p>
-<p><img src="/images/blog/2019-04-04-5.png" alt></p>
-]]></content>
-      <categories>
-        <category>SpringBoot</category>
       </categories>
   </entry>
   <entry>
@@ -11413,6 +11432,27 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>SpringBoot 启动方式</title>
+    <url>/2019/04/04/springboot-start/</url>
+    <content><![CDATA[<p>SpringBoot 启动方式</p>
+<hr>
+<h4 id="IDEA"><a href="#IDEA" class="headerlink" title="IDEA"></a>IDEA</h4><p>启动类必须包含 @SpringBootApplication 这个注解</p>
+<p>其他类目录要么跟Application同级，要么在其下级目录</p>
+<p><img src="/images/blog/2019-04-04-1.png" alt></p>
+<h4 id="MAVEN"><a href="#MAVEN" class="headerlink" title="MAVEN"></a>MAVEN</h4><p>进入到项目的pom.xml 层级，输入图中命令即可</p>
+<p><img src="/images/blog/2019-04-04-2.png" alt></p>
+<h4 id="JAR"><a href="#JAR" class="headerlink" title="JAR"></a>JAR</h4><p>maven 打包</p>
+<p><img src="/images/blog/2019-04-04-3.png" alt></p>
+<p>编译成功后进入target 目录下可以看到有个jar包</p>
+<p><img src="/images/blog/2019-04-04-4.png" alt></p>
+<p>jar 命令启动jar包</p>
+<p><img src="/images/blog/2019-04-04-5.png" alt></p>
+]]></content>
+      <categories>
+        <category>SpringBoot</category>
       </categories>
   </entry>
   <entry>
@@ -11569,25 +11609,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>Linux 实现文件的去重</title>
-    <url>/2019/03/21/linux-remove-duplication/</url>
-    <content><![CDATA[<p>Linux 实现文件的去重</p>
-<hr>
-<h4 id="转载出处"><a href="#转载出处" class="headerlink" title="转载出处"></a>转载出处</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">作者：大数据技术宅</span><br><span class="line">链接：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;followees&#x2F;p&#x2F;7845575.html</span><br><span class="line">来源：博客园</span><br></pre></td></tr></table></figure>
-
-<h4 id="实现文件的去重"><a href="#实现文件的去重" class="headerlink" title="实现文件的去重"></a>实现文件的去重</h4><h5 id="1-两个文件的交集，并集"><a href="#1-两个文件的交集，并集" class="headerlink" title="1. 两个文件的交集，并集"></a>1. 两个文件的交集，并集</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 取出两个文件的并集(重复的行只保留一份)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq &gt; file3</span><br><span class="line"></span><br><span class="line"># 取出两个文件的交集(只留下同时存在于两个文件中的文件)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -d &gt; file3</span><br><span class="line"></span><br><span class="line"># 删除交集，留下其他的行</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -u &gt; file3</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-两个文件合并"><a href="#2-两个文件合并" class="headerlink" title="2. 两个文件合并"></a>2. 两个文件合并</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 一个文件在上，一个文件在下</span><br><span class="line"></span><br><span class="line">cat file1 file2 &gt; file3</span><br><span class="line"></span><br><span class="line"># 一个文件在左，一个文件在右</span><br><span class="line"></span><br><span class="line">paste file1 file2 &gt; file3</span><br></pre></td></tr></table></figure>
-
-<h5 id="3-一个文件去掉重复的行"><a href="#3-一个文件去掉重复的行" class="headerlink" title="3. 一个文件去掉重复的行"></a>3. 一个文件去掉重复的行</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sort file | uniq &gt; file1</span><br><span class="line"></span><br><span class="line">注意：重复的多行记为一行，也就是说这些重复的行还在，只是全部省略为一行！</span><br><span class="line"></span><br><span class="line">sort file | uniq –u &gt; file1</span><br><span class="line"></span><br><span class="line">上面的命令可以把重复的行全部去掉，也就是文件中的非重复行！</span><br></pre></td></tr></table></figure>
-
-
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-  </entry>
-  <entry>
     <title>HBase 编译</title>
     <url>/2019/03/21/hbase-patch-maven/</url>
     <content><![CDATA[<p>HBase 源码调试后编译</p>
@@ -11626,6 +11647,25 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>HBase</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Linux 实现文件的去重</title>
+    <url>/2019/03/21/linux-remove-duplication/</url>
+    <content><![CDATA[<p>Linux 实现文件的去重</p>
+<hr>
+<h4 id="转载出处"><a href="#转载出处" class="headerlink" title="转载出处"></a>转载出处</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">作者：大数据技术宅</span><br><span class="line">链接：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;followees&#x2F;p&#x2F;7845575.html</span><br><span class="line">来源：博客园</span><br></pre></td></tr></table></figure>
+
+<h4 id="实现文件的去重"><a href="#实现文件的去重" class="headerlink" title="实现文件的去重"></a>实现文件的去重</h4><h5 id="1-两个文件的交集，并集"><a href="#1-两个文件的交集，并集" class="headerlink" title="1. 两个文件的交集，并集"></a>1. 两个文件的交集，并集</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 取出两个文件的并集(重复的行只保留一份)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq &gt; file3</span><br><span class="line"></span><br><span class="line"># 取出两个文件的交集(只留下同时存在于两个文件中的文件)</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -d &gt; file3</span><br><span class="line"></span><br><span class="line"># 删除交集，留下其他的行</span><br><span class="line"></span><br><span class="line">cat file1 file2 | sort | uniq -u &gt; file3</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-两个文件合并"><a href="#2-两个文件合并" class="headerlink" title="2. 两个文件合并"></a>2. 两个文件合并</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 一个文件在上，一个文件在下</span><br><span class="line"></span><br><span class="line">cat file1 file2 &gt; file3</span><br><span class="line"></span><br><span class="line"># 一个文件在左，一个文件在右</span><br><span class="line"></span><br><span class="line">paste file1 file2 &gt; file3</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-一个文件去掉重复的行"><a href="#3-一个文件去掉重复的行" class="headerlink" title="3. 一个文件去掉重复的行"></a>3. 一个文件去掉重复的行</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sort file | uniq &gt; file1</span><br><span class="line"></span><br><span class="line">注意：重复的多行记为一行，也就是说这些重复的行还在，只是全部省略为一行！</span><br><span class="line"></span><br><span class="line">sort file | uniq –u &gt; file1</span><br><span class="line"></span><br><span class="line">上面的命令可以把重复的行全部去掉，也就是文件中的非重复行！</span><br></pre></td></tr></table></figure>
+
+
+]]></content>
+      <categories>
+        <category>Linux</category>
       </categories>
   </entry>
   <entry>
@@ -11849,6 +11889,88 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
+    <title>Hadoop + HBase 单机安装部署</title>
+    <url>/2019/03/14/apache-hadoop/</url>
+    <content><![CDATA[<p>单机搭建部署 Hadoop 、HBase</p>
+<hr>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前一直是使用 CDH 。 准备入坑源码。所以想搭建一套 Apache 的来玩玩。</p>
+<p>选择的版本：</p>
+<blockquote>
+<ul>
+<li>Hadoop: 2.7.7</li>
+<li>HBase: 1.2.11</li>
+<li>Linux: CentOs 6.5</li>
+<li>JDK: jdk1.8.0_161</li>
+</ul>
+</blockquote>
+<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>安装jdk，配置环境变量。 这个网上很多，自行百度。</p>
+<p>Hadoop、HBase tar包去官方网站下载即可</p>
+<p>下载之后将其解压。</p>
+<p><img src="/images/blog/2019-03-14-8.png" alt></p>
+<h4 id="配置-Hadoop-环境变量"><a href="#配置-Hadoop-环境变量" class="headerlink" title="配置 Hadoop 环境变量"></a>配置 Hadoop 环境变量</h4><h5 id="1-配置hadoop-env-sh、yarn-env-sh"><a href="#1-配置hadoop-env-sh、yarn-env-sh" class="headerlink" title="1. 配置hadoop-env.sh、yarn-env.sh"></a>1. 配置hadoop-env.sh、yarn-env.sh</h5><p>在Hadoop安装目录下 etc/hadoop</p>
+<p>在 hadoop-env.sh、yarn-env.sh  </p>
+<p>加入 export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
+<p>保存退出</p>
+<h5 id="2-配置HADOOP-HOME"><a href="#2-配置HADOOP-HOME" class="headerlink" title="2. 配置HADOOP_HOME"></a>2. 配置HADOOP_HOME</h5><p>修改全局环境变量</p>
+<p>在 /etc/profile </p>
+<p>export HADOOP_HOME=/opt/hadoop-2.7.3 # Hadoop的安装路径</p>
+<p>export PATH=$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$PATH</p>
+<h4 id="配置基本相关xml"><a href="#配置基本相关xml" class="headerlink" title="配置基本相关xml"></a>配置基本相关xml</h4><h5 id="core-site-xml"><a href="#core-site-xml" class="headerlink" title="core-site.xml"></a>core-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;fs.defaultFS&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hadoop.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;tmp&lt;&#x2F;value&gt; </span><br><span class="line">                &lt;description&gt;namenode上本地的hadoop临时文件夹&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="hdfs-site-xml"><a href="#hdfs-site-xml" class="headerlink" title="hdfs-site.xml"></a>hdfs-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">              &lt;name&gt;dfs.replication&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;1&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;数据需要备份的数量，不能大于集群的机器数量，默认为3&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.namenode.name.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;nn&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;description&gt;namenode上存储hdfs名字空间元数据&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.datanode.data.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;dn&lt;&#x2F;value&gt;</span><br><span class="line">             &lt;description&gt;datanode上数据块的物理存储位置&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　　　&lt;name&gt;dfs.namenode.secondary.http-address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　　　&lt;value&gt;localhost:9001&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;SecondaryNameNode HTTP 端口。如端口为 0，服务器将在自由端口启动。&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;  </span><br><span class="line">        &lt;property&gt; </span><br><span class="line">              &lt;name&gt;dfs.webhdfs.enabled&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;true&lt;&#x2F;value&gt; </span><br><span class="line">              &lt;description&gt;设置为true，可以在浏览器中IP+port查看&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="mapred-site-xml"><a href="#mapred-site-xml" class="headerlink" title="mapred-site.xml"></a>mapred-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.framework.name&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;yarn&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;mapreduce运用了yarn框架，设置name为yarn&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:10020&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;历史服务器,查看Mapreduce作业记录&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:19888&lt;&#x2F;value&gt;</span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;mapreduce_shuffle&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;NodeManager上运行的附属服务，用于运行mapreduce&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services.mapreduce.shuffle.class&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8032&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对客户端暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.scheduler.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8030&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对ApplicationMaster暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.resource-tracker.address&lt;&#x2F;name&gt;  </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8031&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对NodeManager暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.admin.address&lt;&#x2F;name&gt;   </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8033&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对管理员暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">           &lt;value&gt;localhost:8088&lt;&#x2F;value&gt; </span><br><span class="line">           &lt;description&gt;ResourceManager 对外web暴露的地址，可在浏览器查看&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Hadoop的启动与停止"><a href="#Hadoop的启动与停止" class="headerlink" title="Hadoop的启动与停止"></a>Hadoop的启动与停止</h4><h5 id="1-格式化namenode"><a href="#1-格式化namenode" class="headerlink" title="1. 格式化namenode"></a>1. 格式化namenode</h5><p>bin/hadoop namenode -format</p>
+<p><img src="/images/blog/2019-04-27-1.png" alt></p>
+<p>出现 successfully formatted 即可</p>
+<h5 id="2-启动-HDFS、YARN"><a href="#2-启动-HDFS、YARN" class="headerlink" title="2. 启动 HDFS、YARN"></a>2. 启动 HDFS、YARN</h5><p>一起启动</p>
+<p>sbin/start-all.sh</p>
+<p>也可以分开启动</p>
+<p>sbin/start-dfs.sh</p>
+<p>sbin/start-yarn.sh</p>
+<h5 id="3-验证"><a href="#3-验证" class="headerlink" title="3. 验证"></a>3. 验证</h5><p>在命令行输入 jps 可以看到启动的 Java 进程，接着在看看是否有 HDFS、Yarn 的角色</p>
+<p><img src="/images/blog/2019-03-14-9.png" alt></p>
+<p>在浏览器中输入http://{ip}:50070 查看 NameNode 状态。 ip 为你安装的机器 IP</p>
+<h5 id="4-停止"><a href="#4-停止" class="headerlink" title="4. 停止"></a>4. 停止</h5><p>停止hadoop，进入Hadoop目录下，输入命令：</p>
+<p>sbin/stop-all.sh。</p>
+<p>同样也可以分开停止的。</p>
+<p>sbin/stop-dfs.sh</p>
+<p>sbin/stop-yarn.sh</p>
+<h4 id="HBase"><a href="#HBase" class="headerlink" title="HBase"></a>HBase</h4><h5 id="1-配置HADOOP-HOME"><a href="#1-配置HADOOP-HOME" class="headerlink" title="1. 配置HADOOP_HOME"></a>1. 配置HADOOP_HOME</h5><p>在 /etc/profile 中加入</p>
+<p>export HBASE_HOME=/opt/hbase-1.2.11</p>
+<p>export PATH=$HBASE_HOME/bin:$PATH</p>
+<h5 id="2-hbase-site-xml"><a href="#2-hbase-site-xml" class="headerlink" title="2. hbase-site.xml"></a>2. hbase-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;!-- 端口要和Hadoop的fs.defaultFS端口一致--&gt;</span><br><span class="line">           &lt;!-- hbase存放数据目录 --&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　   &lt;name&gt;hbase.cluster.distributed&lt;&#x2F;name&gt; &lt;!-- 是否分布式部署 --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;false&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hbase.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;tmp&lt;&#x2F;value&gt;</span><br><span class="line">                &lt;description&gt;hbase临时文件目录&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.quorum&lt;&#x2F;name&gt; &lt;!-- list of  zookooper --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;localhost&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt; 　　　 </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.property.dataDir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;zookeeper&lt;&#x2F;value&gt;</span><br><span class="line">            &lt;description&gt;zookooper配置、日志等的存储位置&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-hbase-env-sh"><a href="#3-hbase-env-sh" class="headerlink" title="3. hbase-env.sh"></a>3. hbase-env.sh</h5><p>使用 HBase 自带的zookeeper</p>
+<p>export HBASE_MANAGES_ZK=true </p>
+<p>指定 JDK</p>
+<p>export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
+<h4 id="启动与停止Hbase"><a href="#启动与停止Hbase" class="headerlink" title="启动与停止Hbase"></a>启动与停止Hbase</h4><p>在Hadoop已经启动成功的基础上，输入 start-hbase.sh ，过几秒钟便启动完成。</p>
+<p>输入jps命令查看进程是否启动成功，若 机器 上出现 HMaster 即可。 (不知道为什么。我这里没有出现 HQuorumPeer，不知道是不是版本的原因)</p>
+<p>输入 hbase 可以看到支持的命令服务。 zkcli 是进入 HBase 自带的 zk 的命令</p>
+<p>输入 hbase shell 命令 进入 HBase 命令模式</p>
+<p>在浏览器中输入http://{ip}:16010 就可以在界面上看到 HBase 的配置了</p>
+<p>当要停止hbase时输入stop-hbase.sh，过几秒后hbase就会被停止了。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>这只是简易版的。生产环境的要求肯定不止这些。参考者请注意。</p>
+<p>这里有个地方没弄懂。尝试过配置 HBase Master 的端口为 16000。 发现未生效。端口是随机的。。。<br>没想明白为什么。等看下源码找找原因。</p>
+<p>附上 HBase 端口设置参数</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">hbase-site.xml</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16010&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16201&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16301&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>参考链接</p>
+<ul>
+<li><a href="https://www.cnblogs.com/lzxlfly/p/7221890.html" target="_blank" rel="noopener">Hadoop2.7.3+Hbase-1.2.6完全分布式安装部署</a></li>
+<li><a href="https://www.cnblogs.com/jing1996/p/8038219.html" target="_blank" rel="noopener">Hadoop2.7.4安装配置</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Hadoop</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Hive 重新配置元数据库</title>
     <url>/2019/03/14/hive-memstore/</url>
     <content><![CDATA[<p>Hive 重新配置元数据库</p>
@@ -11883,65 +12005,6 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
 ]]></content>
       <categories>
         <category>Hive</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>HDFS 块故障</title>
-    <url>/2019/03/14/hdfs-block-fault/</url>
-    <content><![CDATA[<p>发现测试集群HDFS报丢失块的告警。 对块进行修复</p>
-<hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>发现测试集群HDFS报丢失块的告警。 </p>
-<p><img src="/images/blog/2019-03-14-4.png" alt></p>
-<p>如果块损坏过多，超过设置的百分比，NameNode 会进入安全模式。需要退出安全模式处理</p>
-<h4 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h4><p>解决方法：</p>
-<ul>
-<li>如果文件不重要，可以直接删除此文件；或删除后重新复制一份到集群中</li>
-<li>如果不能删除，需要从上面命令中找到发生在哪台机器上，然后到此机器上查看日志。</li>
-</ul>
-<p>先确认集群有没有datanode宕机</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo -u hdfs hdfs dfsadmin -report</span><br></pre></td></tr></table></figure>
-
-<p>查看丢失块的信息</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 需要hdfs权限权限操作。如果没有hdfs 账号，则在命令前加 sudo -u hdfs ，以hdfs权限运行该命令</span><br><span class="line"></span><br><span class="line"># 检查整个文件系统，检查哪些数据块丢失了</span><br><span class="line">hdfs fsck &#x2F;</span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息</span><br><span class="line">hdfs fsck -list-corruptfileblocks   </span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息  -locations位置信息  -blocks各个块的信息   -files显示文件信息，包括文件名称，大小，块数量和健康状况（是否有缺失的块）</span><br><span class="line">hdfs fsck &lt;path&gt; -locations -blocks -files</span><br></pre></td></tr></table></figure>
-<p><img src="/images/blog/2019-03-14-5.png" alt></p>
-<p><img src="/images/blog/2019-03-14-6.png" alt></p>
-<p>当然，这只是数据允许丢失的情况下可以使用的一种简单粗暴的方法<code>hdfs fsck / -delete</code>, 是删除所有损坏的块的数据文件，会导致数据彻底丢失</p>
-<p>生产上还是无法使用这种直接删数据的方法的</p>
-<p>那么生产上应该怎么处理这种情况呢？</p>
-<ol>
-<li>首先<code>hdfs fsck -list-corruptfileblocks</code>找到数据块的位置</li>
-<li><code>hdfs debug recoverLease [-path &lt;path&gt;] [-retries &lt;num-retries&gt;]</code>用这个命令恢复上面路径丢失的数据块，最后一个参数是重试次数</li>
-</ol>
-<blockquote>
-<p>自动修复<br>hdfs当然会自动修复损坏的数据块，当数据块损坏后，DN节点执⾏directoryscan（datanode进行内存和磁盘数据集块校验）操作之前，都不会发现损坏；也就是directoryscan操作校验是间隔6h<br>dfs.datanode.directoryscan.interval : 21600</p>
-<p>在DN向NN进⾏blockreport前，都不会恢复数据块;也就是blockreport操作是间隔6h<br>dfs.blockreport.intervalMsec : 21600000<br>最终当NN收到blockreport才会进⾏恢复操作<br>生产中倾向于使用手动修复的方法去修复损坏的数据块。</p>
-</blockquote>
-<p>具体的实操请转移这里阅读<a href="https://ruozedata.github.io/2019/06/06/%E7%94%9F%E4%BA%A7HDFS%20Block%E6%8D%9F%E5%9D%8F%E6%81%A2%E5%A4%8D%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5(%E5%90%AB%E6%80%9D%E8%80%83%E9%A2%98)/" target="_blank" rel="noopener">生产HDFS Block损坏恢复最佳实践(含思考题)</a>，注意地方：</p>
-<ul>
-<li>删除块和meta文件之后要重启HDFS，模拟损坏效果，不重启的话直接fsck检查看不到块损坏</li>
-</ul>
-<h4 id="HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法"><a href="#HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法" class="headerlink" title="HDFS block丢失过多进入安全模式（Safe mode）的解决方法"></a>HDFS block丢失过多进入安全模式（Safe mode）的解决方法</h4><p>前面介绍的是简单的块损坏。 后面遇到一次丢失块比例高达 13% 的测试环境。</p>
-<p>由于系统断电，内存不足等原因导致 DN 丢失超过设置的丢失百分比，系统自动进入安全模式。</p>
-<p>解决办法就是把宕机 DN 重启恢复回来，然后观察是否能够恢复。</p>
-<p>不然只能退出安全模式。清理损坏的块。<strong>注意: 这种方式会出现数据丢失，损坏的block会被删掉</strong> 请慎重</p>
-<p>退出安全模式操作如下</p>
-<p><img src="/images/blog/2019-03-14-7.png" alt></p>
-<p>离开安全模式后使用<code>hdfs dfsadmin -safemode get</code>查看，<code>Safe mode is OFF</code> 为安全模式关闭，<code>Safe mode is ON</code>为安全模式开启</p>
-<p>如果无法离开安全模式，那就强制离开<code>hdfs dfsadmin -safemode forceExit</code></p>
-<p>执行健康检查，删除损坏掉的block <code>hdfs fsck / -delete</code></p>
-<hr>
-<p>参考链接</p>
-<ul>
-<li><a href="https://blog.csdn.net/mnasd/article/details/82143653" target="_blank" rel="noopener">查看修复HDFS中丢失的块 &amp;HDFS block丢失过多进入安全模式（safe mode）的解决方法</a></li>
-<li><a href="https://www.cnblogs.com/admln/p/5822004.html" target="_blank" rel="noopener">查看修复HDFS中丢失的块</a></li>
-</ul>
-<ul>
-<li><a href="https://blog.csdn.net/qq_32641659/article/details/88243255" target="_blank" rel="noopener">hadoop之hdfs生产数据块损坏修复方法</a></li>
-<li><a href="https://blog.csdn.net/eryehong/article/details/95167059" target="_blank" rel="noopener">【学习笔记】Hadoop之HDFS Block损坏恢复最佳实践(含思考题)</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>HDFS</category>
       </categories>
   </entry>
   <entry>
@@ -12029,85 +12092,62 @@ hotfix: 这个分支的代码是紧急修复生产 bug 的代码</code></pre><p>
       </categories>
   </entry>
   <entry>
-    <title>Hadoop + HBase 单机安装部署</title>
-    <url>/2019/03/14/apache-hadoop/</url>
-    <content><![CDATA[<p>单机搭建部署 Hadoop 、HBase</p>
+    <title>HDFS 块故障</title>
+    <url>/2019/03/14/hdfs-block-fault/</url>
+    <content><![CDATA[<p>发现测试集群HDFS报丢失块的告警。 对块进行修复</p>
 <hr>
-<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>之前一直是使用 CDH 。 准备入坑源码。所以想搭建一套 Apache 的来玩玩。</p>
-<p>选择的版本：</p>
-<blockquote>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>发现测试集群HDFS报丢失块的告警。 </p>
+<p><img src="/images/blog/2019-03-14-4.png" alt></p>
+<p>如果块损坏过多，超过设置的百分比，NameNode 会进入安全模式。需要退出安全模式处理</p>
+<h4 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h4><p>解决方法：</p>
 <ul>
-<li>Hadoop: 2.7.7</li>
-<li>HBase: 1.2.11</li>
-<li>Linux: CentOs 6.5</li>
-<li>JDK: jdk1.8.0_161</li>
+<li>如果文件不重要，可以直接删除此文件；或删除后重新复制一份到集群中</li>
+<li>如果不能删除，需要从上面命令中找到发生在哪台机器上，然后到此机器上查看日志。</li>
 </ul>
+<p>先确认集群有没有datanode宕机</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo -u hdfs hdfs dfsadmin -report</span><br></pre></td></tr></table></figure>
+
+<p>查看丢失块的信息</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 需要hdfs权限权限操作。如果没有hdfs 账号，则在命令前加 sudo -u hdfs ，以hdfs权限运行该命令</span><br><span class="line"></span><br><span class="line"># 检查整个文件系统，检查哪些数据块丢失了</span><br><span class="line">hdfs fsck &#x2F;</span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息</span><br><span class="line">hdfs fsck -list-corruptfileblocks   </span><br><span class="line"></span><br><span class="line"># 查看损坏块的信息  -locations位置信息  -blocks各个块的信息   -files显示文件信息，包括文件名称，大小，块数量和健康状况（是否有缺失的块）</span><br><span class="line">hdfs fsck &lt;path&gt; -locations -blocks -files</span><br></pre></td></tr></table></figure>
+<p><img src="/images/blog/2019-03-14-5.png" alt></p>
+<p><img src="/images/blog/2019-03-14-6.png" alt></p>
+<p>当然，这只是数据允许丢失的情况下可以使用的一种简单粗暴的方法<code>hdfs fsck / -delete</code>, 是删除所有损坏的块的数据文件，会导致数据彻底丢失</p>
+<p>生产上还是无法使用这种直接删数据的方法的</p>
+<p>那么生产上应该怎么处理这种情况呢？</p>
+<ol>
+<li>首先<code>hdfs fsck -list-corruptfileblocks</code>找到数据块的位置</li>
+<li><code>hdfs debug recoverLease [-path &lt;path&gt;] [-retries &lt;num-retries&gt;]</code>用这个命令恢复上面路径丢失的数据块，最后一个参数是重试次数</li>
+</ol>
+<blockquote>
+<p>自动修复<br>hdfs当然会自动修复损坏的数据块，当数据块损坏后，DN节点执⾏directoryscan（datanode进行内存和磁盘数据集块校验）操作之前，都不会发现损坏；也就是directoryscan操作校验是间隔6h<br>dfs.datanode.directoryscan.interval : 21600</p>
+<p>在DN向NN进⾏blockreport前，都不会恢复数据块;也就是blockreport操作是间隔6h<br>dfs.blockreport.intervalMsec : 21600000<br>最终当NN收到blockreport才会进⾏恢复操作<br>生产中倾向于使用手动修复的方法去修复损坏的数据块。</p>
 </blockquote>
-<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>安装jdk，配置环境变量。 这个网上很多，自行百度。</p>
-<p>Hadoop、HBase tar包去官方网站下载即可</p>
-<p>下载之后将其解压。</p>
-<p><img src="/images/blog/2019-03-14-8.png" alt></p>
-<h4 id="配置-Hadoop-环境变量"><a href="#配置-Hadoop-环境变量" class="headerlink" title="配置 Hadoop 环境变量"></a>配置 Hadoop 环境变量</h4><h5 id="1-配置hadoop-env-sh、yarn-env-sh"><a href="#1-配置hadoop-env-sh、yarn-env-sh" class="headerlink" title="1. 配置hadoop-env.sh、yarn-env.sh"></a>1. 配置hadoop-env.sh、yarn-env.sh</h5><p>在Hadoop安装目录下 etc/hadoop</p>
-<p>在 hadoop-env.sh、yarn-env.sh  </p>
-<p>加入 export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
-<p>保存退出</p>
-<h5 id="2-配置HADOOP-HOME"><a href="#2-配置HADOOP-HOME" class="headerlink" title="2. 配置HADOOP_HOME"></a>2. 配置HADOOP_HOME</h5><p>修改全局环境变量</p>
-<p>在 /etc/profile </p>
-<p>export HADOOP_HOME=/opt/hadoop-2.7.3 # Hadoop的安装路径</p>
-<p>export PATH=$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$PATH</p>
-<h4 id="配置基本相关xml"><a href="#配置基本相关xml" class="headerlink" title="配置基本相关xml"></a>配置基本相关xml</h4><h5 id="core-site-xml"><a href="#core-site-xml" class="headerlink" title="core-site.xml"></a>core-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;fs.defaultFS&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hadoop.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;tmp&lt;&#x2F;value&gt; </span><br><span class="line">                &lt;description&gt;namenode上本地的hadoop临时文件夹&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="hdfs-site-xml"><a href="#hdfs-site-xml" class="headerlink" title="hdfs-site.xml"></a>hdfs-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">              &lt;name&gt;dfs.replication&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;1&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;数据需要备份的数量，不能大于集群的机器数量，默认为3&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.namenode.name.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;nn&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;description&gt;namenode上存储hdfs名字空间元数据&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;dfs.datanode.data.dir&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;dfs&#x2F;dn&lt;&#x2F;value&gt;</span><br><span class="line">             &lt;description&gt;datanode上数据块的物理存储位置&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　　　&lt;name&gt;dfs.namenode.secondary.http-address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　　　&lt;value&gt;localhost:9001&lt;&#x2F;value&gt;</span><br><span class="line">              &lt;description&gt;SecondaryNameNode HTTP 端口。如端口为 0，服务器将在自由端口启动。&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;  </span><br><span class="line">        &lt;property&gt; </span><br><span class="line">              &lt;name&gt;dfs.webhdfs.enabled&lt;&#x2F;name&gt;</span><br><span class="line">              &lt;value&gt;true&lt;&#x2F;value&gt; </span><br><span class="line">              &lt;description&gt;设置为true，可以在浏览器中IP+port查看&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="mapred-site-xml"><a href="#mapred-site-xml" class="headerlink" title="mapred-site.xml"></a>mapred-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.framework.name&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;yarn&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;mapreduce运用了yarn框架，设置name为yarn&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:10020&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;历史服务器,查看Mapreduce作业记录&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;mapreduce.jobhistory.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:19888&lt;&#x2F;value&gt;</span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;mapreduce_shuffle&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;NodeManager上运行的附属服务，用于运行mapreduce&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.nodemanager.aux-services.mapreduce.shuffle.class&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;MapReduce JobHistory Web 应用程序 HTTP 端口&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8032&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对客户端暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.scheduler.address&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8030&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对ApplicationMaster暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.resource-tracker.address&lt;&#x2F;name&gt;  </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8031&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对NodeManager暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.admin.address&lt;&#x2F;name&gt;   </span><br><span class="line">　　　　　　&lt;value&gt;localhost:8033&lt;&#x2F;value&gt; </span><br><span class="line">          &lt;description&gt;ResourceManager 对管理员暴露的地址&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　&lt;name&gt;yarn.resourcemanager.webapp.address&lt;&#x2F;name&gt; </span><br><span class="line">           &lt;value&gt;localhost:8088&lt;&#x2F;value&gt; </span><br><span class="line">           &lt;description&gt;ResourceManager 对外web暴露的地址，可在浏览器查看&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Hadoop的启动与停止"><a href="#Hadoop的启动与停止" class="headerlink" title="Hadoop的启动与停止"></a>Hadoop的启动与停止</h4><h5 id="1-格式化namenode"><a href="#1-格式化namenode" class="headerlink" title="1. 格式化namenode"></a>1. 格式化namenode</h5><p>bin/hadoop namenode -format</p>
-<p><img src="/images/blog/2019-04-27-1.png" alt></p>
-<p>出现 successfully formatted 即可</p>
-<h5 id="2-启动-HDFS、YARN"><a href="#2-启动-HDFS、YARN" class="headerlink" title="2. 启动 HDFS、YARN"></a>2. 启动 HDFS、YARN</h5><p>一起启动</p>
-<p>sbin/start-all.sh</p>
-<p>也可以分开启动</p>
-<p>sbin/start-dfs.sh</p>
-<p>sbin/start-yarn.sh</p>
-<h5 id="3-验证"><a href="#3-验证" class="headerlink" title="3. 验证"></a>3. 验证</h5><p>在命令行输入 jps 可以看到启动的 Java 进程，接着在看看是否有 HDFS、Yarn 的角色</p>
-<p><img src="/images/blog/2019-03-14-9.png" alt></p>
-<p>在浏览器中输入http://{ip}:50070 查看 NameNode 状态。 ip 为你安装的机器 IP</p>
-<h5 id="4-停止"><a href="#4-停止" class="headerlink" title="4. 停止"></a>4. 停止</h5><p>停止hadoop，进入Hadoop目录下，输入命令：</p>
-<p>sbin/stop-all.sh。</p>
-<p>同样也可以分开停止的。</p>
-<p>sbin/stop-dfs.sh</p>
-<p>sbin/stop-yarn.sh</p>
-<h4 id="HBase"><a href="#HBase" class="headerlink" title="HBase"></a>HBase</h4><h5 id="1-配置HADOOP-HOME"><a href="#1-配置HADOOP-HOME" class="headerlink" title="1. 配置HADOOP_HOME"></a>1. 配置HADOOP_HOME</h5><p>在 /etc/profile 中加入</p>
-<p>export HBASE_HOME=/opt/hbase-1.2.11</p>
-<p>export PATH=$HBASE_HOME/bin:$PATH</p>
-<h5 id="2-hbase-site-xml"><a href="#2-hbase-site-xml" class="headerlink" title="2. hbase-site.xml"></a>2. hbase-site.xml</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:8020&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">　　　　　　 &lt;!-- 端口要和Hadoop的fs.defaultFS端口一致--&gt;</span><br><span class="line">           &lt;!-- hbase存放数据目录 --&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt; </span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　   &lt;name&gt;hbase.cluster.distributed&lt;&#x2F;name&gt; &lt;!-- 是否分布式部署 --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;false&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">                &lt;name&gt;hbase.tmp.dir&lt;&#x2F;name&gt;</span><br><span class="line">                &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;tmp&lt;&#x2F;value&gt;</span><br><span class="line">                &lt;description&gt;hbase临时文件目录&lt;&#x2F;description&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">　　　　&lt;property&gt; </span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.quorum&lt;&#x2F;name&gt; &lt;!-- list of  zookooper --&gt;</span><br><span class="line">　　　　　　 &lt;value&gt;localhost&lt;&#x2F;value&gt; </span><br><span class="line">　　　　&lt;&#x2F;property&gt; 　　　 </span><br><span class="line">　　　　&lt;property&gt;</span><br><span class="line">　　　　　　 &lt;name&gt;hbase.zookeeper.property.dataDir&lt;&#x2F;name&gt; </span><br><span class="line">　　　　　　 &lt;value&gt;&#x2F;opt&#x2F;hadoop&#x2F;hbase&#x2F;zookeeper&lt;&#x2F;value&gt;</span><br><span class="line">            &lt;description&gt;zookooper配置、日志等的存储位置&lt;&#x2F;description&gt;</span><br><span class="line">　　　　&lt;&#x2F;property&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">             &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="3-hbase-env-sh"><a href="#3-hbase-env-sh" class="headerlink" title="3. hbase-env.sh"></a>3. hbase-env.sh</h5><p>使用 HBase 自带的zookeeper</p>
-<p>export HBASE_MANAGES_ZK=true </p>
-<p>指定 JDK</p>
-<p>export JAVA_HOME=/usr/local/jdk1.8.0_161（jdk安装路径）</p>
-<h4 id="启动与停止Hbase"><a href="#启动与停止Hbase" class="headerlink" title="启动与停止Hbase"></a>启动与停止Hbase</h4><p>在Hadoop已经启动成功的基础上，输入 start-hbase.sh ，过几秒钟便启动完成。</p>
-<p>输入jps命令查看进程是否启动成功，若 机器 上出现 HMaster 即可。 (不知道为什么。我这里没有出现 HQuorumPeer，不知道是不是版本的原因)</p>
-<p>输入 hbase 可以看到支持的命令服务。 zkcli 是进入 HBase 自带的 zk 的命令</p>
-<p>输入 hbase shell 命令 进入 HBase 命令模式</p>
-<p>在浏览器中输入http://{ip}:16010 就可以在界面上看到 HBase 的配置了</p>
-<p>当要停止hbase时输入stop-hbase.sh，过几秒后hbase就会被停止了。</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>这只是简易版的。生产环境的要求肯定不止这些。参考者请注意。</p>
-<p>这里有个地方没弄懂。尝试过配置 HBase Master 的端口为 16000。 发现未生效。端口是随机的。。。<br>没想明白为什么。等看下源码找找原因。</p>
-<p>附上 HBase 端口设置参数</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">hbase-site.xml</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16000&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.master.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16010&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16201&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line"></span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.regionserver.info.port&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;16301&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br></pre></td></tr></table></figure>
-
+<p>具体的实操请转移这里阅读<a href="https://ruozedata.github.io/2019/06/06/%E7%94%9F%E4%BA%A7HDFS%20Block%E6%8D%9F%E5%9D%8F%E6%81%A2%E5%A4%8D%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5(%E5%90%AB%E6%80%9D%E8%80%83%E9%A2%98)/" target="_blank" rel="noopener">生产HDFS Block损坏恢复最佳实践(含思考题)</a>，注意地方：</p>
+<ul>
+<li>删除块和meta文件之后要重启HDFS，模拟损坏效果，不重启的话直接fsck检查看不到块损坏</li>
+</ul>
+<h4 id="HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法"><a href="#HDFS-block丢失过多进入安全模式（Safe-mode）的解决方法" class="headerlink" title="HDFS block丢失过多进入安全模式（Safe mode）的解决方法"></a>HDFS block丢失过多进入安全模式（Safe mode）的解决方法</h4><p>前面介绍的是简单的块损坏。 后面遇到一次丢失块比例高达 13% 的测试环境。</p>
+<p>由于系统断电，内存不足等原因导致 DN 丢失超过设置的丢失百分比，系统自动进入安全模式。</p>
+<p>解决办法就是把宕机 DN 重启恢复回来，然后观察是否能够恢复。</p>
+<p>不然只能退出安全模式。清理损坏的块。<strong>注意: 这种方式会出现数据丢失，损坏的block会被删掉</strong> 请慎重</p>
+<p>退出安全模式操作如下</p>
+<p><img src="/images/blog/2019-03-14-7.png" alt></p>
+<p>离开安全模式后使用<code>hdfs dfsadmin -safemode get</code>查看，<code>Safe mode is OFF</code> 为安全模式关闭，<code>Safe mode is ON</code>为安全模式开启</p>
+<p>如果无法离开安全模式，那就强制离开<code>hdfs dfsadmin -safemode forceExit</code></p>
+<p>执行健康检查，删除损坏掉的block <code>hdfs fsck / -delete</code></p>
 <hr>
 <p>参考链接</p>
 <ul>
-<li><a href="https://www.cnblogs.com/lzxlfly/p/7221890.html" target="_blank" rel="noopener">Hadoop2.7.3+Hbase-1.2.6完全分布式安装部署</a></li>
-<li><a href="https://www.cnblogs.com/jing1996/p/8038219.html" target="_blank" rel="noopener">Hadoop2.7.4安装配置</a></li>
+<li><a href="https://blog.csdn.net/mnasd/article/details/82143653" target="_blank" rel="noopener">查看修复HDFS中丢失的块 &amp;HDFS block丢失过多进入安全模式（safe mode）的解决方法</a></li>
+<li><a href="https://www.cnblogs.com/admln/p/5822004.html" target="_blank" rel="noopener">查看修复HDFS中丢失的块</a></li>
+</ul>
+<ul>
+<li><a href="https://blog.csdn.net/qq_32641659/article/details/88243255" target="_blank" rel="noopener">hadoop之hdfs生产数据块损坏修复方法</a></li>
+<li><a href="https://blog.csdn.net/eryehong/article/details/95167059" target="_blank" rel="noopener">【学习笔记】Hadoop之HDFS Block损坏恢复最佳实践(含思考题)</a></li>
 </ul>
 ]]></content>
       <categories>
-        <category>Hadoop</category>
+        <category>HDFS</category>
       </categories>
   </entry>
   <entry>
