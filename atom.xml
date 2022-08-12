@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2021-09-23T12:13:22.085Z</updated>
+  <updated>2022-08-12T13:03:51.274Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,48 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Golang sync.WaitGroup 的用法</title>
+    <link href="http://yoursite.com/2022/08/12/go-syncWaitGroup/"/>
+    <id>http://yoursite.com/2022/08/12/go-syncWaitGroup/</id>
+    <published>2022-08-11T16:00:00.000Z</published>
+    <updated>2022-08-12T13:03:51.274Z</updated>
+    
+    <content type="html"><![CDATA[<p>Golang sync.WaitGroup 的用法</p><hr><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">func main()&#123;</span><br><span class="line">    for i :&#x3D; 0; i &lt; 100 ; i++&#123;</span><br><span class="line">        go fmt.Println(i)</span><br><span class="line">    &#125;</span><br><span class="line">    time.Sleep(time.Second)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>主线程为了等待goroutine都运行完毕，不得不在程序的末尾使用time.Sleep() 来睡眠一段时间，等待其他线程充分运行。</p><p>对于实际生活的大多数场景来说，1秒是不够的，并且大部分时候我们都无法预知for循环内代码运行时间的长短。这时候就不能使用time.Sleep() 来完成等待操作了。</p><p>对于这种情况，go语言中有一个其他的工具sync.WaitGroup 能更加方便的帮助我们达到这个目的。</p><p>WaitGroup 对象内部有一个计数器，最初从0开始</p><p>有三个方法：Add(), Done(), Wait() 用来控制计数器的数量</p><ul><li>Add(n) 把计数器新增n</li><li>Done() 每次把计数器-1 </li><li>wait() 会阻塞代码的运行，直到计数器地值减为0。</li></ul><h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h4><h5 id="计数器不能为负值"><a href="#计数器不能为负值" class="headerlink" title="计数器不能为负值"></a>计数器不能为负值</h5><p>不能使用Add() 给wg 设置一个负值，否则代码将会报错</p><p>同样使用Done() 也要特别注意不要把计数器设置成负数</p><h5 id="WaitGroup对象不是一个引用类型"><a href="#WaitGroup对象不是一个引用类型" class="headerlink" title="WaitGroup对象不是一个引用类型"></a>WaitGroup对象不是一个引用类型</h5><p>WaitGroup对象不是一个引用类型，在通过函数传值的时候需要使用地址</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">func main() &#123;</span><br><span class="line">    wg :&#x3D; sync.WaitGroup&#123;&#125;</span><br><span class="line">    wg.Add(100)</span><br><span class="line">    for i :&#x3D; 0; i &lt; 100; i++ &#123;</span><br><span class="line">        go f(i, &amp;wg)</span><br><span class="line">    &#125;</span><br><span class="line">    wg.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; 一定要通过指针传值，不然进程会进入死锁状态</span><br><span class="line">func f(i int, wg *sync.WaitGroup) &#123; </span><br><span class="line">    fmt.Println(i)</span><br><span class="line">    wg.Done()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><ul><li><a href="https://studygolang.com/articles/12972" target="_blank" rel="noopener">Golang sync.WaitGroup的用法</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      Golang sync.WaitGroup 的用法
+    
+    </summary>
+    
+    
+      <category term="Golang" scheme="http://yoursite.com/categories/Golang/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Golang http 服务器编程</title>
+    <link href="http://yoursite.com/2021/10/30/go-http/"/>
+    <id>http://yoursite.com/2021/10/30/go-http/</id>
+    <published>2021-10-29T16:00:00.000Z</published>
+    <updated>2021-10-31T16:26:10.613Z</updated>
+    
+    <content type="html"><![CDATA[<p>跳转两篇优秀的 http 服务器编程的文章</p><hr><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>目前 Go 社区已经有非常多关于 Web 开发的库或框架。其中 <a href="https://github.com/gin-gonic/gin" target="_blank" rel="noopener">gin</a> 有高达 5w 多的 star</p><p>这些 Web 库/框架大多是基于 net/http 包做了包装，提供易于使用的功能，因此我也选择从基础的 net/http 包开始学起</p><h4 id><a href="#" class="headerlink" title></a></h4><p>http 是典型的 C/S 架构，客户端向服务端发送请求（request），服务端做出应答（response）</p><p>典型的 HTTP 服务端的处理流程可以用下图表示。<strong>图来源于稀土掘金社区，<a href="https://juejin.cn/post/6844903998869209095#heading-1" target="_blank" rel="noopener">https://juejin.cn/post/6844903998869209095#heading-1</a></strong></p><p><img src="/images/blog/2021-10-31-1.png" alt></p><p>下方两篇文章讲的挺好，跳转阅读即可学习</p><ul><li><a href="https://cizixs.com/2016/08/17/golang-http-server-side/" target="_blank" rel="noopener">go http 服务器编程</a></li><li><a href="https://juejin.cn/post/6844903998869209095#heading-1" target="_blank" rel="noopener">深入理解Golang之http server</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      跳转两篇优秀的 http 服务器编程的文章
+    
+    </summary>
+    
+    
+      <category term="Golang" scheme="http://yoursite.com/categories/Golang/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>Kafka Broker节点磁盘数据Balance</title>
@@ -390,48 +432,6 @@
     
     
       <category term="Kafka" scheme="http://yoursite.com/categories/Kafka/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Shell 2&gt;&amp;1 用法</title>
-    <link href="http://yoursite.com/2021/01/25/Linux-Shell-redirection/"/>
-    <id>http://yoursite.com/2021/01/25/Linux-Shell-redirection/</id>
-    <published>2021-01-24T16:00:00.000Z</published>
-    <updated>2021-01-26T14:10:05.086Z</updated>
-    
-    <content type="html"><![CDATA[<p>Shell 2&gt;&amp;1 用法</p><hr><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>在Shell脚本中，默认情况下，总是有三个文件处于打开状态，标准输入(键盘输入)、标准输出（输出到屏幕）、标准错误（也是输出到屏幕），它们分别对应的文件描述符是0，1，2 。</p><p>&gt;  默认为标准输出重定向，与 1&gt; 相同</p><p>2&gt;&amp;1  意思是把 标准错误输出 重定向到 标准输出</p><p>同理 1&gt;&amp;2 意思是将标准输出 重定向到 标准错误输出</p><h4 id="运用"><a href="#运用" class="headerlink" title="运用"></a>运用</h4><p>遇到一个问题需要批量扫描机器的JDK版本是不是为1.8的，遇到无法在’java -version’输出中使用grep和awk的情况</p><p>出现这样的问题，主要就是这些消息默认情况下转到stderr，而不是stdout。所有需要先重定向到stdout，然后才能进行此类操作。</p><p>将stderr重定向到stdout</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">java_check&#x3D;$(java -version 2&gt;&amp;1)</span><br><span class="line"></span><br><span class="line">echo $java_check | grep 1.8.0_265-b01</span><br><span class="line">OpenJDK Runtime Environment Corretto-8.265.01.1 (build 1.8.0_265-b01)</span><br></pre></td></tr></table></figure><h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>&amp;&gt;file  意思是把标准输出和标准错误输出都重定向到文件file中</p><p>/dev/null是一个文件，这个文件比较特殊，所有传给它的东西它都丢弃掉</p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/u011630575/article/details/52151995" target="_blank" rel="noopener">Shell重定向 ＆&gt;file、2&gt;&amp;1、1&gt;&amp;2 、/dev/null的区别</a></li><li><a href="https://blog.csdn.net/ITqingliang/article/details/103733038" target="_blank" rel="noopener">不能在’java -version’输出中grep和awk</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Shell 2&gt;&amp;1 用法
-    
-    </summary>
-    
-    
-      <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Linux 光标快速移动的快捷键</title>
-    <link href="http://yoursite.com/2021/01/21/Linux-shortcut-keys/"/>
-    <id>http://yoursite.com/2021/01/21/Linux-shortcut-keys/</id>
-    <published>2021-01-20T16:00:00.000Z</published>
-    <updated>2021-01-21T14:11:14.101Z</updated>
-    
-    <content type="html"><![CDATA[<p>Linux 快速移动光标的快捷键</p><hr><h4 id="光标快速切换到行尾行首"><a href="#光标快速切换到行尾行首" class="headerlink" title="光标快速切换到行尾行首"></a>光标快速切换到行尾行首</h4><p>ctrl+a 行首<br>ctrl+e 行尾</p><h4 id="删除至行尾"><a href="#删除至行尾" class="headerlink" title="删除至行尾"></a>删除至行尾</h4><p>ctrl+k</p><h4 id="左-右移动一个单词"><a href="#左-右移动一个单词" class="headerlink" title="左|右移动一个单词"></a>左|右移动一个单词</h4><p>Esc b 左移一个单词[back]<br>Esc f 右移一个单词[forward]</p><p><strong>注意：每次按下快捷键，需抬起后再按下快捷键，方可多次移动单词</strong></p><hr><p>参考链接</p><ul><li><a href="https://blog.csdn.net/u010865136/article/details/95628409" target="_blank" rel="noopener">Linux命令行——光标快速移动的快捷键</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      Linux 命令行执行命令时，快速移动光标可节省不少时间
-    
-    </summary>
-    
-    
-      <category term="Linux" scheme="http://yoursite.com/categories/Linux/"/>
     
     
   </entry>
